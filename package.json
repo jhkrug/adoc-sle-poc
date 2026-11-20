@@ -1,0 +1,12 @@
+{
+  "name": "adoc-sle-poc",
+  "private": true,
+  "description": "Antora site build for the doc-sle conversion spike",
+  "scripts": {
+    "build": "antora --fetch antora-playbook-netlify.yml"
+  },
+  "dependencies": {
+    "@antora/cli": "3.1.14",
+    "@antora/site-generator": "3.1.14"
+  }
+}

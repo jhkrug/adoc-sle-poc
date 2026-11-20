@@ -1,0 +1,27 @@
+# Site build from the committed docs/ tree only. Used by Netlify (netlify.toml)
+# and by `npm run build`. It needs no doc-sle source, Python or dia: run
+# build.sh locally to convert again, then commit docs/.
+site:
+  title: SLE docs on Antora (spike)
+  start_page: sles::index.adoc
+content:
+  sources:
+  - url: .
+    branches: HEAD
+    start_path: docs
+ui:
+  bundle:
+    url: https://github.com/susedoc/dsc-style-bundle/raw/main/default-ui/ui-bundle.zip
+    snapshot: true
+antora:
+  extensions:
+  # Drop pages that the profiled nav does not list (for example SLED-only
+  # chapters). Copy of rancher/product-docs-common, MPL-2.0.
+  - require: ./extensions/unpublish-unlisted-pages.js
+    component: [sles]
+runtime:
+  log:
+    failure_level: fatal
+    level: warn
+output:
+  dir: build/site

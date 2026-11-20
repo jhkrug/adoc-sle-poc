@@ -1,0 +1,7 @@
+# Netlify builds the Antora site from the committed docs/ tree.
+[build]
+  command = "npm run build"
+  publish = "build/site"
+
+[build.environment]
+  NODE_VERSION = "22"

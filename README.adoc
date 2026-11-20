@@ -23,6 +23,24 @@ result. A script compares the result with the DocBook source.
 
 Reports are in `reports/`.
 
+=== Site only (Netlify)
+
+The committed `docs/` tree has everything that Antora needs. To build only
+the site (no `doc-sle` source, no Python, no `dia`):
+
+[source,bash]
+----
+npm ci
+npm run build
+----
+
+`netlify.toml` runs the same command and publishes `build/site`. The
+playbook `antora-playbook-netlify.yml` reads `docs/` from this Git repository,
+loads the UI bundle from `susedoc/dsc-style-bundle` on GitHub, and uses the
+copy of the `unpublish-unlisted-pages` extension in `extensions/`.
+
+After a change to the converter, run `./build.sh` locally and commit `docs/`.
+
 == Result
 
 [cols="2,1,1"]

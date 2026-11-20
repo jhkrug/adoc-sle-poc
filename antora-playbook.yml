@@ -21,5 +21,5 @@ antora:
   # Pages whose book include is profiled out (os="sled") are still converted,
   # and Antora publishes every page. The nav is profiled with ifdef, so drop
   # pages that are not in the nav. Same extension as the Rancher playbook.
-  - require: ../../product-docs/product-docs-playbook/product-docs-common/extensions/unpublish-unlisted-pages/unpublish-unlisted-pages.js
+  - require: ./extensions/unpublish-unlisted-pages.js
     component: [sles]
