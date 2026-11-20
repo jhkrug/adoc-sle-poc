@@ -1,0 +1,39 @@
+// Converted from xml/zseries_rescue_initrd.xml
+
+[#sec-zseries-rescue]
+== {zseries}: using initrd as a rescue system
+
+If the kernel of the {slsreg} for {zseries} is upgraded or modified, it is possible to reboot the system accidentally in an inconsistent state, so standard procedures of IPLing the installed system fail. In such a case, you may use the installation system for rescue purposes.
+
+IPL the {sls} for {zseries} installation system as described in xref:deployment:deployment-prep-zseries.adoc#sec-zseries-prep[Preparing for installation]. Choose *Start Installation* and enter all required parameters. After the installation system has loaded and you are asked which display type to use to control the installation, select `+SSH+`. Now you can log in to the system with SSH as `+root+` without a password.
+
+In this state, no disks are configured. You need to configure them before you can proceed.
+
+.Configuring DASDs
+. Configure DASDs with the following command:
++
+----
+dasd_configure 0.0.0150 1 0
+----
++
+0.0.0150 is the channel to which the DASD is connected. The `+1+` means activate the disk (a `+0+` at this place would deactivate the disk). The `+0+` stands for “no DIAG mode” for the disk (a `+1+` here would enable DAIG access to the disk).
+. Now the DASD is online (check with `+cat /proc/partitions+`) and can used for subsequent commands.
+
+.Configuring a zFCP disk
+. To configure a zFCP disk, it is necessary to first configure the zFCP adapter. Do this with the following command:
++
+----
+zfcp_host_configure 0.0.4000 1
+----
++
+`+0.0.4000+` is the channel to which the adapter is attached and `+1+` stands for activate (a `+0+` here would deactivate the adapter).
+. After the adapter is activated, a disk can be configured. Do this with the following command:
++
+----
+zfcp_disk_configure 0.0.4000 1234567887654321 8765432100000000  1
+----
++
+`+0.0.4000+` is the previously-used channel ID, `+1234567887654321+` is the WWPN (World wide Port Number), and `+8765432100000000+` is the LUN (logical unit number). The `+1+` stands for activating the disk (a `+0+` here would deactivate the disk).
+. Now the zFCP disk is online (check with `+cat /proc/partitions+`) and can used for subsequent commands.
+
+Now the rescue system is fully set up and you can start repairing the installed system. See <<sec-trouble-data-recover-rescue,Using the rescue system>> for instructions on how to repair the most common issues.

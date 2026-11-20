@@ -1,0 +1,47 @@
+// Converted from xml/zseries_net_lan_devices.xml
+
+ifdef::os-sles[]
+ifdef::arch-zseries[]
+[#sec-network-yast-s390]
+=== {zseries}: configuring network devices
+
+{productname} for {zseries} supports several types of network interfaces. {yast} can be used to configure all of them.
+
+[#sec-network-yast-s390-hsi]
+==== The qeth-hsi device
+
+To add a `+qeth-hsi+` (HiperSockets) interface to the installed system, start the menu:System[Network Settings] module in {yast}. Select one of the devices marked *Hipersocket* to use as the READ device address and click *Edit*. Enter the device numbers for the read, write and control channels (example device number format: `+0.0.0800+`). Then click next. In the *Network Address Setup* dialog, specify the IP address and netmask for the new interface and leave the network configuration by clicking *Next* and *OK*.
+
+[#sec-network-yast-s390-eth]
+==== The qeth-ethernet device
+
+To add a `+qeth-ethernet+` (IBM OSA Express Ethernet Card) interface to the installed system, start the menu:System[Network Settings] module in {yast}. Select one of the devices marked *IBM OSA Express Ethernet Card* to use as the READ device address and click *Edit*. Enter a device number for the read, write and control channels (example device number format: `+0.0.0700+`). Enter the needed port name, port number (if applicable) and some additional options, your IP address, and an appropriate netmask. Leave the network configuration with *Next* and *OK*.
+
+[#sec-network-yast-s390-ctc]
+==== The ctc device
+
+To add a `+ctc+` (IBM parallel CTC Adapter) interface to the installed system, start the menu:System[Network Settings] module in {yast}. Select one of the devices marked *IBM Parallel CTC Adapter* to use as your read channel and click *Configure*. Choose the *Device Settings* that fit your devices (usually this would be *Compatibility Mode*). Specify both your IP address and the IP address of the remote partner. If needed, adjust the MTU size with menu:Advanced[Detailed Settings]. Leave the network configuration with *Next* and *OK*.
+
+[WARNING]
+.CTC is no longer supported
+====
+The use of this interface is deprecated. This interface will not be supported in future versions of {productname}.
+====
+
+[#sec-network-yast-s390-lcs]
+==== The lcs device
+
+To add an `+lcs+` (IBM OSA-2 Adapter) interface to the installed system, start the menu:System[Network Settings] module in {yast}. Select one of the devices marked *IBM OSA-2 Adapter* and click *Configure*. Enter the needed port number, some additional options, your IP address and an appropriate netmask. Leave the network configuration with *Next* and *OK*.
+
+[#sec-network-yast-s390-iucv]
+==== The IUCV device
+
+To add an `+iucv+` (IUCV) interface to the installed system, start the menu:System[Network Settings] module in {yast}. Select a device marked *IUCV* and click *Edit*. {yast} prompts you for the name of your IUCV partner (*Peer*). Enter the name (this entry is case-sensitive) and select *Next*. Specify both the *IP Address* and the *Remote IP Address* of your partner. If needed, *Set MTU* size on *General* tab. Leave the network configuration with *Next* and *OK*.
+
+[WARNING]
+.IUCV is no longer supported
+====
+The use of this interface is deprecated. This interface will not be supported in future versions of {productname}.
+====
+endif::[]
+endif::[]

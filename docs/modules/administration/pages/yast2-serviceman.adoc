@@ -1,0 +1,20 @@
+// Converted from xml/yast2_serviceman.xml
+[#cha-yast-serviceman]
+= Service management with {yast}
+:description: Learn how to manage system services with YaST, including controlling targets, viewing status, logs and socket-based activation
+:revdate: 2026-01-16
+
+[abstract]
+--
+{yast} provides a service manager for controlling the default system target, services, displaying service status, and reading the log file. New in {productname} {productnumber} is {yast} support for `+systemd+` socket-based services activation, which configures services to start on demand.
+--
+
+`+systemd+` supports starting services with socket-based activation, for starting services on demand. These services have two unit types: service and socket. For example, CUPS is controlled by `+cups.service+` and `+cups.socket+`. {yast} allows you to select the type of service start-up you want to use.
+
+<<fig-yast-serviceman,{yast} service manager>> shows the options in the Start Mode drop-down box: *On Boot*, *On Demand*, and *Manually*. Select *On Demand* for socket-based activation. This opens a listening network socket, and the service starts when there is a request.
+
+[#fig-yast-serviceman]
+.{yast} service manager
+image::yast2_servicemanager.png["",width=100%]
+
+The *On Demand* option is visible only for services that support it. Currently this is a small subset of services, such as CUPS, dbus, iscsid, iscsiuio, multipathd, pcscd, rpcbind, TFTP, virtlockd, virtlogd. See `+man 5 systemd.socket+` for detailed information on how socket activation works.

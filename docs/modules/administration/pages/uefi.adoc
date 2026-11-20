@@ -1,0 +1,346 @@
+// Converted from xml/uefi.xml
+[#cha-uefi]
+= UEFI (Unified Extensible Firmware Interface)
+:description: Learn how to configure Secure Boot on your system using UEFI firmware and understand its importance in establishing a chain of trust
+:revdate: 2026-01-16
+
+UEFI (Unified Extensible Firmware Interface) is the interface between the firmware that comes with the system hardware, all the hardware components of the system, and the operating system.
+
+UEFI is becoming more and more available on PC systems and thus is replacing the traditional PC-BIOS. UEFI, for example, properly supports 64-bit systems and offers secure booting (“Secure Boot”, firmware version 2.3.1c or better required), which is one of its most important features. Lastly, with UEFI a standard firmware will become available on all x86 platforms.
+
+UEFI additionally offers the following advantages:
+
+* Booting from large disks (over 2 TiB) with a GUID Partition Table (GPT).
+* CPU-independent architecture and drivers.
+* Flexible pre-OS environment with network capabilities.
+* CSM (Compatibility Support Module) to support booting legacy operating systems via a PC-BIOS-like emulation.
+
+For more information, see link:https://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface[]. The following sections are not meant as a general UEFI overview; these are only hints about how certain features are implemented in {productname}.
+
+[#sec-uefi-secboot]
+== Secure boot
+
+In the world of UEFI, securing the bootstrapping process means establishing a chain of trust. The “platform” is the root of this chain of trust; in the context of {productname}, the mainboard and the on-board firmware could be considered the “platform”. In other words, it is the hardware vendor, and the chain of trust flows from that hardware vendor to the component manufacturers, the OS vendors, etc.
+
+The trust is expressed via public key cryptography. The hardware vendor puts a so-called Platform Key (PK) into the firmware, representing the root of trust. The trust relationship with operating system vendors and others is documented by signing their keys with the Platform Key.
+
+Finally, security is established by requiring that no code will be executed by the firmware unless it has been signed by one of these “trusted” keys—be it an OS boot loader, a driver located in the flash memory of certain PCI Express card or on disk, or be it an update of the firmware itself.
+
+To use Secure Boot, you need to have your OS loader signed with a key trusted by the firmware, and you need the OS loader to verify that the kernel it loads can be trusted.
+
+Key Exchange Keys (KEK) can be added to the UEFI key database. This way, you can use other certificates, if they are signed with the private part of the PK.
+
+[#sec-uefi-secboot-sle]
+=== Implementation on {productname}
+
+Microsoft’s Key Exchange Key (KEK) is installed by default.
+
+[NOTE]
+.GUID partitioning table (GPT) required
+====
+The Secure Boot feature is enabled by default on UEFI/x86_64 installations. You can find the *Enable Secure Boot Support* option in the *Boot Code Options* tab of the *Boot Loader Settings* dialog. It supports booting when the secure boot is activated in the firmware, while making it possible to boot when it is deactivated.
+
+.Secure boot support
+image::yast2_bootloader_boot_code_efi.png["",width=70%]
+
+The Secure Boot feature requires that a GUID Partitioning Table (GPT) replaces the old partitioning with a Master Boot Record (MBR). If {yast} detects EFI mode during the installation, it will try to create a GPT partition. UEFI expects to find the EFI programs on a FAT-formatted EFI System Partition (ESP).
+====
+
+Supporting UEFI Secure Boot requires having a boot loader with a digital signature that the firmware recognizes as a trusted key. That key is trusted by the firmware a priori, without requiring any manual intervention.
+
+There are two ways of getting there. One is to work with hardware vendors to have them endorse a SUSE key, which SUSE then signs the boot loader with. The other way is to go through Microsoft’s Windows Logo Certification program to have the boot loader certified and have Microsoft recognize the SUSE signing key (that is, have it signed with their KEK). By now, SUSE got the loader signed by UEFI Signing Service (that is Microsoft in this case).
+
+[#fig-uefi-secure-boot-mok2]
+.UEFI: secure boot process
+image::uefi-secure-boot-mok2.svg["",width=80%]
+
+At the implementation layer, SUSE uses the `+shim+` loader which is installed by default. It is a smart solution that avoids legal issues, and simplifies the certification and signing step considerably. The `+shim+` loader’s job is to load a boot loader such as {grub} and verify it; this boot loader in turn will load kernels signed by a SUSE key only.
+
+There are two types of trusted users:
+
+* First, those who hold the keys. The Platform Key (PK) allows almost everything. The Key Exchange Key (KEK) allows all a PK can except changing the PK.
+* Second, anyone with physical access to the machine. A user with physical access can reboot the machine, and configure UEFI.
+
+UEFI offers two types of variables to fulfill the needs of those users:
+
+* The first is the so-called “Authenticated Variables”, which can be updated from both within the boot process (the so-called Boot Services Environment) and the running OS. This can be done only when the new value of the variable is signed with the same key that the old value of the variable was signed with. And they can only be appended to or changed to a value with a higher serial number.
+* The second is the so-called “Boot Services Only Variables”. These variables are accessible to any code that runs during the boot process. After the boot process ends and before the OS starts, the boot loader must call the `+ExitBootServices+` call. After that, these variables are no longer accessible, and the OS cannot touch them.
+
+UEFI key lists are of the first type, as this allows online updating, adding and blacklisting of keys, drivers and firmware fingerprints. It is the second type of variable, the “Boot Services Only Variable”, that helps to implement Secure Boot in a secure and open source-friendly manner, and thus compatible with GPLv3.
+
+SUSE starts with `+shim+`—a small and simple EFI boot loader signed by SUSE and Microsoft.
+
+This allows `+shim+` to load and execute.
+
+`+shim+` then goes on to verify that the boot loader it wants to load is trusted. In a default situation `+shim+` will use an independent SUSE certificate embedded in its body. In addition, `+shim+` will allow to “enroll” additional keys, overriding the default SUSE key. In the following, we call them “Machine Owner Keys” or MOKs for short.
+
+Next the boot loader will verify and then boot the kernel, and the kernel will do the same on the modules.
+
+[#sec-uefi-secboot-mok]
+=== MOK (Machine Owner Key)
+
+To replace specific kernels, drivers or other components that are part of the boot process, you need to use Machine Owner Keys (MOKs). The `+mokutil+` tool can help you to manage MOKs.
+
+You can create a MOK enrollment request with `+mokutil+`. The request is stored in a UEFI runtime (RT) variable called `+MokNew+`. During the next boot, the `+shim+` boot loader detects `+MokNew+` and loads `+MokManager+`, which presents you with several options. You can use the *Enroll key from disk* and *Enroll hash from disk* options to add the key to the MokList. Use the *Enroll MOK* option to copy the key from the `+MokNew+` variable.
+
+Enrolling a key from disk is normally done when the shim fails to load `+grub2+` and falls back to loading MokManager. As `+MokNew+` does not exist yet, you have the option of locating the key on the UEFI partition.
+
+[#sec-uefi-secboot-custom]
+=== Booting a custom kernel
+
+The following is based on link:https://en.opensuse.org/openSUSE:UEFI#Booting_a_custom_kernel[].
+
+Secure Boot does not prevent you from using a self-compiled kernel. You must sign it with your own certificate and make that certificate known to the firmware or MOK.
+
+. Create a custom X.509 key and certificate used for signing:
++
+----
+openssl req -new -x509 -newkey rsa:2048 -keyout key.asc \
+  -out cert.pem -nodes -days 666 -subj "/CN=$USER/"
+----
++
+For more information about creating certificates, see link:https://en.opensuse.org/openSUSE:UEFI_Image_File_Sign_Tools#Create_Your_Own_Certificate[].
+. Package the key and the certificate as a PKCS{hash}12 structure:
++
+----
+> openssl pkcs12 -export -inkey key.asc -in cert.pem \
+  -name kernel_cert -out cert.p12
+----
+. Generate an NSS database for use with `+pesign+`:
++
+----
+> certutil -d . -N
+----
+. Import the key and the certificate contained in PKCS{hash}12 into the NSS database:
++
+----
+> pk12util -d . -i cert.p12
+----
+. “Bless” the kernel with the new signature using `+pesign+`:
++
+----
+> pesign -n . -c kernel_cert -i arch/x86/boot/bzImage \
+  -o vmlinuz.signed -s
+----
+. List the signatures on the kernel image:
++
+----
+> pesign -n . -S -i vmlinuz.signed
+----
++
+At that point, you can install the kernel in `+/boot+` as usual. Because the kernel now has a custom signature the certificate used for signing needs to be imported into the UEFI firmware or MOK.
+. Convert the certificate to the DER format for import into the firmware or MOK:
++
+----
+> openssl x509 -in cert.pem -outform der -out cert.der
+----
+. Copy the certificate to the ESP for easier access:
++
+----
+> sudo cp cert.der /boot/efi/
+----
+. Use `+mokutil+` to launch the MOK list automatically.
++
+* {empty}
++
+.. Import the certificate to MOK:
++
+----
+> mokutil --root-pw --import cert.der
+----
++
+The `+--root-pw+` option enables usage of the `+root+` user directly.
+.. Check the list of certificates that are prepared to be enrolled:
++
+----
+> mokutil --list-new
+----
+.. Reboot the system; `+shim+` should launch MokManager. You need to enter the `+root+` password to confirm the import of the certificate to the MOK list.
+.. Check if the newly imported key was enrolled:
++
+----
+> mokutil --list-enrolled
+----
+* {empty}
++
+.. Alternatively, this is the procedure to launch MOK manually:
++
+Reboot
+.. In the {grub} menu press the {apos}``+c+``{apos} key.
+.. Type:
++
+----
+chainloader $efibootdir/MokManager.efi
+boot
+----
+.. Select *Enroll key from disk*.
+.. Navigate to the `+cert.der+` file and press kbd:[Enter].
+.. Follow the instructions to enroll the key. Normally this should be pressing “0” and then “y” to confirm.
++
+Alternatively, the firmware menu may provide ways to add a new key to the Signature Database.
+
+[#sec-uefi-secboot-non-inbox]
+=== Using non-inbox drivers
+
+There is no support for adding non-inbox drivers (that is, drivers that do not come with {productname}) during installation with Secure Boot enabled. The signing key used for SolidDriver/PLDP is not trusted by default.
+
+It is possible to install third party drivers during installation with Secure Boot enabled in two different ways. In both cases:
+
+* Add the needed keys to the firmware database via firmware/system management tools before the installation. This option depends on the specific hardware you are using. Consult your hardware vendor for more information.
+* Use a bootable driver ISO from link:https://drivers.suse.com/[] or your hardware vendor to enroll the needed keys in the MOK list at first boot.
+
+To use the bootable driver ISO to enroll the driver keys to the MOK list, follow these steps:
+
+. Burn the ISO image above to an empty CD/DVD medium.
+. Start the installation using the new CD/DVD medium, having the standard installation media at hand or a URL to a network installation server.
++
+If doing a network installation, enter the URL of the network installation source on the boot command line using the `+install=+` option.
++
+If doing installation from optical media, the installer will first boot from the driver kit and then ask to insert the first installation disk of the product.
+. An initrd containing updated drivers will be used for installation.
+
+For more information, see link:https://drivers.suse.com/doc/Usage/Secure_Boot_Certificate.html[].
+
+[#sec-uefi-secboot-feats]
+=== Features and limitations
+
+When booting in Secure Boot mode, the following features apply:
+
+* Installation to UEFI default boot loader location, a mechanism to keep or restore the EFI boot entry.
+* Reboot via UEFI.
+* Xen hypervisor will boot with UEFI when there is no legacy BIOS to fall back to.
+* UEFI IPv6 PXE boot support.
+* UEFI video mode support, the kernel can retrieve video mode from UEFI to configure KMS mode with the same parameters.
+* UEFI booting from USB devices is supported.
+* Since 
+ifdef::os-sles,os-sled,os-slemicro[{sles} 15 SP3]
+ifdef::os-osuse[{leap} 15.3]
+, Kexec and Kdump are supported in Secure Boot mode.
+
+When booting in Secure Boot mode, the following limitations apply:
+
+* To ensure that Secure Boot cannot be easily circumvented, certain kernel features are disabled when running under Secure Boot.
+* Boot loader, kernel, and kernel modules must be signed.
+* Hibernation (suspend on disk) is disabled.
+* Access to `+/dev/kmem+` and `+/dev/mem+` is not possible, not even as root user.
+* Access to the I/O port is not possible, not even as root user. All X11 graphical drivers must use a kernel driver.
+* PCI BAR access through sysfs is not possible.
+* `+custom_method+` in ACPI is not available.
+* debugfs for asus-wmi module is not available.
+* the `+acpi_rsdp+` parameter does not have any effect on the kernel.
+
+[#sec-uefi-revocation-list]
+== The Secure Boot Revocation List
+
+The UEFI Secure Boot Revocation List, also known as `+dbx+` (Secure Boot Forbidden Signature Database), is a critical security component of a computer's UEFI firmware. It enhances the system security by preventing the loading and execution of untrusted software during the boot process. `+dbx+` is important because it does the following:
+
+* {empty}
++
+*Prevents boot-time malware:* `+dbx+` stops malicious code from being loaded and executed before the operating system even starts.
+* {empty}
++
+*Maintains a chain of trust:* Each component verifies the next one in the boot sequence. `+dbx+` ensures that any component in this chain that has been compromised is immediately blocked.
+* {empty}
++
+*Protects against rollback attacks:* Helps prevent attackers from rolling back firmware or boot-loaders to older, vulnerable versions.
+* {empty}
++
+*Enhanced security:* Updating `+dbx+` is important to keep your system protected as new vulnerabilities are discovered. Failing to update it can leave your system exposed to known exploits.
+
+[#sec-uefi-revocation-list-online]
+=== How to apply an online Revocation List update
+
+.Prerequisites
+* Secure boot is enabled on your system.
+* Your system can access the Internet for updates.
+
+. Check the current version of the Revocation List:
++
+----
+>  fwupdmgr get-devices
+      LENOVO 21AAS05L00
+      │
+      ├─11th Gen Intel Core™ i7-11800H @ 2.30GHz:
+      │     Device ID:          4bde70ba4e39b28f9eab1628f9dd6e6244c03027
+      │     Current version:    0x00000052
+      │     Vendor:             Intel
+      │     GUIDs:              a6bd4ca5-75a6-5796-b564-66b5cab1b11b ← CPUID\PRO_0&FAM_06&MOD_8D
+      │                         d9dd5e77-df17-5bab-b5ec-22827598bfed ← CPUID\PRO_0&FAM_06&MOD_8D&STP_1
+      │     Device Flags:       • Internal device
+      │     Device Requests:    • Message
+      
+----
+. Enable the LVFS (Linux Vendor Firmware Service) Revocation List repository:
++
+----
+>  fwupdmgr enable-remote lvfs
+           
+----
+. Refresh the repository metadata:
++
+----
+>  fwupdmgr refresh
+           
+----
+. Apply the Revocation List update:
++
+----
+>  fwupdmgr update
+                 
+----
+. To verify after reboot, check the current version:
++
+----
+>  fwupdmgr get-devices
+----
+
+[#sec-uefi-revocation-list-offline]
+=== How to apply an online Revocation List update
+
+For an offline revocation list update, you can update the secure Boot revocation list from {productname} so that secure boot prevents known security issues. This procedure is safe and ensures that the update does not prevent your system from booting.
+
+. Check the current version of the Revocation List:
++
+----
+>  fwupdmgr get-devices
+         LENOVO 21AAS05L00
+         │
+         ├─11th Gen Intel Core™ i7-11800H @ 2.30GHz:
+         │     Device ID:          4bde70ba4e39b28f9eab1628f9dd6e6244c03027
+         │     Current version:    0x00000052
+         │     Vendor:             Intel
+         │     GUIDs:              a6bd4ca5-75a6-5796-b564-66b5cab1b11b ← CPUID\PRO_0&FAM_06&MOD_8D
+         │                         d9dd5e77-df17-5bab-b5ec-22827598bfed ← CPUID\PRO_0&FAM_06&MOD_8D&STP_1
+         │     Device Flags:       • Internal device
+         │     Device Requests:    • Message
+             
+----
+. List the updates available from {productname}:
++
+----
+>  ls /usr/share/dbxtool/
+              
+----
+. Choose the most recent update file for your architecture. For example, `+DBXUpdate-date-architecture.cab+`.
+. Install the selected update file:
++
+----
+>  fwupdmgr install /usr/share/dbxtool/DBXUpdate-date-architecture.cab
+                    
+----
+. To verify after reboot, check the current version:
++
+----
+>  fwupdmgr get-devices 
+----
+
+[#sec-uefi-moreinfo]
+== More information
+
+* link:https://uefi.org[] — UEFI home page where you can find the current UEFI specifications.
+* Blog posts by Olaf Kirch and Vojtěch Pavlík (the chapter above is heavily based on these posts):
++
+** link:https://www.suse.com/c/uefi-secure-boot-plan/[]
+** link:https://www.suse.com/c/uefi-secure-boot-overview/[]
+** link:https://www.suse.com/c/uefi-secure-boot-details/[]
+* link:https://en.opensuse.org/openSUSE:UEFI[] —UEFI with openSUSE.

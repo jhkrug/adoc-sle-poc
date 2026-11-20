@@ -1,0 +1,32 @@
+// Converted from xml/suse_kb.xml
+
+[#sec-suse-kb]
+== Keyboard mapping
+
+To standardize the keyboard mapping of programs, changes were made to the following files:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+/etc/inputrc
+/etc/X11/Xmodmap
+/etc/skel/.emacs
+/etc/skel/.gnu-emacs
+/etc/skel/.vimrc
+/etc/csh.cshrc
+/etc/termcap
+/usr/share/terminfo/x/xterm
+/usr/share/X11/app-defaults/XTerm
+/usr/share/emacs/__VERSION__/site-lisp/term/{asterisk}.el
+----
+
+These changes only affect applications that use `+terminfo+` entries or whose configuration files are changed directly (`+vi+`, `+emacs+`, etc.). Applications not shipped with the system should be adapted to these defaults.
+
+Under X, the compose key (multikey) can be enabled as explained in `+/etc/X11/Xmodmap+`.
+
+Further settings are possible using the X Keyboard Extension (XKB).
+
+[TIP]
+.More information
+====
+Information about XKB is available in the documents listed in `+/usr/share/doc/packages/xkeyboard-config+` (part of the `+xkeyboard-config+` package).
+====

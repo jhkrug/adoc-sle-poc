@@ -1,0 +1,167 @@
+// Converted from xml/rmt_rmt-cli.xml
+
+[#sec-rmt-tools-rmt-cli]
+== {rmt} command line interface (`+rmt-cli+`)
+
+[#sec-rmt-tools-rmt-cli-overview]
+=== Overview
+
+The key command to manage the {rmt} is `+rmt-cli+` (`+/usr/bin/rmt-cli+`). The `+rmt-cli+` command should be used together with the sub-commands described in this section. If the `+rmt-cli+` command is used alone, it prints a list of all available sub-commands. To get help for individual sub-commands, use `+man rmt-cli+` or `+rmt-cli help [subcommand]+`.
+
+The following sub-commands are available:
+
+`+rmt-cli sync+`::
+Synchronize database with {scc}.
+`+rmt-cli products+`::
+List and modify products.
+`+rmt-cli repos+`::
+List and modify repositories.
+`+rmt-cli mirror+`::
+Mirror repositories.
+`+rmt-cli systems+`::
+List and modify systems.
+`+rmt-cli import+`::
+Import commands for offline mode.
+`+rmt-cli export+`::
+Export commands for offline mode.
+`+rmt-cli version+`::
+Show {rmt} version.
+
+The following sections explain each sub-command in detail.
+
+[#sec-rmt-tools-rmt-cli-sync]
+=== `+sync+`
+
+This command triggers synchronization with the {scc} instantly. The command has no further options. Synchronization is also triggered each night by the `+systemd+` timer `+rmt-server-sync.timer+`.
+
+During synchronization, no data is uploaded to the {scc}. This command for example updates local product definitions and repository data.
+
+[#sec-rmt-tools-rmt-cli-products]
+=== `+products+`
+
+List and modify products.
+
+`+rmt-cli products list [--all] [--csv]+`::
+Lists the products that are enabled for mirroring. Use the `+--all+` flag to list all available products. Use the `+--csv+` flag to output the list in CSV format. `+ls+` can be used as a shortcut for `+list+`.
+`+rmt-cli products enable [id | string] [--all-modules]+`::
+Enables mandatory repositories of a product by its ID or product string. The `+--all-modules+` flag enables all modules of a product instead of only the recommended ones.
+`+rmt-cli products disable [id | string]+`::
+Disables all repositories of a product by its ID or product string.
+
+[#sec-rmt-tools-rmt-cli-repos]
+=== `+repos+`
+
+`+rmt-cli repos list [--all] [--csv]+`::
+Lists the repositories that are enabled for mirroring. Use the `+--all+` flag to list all available repositories. Use the `+--csv+` flag to output the list in CSV format. `+ls+` can be used as a shortcut for `+list+`.
+`+rmt-cli repos enable [id]+`::
+Enables mirroring of a single repository by its ID.
+`+rmt-cli repos disable [id]+`::
+Disables mirroring of a single repository by its ID.
+`+rmt-cli repos clean+`::
+Removes locally mirrored files of repositories that are not marked to be mirrored.
+
+[#sec-rmt-tools-rmt-cli-repos-custom]
+=== `+repos custom+`
+
+`+rmt-cli repos custom list [--csv]+`::
+Lists all your custom repositories. Use the `+--csv+` flag to output the list in CSV format. `+ls+` can be used as a shortcut for `+list+`.
+`+rmt-cli repos custom add [url] [name] [--id]+`::
+Adds a new custom repository. Use the `+--id+` flag to specify a custom alphanumeric ID.
+`+rmt-cli repos custom enable [id]+`::
+Enables mirroring of a custom repository.
+`+rmt-cli repos custom disable [id]+`::
+Disables mirroring of a custom repository.
+`+rmt-cli repos custom remove [id]+`::
+Removes a custom repository.
+`+rmt-cli repos custom products [id]+`::
+Lists the products attached to the custom repository with the given ID.
+`+rmt-cli repos custom attach [id] [product id]+`::
+Attaches an existing custom repository to a product.
+`+rmt-cli repos custom detach [id] [product id]+`::
+Detaches an existing custom repository from a product.
+
+[#sec-rmt-tools-rmt-cli-mirror]
+=== `+mirror+`
+
+`+rmt-cli mirror+`::
+Starts the mirroring process manually.
+`+rmt-cli mirror all+`::
+Mirrors all enabled repositories.
+`+rmt-cli mirror repository [IDs]+`::
+Mirrors enabled repositories by a list of IDs.
+`+rmt-cli mirror product [IDs]+`::
+Mirrors enabled repositories for a product by a list of IDs.
+
+[#sec-rmt-tools-rmt-cli-systems]
+=== `+systems+`
+
+`+rmt-cli systems list+`::
+This command lists registered systems.
+`+rmt-cli systems scc-sync+`::
+This command forwards registered systems' data to SCC.
+`+rmt-cli systems remove [TARGET]+`::
+This command removes a system from RMT as identified by the *Login* column of the output of the `+rmt-cli systems list+` command.
+`+rmt-cli systems purge+`::
+This command lists and provides the option to delete inactive systems. It has the following options:
++
+--
+* `--before _DATE_`—lists systems that have been inactive since _DATE_ until now. Default is the last 3 months.
+* `+--no-confirmation+`—allows the administrator to delete matching systems without confirmation.
+--
++
+----
+# rmt-cli systems purge --before 2021-06-16
++------------+----------+---------------------+---------------------+----------+
+| Login      | Hostname | Registration time   | Last seen           | Products |
++------------+----------+---------------------+---------------------+----------+
+| SCC_c5b0.. | 6e485e48b| 2021-06-11 13:38:07 | 2021-06-11 13:52:01 | SLES/15..|
+| SCC_5fcf.. | node52   | 2021-06-15 13:29:24 | 2021-06-15 13:31:25 | SLES/15..|
++------------+----------+---------------------+---------------------+----------+
+Do you want to delete these systems? (y/n) y
+Purged systems that have not contacted this RMT since 2021-06-16.
+----
+
+[#sec-rmt-tools-rmt-cli-import]
+=== `+import+`
+
+This command is required for the _offline mode_. For details, see xref:rmt-mirroring.adoc#sec-rmt-mirroring-export-import[Exporting and importing repositories].
+
+`+rmt-cli import data [path]+`::
+Run this on the offline {rmt} to read the JSON files from the given path and fill the local database with data.
+`+rmt-cli import repos [path]+`::
+Run this on the offline {rmt} to import RPM packages.
+
+[#sec-rmt-tools-rmt-cli-export]
+=== `+export+`
+
+This command is required for the _offline mode_. For details, see xref:rmt-mirroring.adoc#sec-rmt-mirroring-export-import[Exporting and importing repositories].
+
+`+rmt-cli export data [path]+`::
+Run this on an online {rmt} to get the latest data from {scc} and save the result as JSON files at the specified path.
+`+rmt-cli export settings [path]+`::
+Run this on the offline {rmt} to save the settings for enabled repositories at a given path as `+repos.json+`.
+`+rmt-cli export repos [path]+`::
+Run this regularly on the online {rmt} to mirror the set of repositories specified in the `+repos.json+` at the given path. The mirrored repository files are stored in subdirectories of the same path.
+
+[#sec-rmt-tools-rmt-cli-clean]
+=== `+clean packages+`
+
+The `+rmt-cli clean packages+` command removes locally mirrored _dangling_ files and their database entries. A file is considered to be dangling if it matches all the following characteristics:
+
+* It exists in a repository directory with primary and metadata `+repomd.xml+` files.
+* It is no longer referenced in the metadata files.
+* It is at least two days old.
+
+You can pass the following options to the `+rmt-cli clean packages+` command:
+
+--dry-run::
+Generates a report of all affected files without actually cleaning them or their database entries.
+--verbose::
+Prints detailed information about each cleaned file.
+--non-interactive::
+Skips confirmation before proceeding with the cleaning process.
+
+[#sec-rmt-tools-rmt-cli-version]
+=== `+version+`
+
+Display the version of `+rmt-cli+`.

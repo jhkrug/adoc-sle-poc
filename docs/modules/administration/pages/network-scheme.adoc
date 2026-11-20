@@ -1,0 +1,9 @@
+// Converted from xml/network_scheme.xml
+[#app-nwscheme]
+= An example network
+:description: Learn to configure a sample network for testing purposes across various network-related topics
+:revdate: 2026-01-16
+
+This example network is used across all network-related chapters of the {productnamereg} documentation.
+
+image::network_schema.svg["",width=100%]

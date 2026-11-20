@@ -1,0 +1,173 @@
+// Converted from xml/apps_ekiga.xml
+[#cha-ekiga]
+= Ekiga: using voice over IP
+:description: Learn how to make VoIP phone calls, participate in video conferences, and send instant messages using Ekiga
+:revdate: 2026-01-16
+
+[abstract]
+--
+Ekiga is an application you can use for making phone calls via Voice over IP (VoIP), video conferencing, and instant messaging.
+--
+
+[NOTE]
+.Ekiga may not be installed
+====
+Before proceeding, make sure that the package `+ekiga+` is installed.
+====
+
+Before starting, make sure that the following requirements are met:
+
+* Your sound card is properly configured.
+* A headset or a microphone and speakers are connected to your computer.
+* For dialing in to regular phone networks, a SIP account is required. SIP (_Signaling protocol for Internet Telephony_) is the protocol used to establish sessions for audio and video conferencing or call forwarding.
+* For video conferencing: a Web cam is connected to your computer.
+
+[#sec-ekiga-start]
+== Starting Ekiga
+
+To start Ekiga, open the *Activities* overview by pressing kbd:[Meta] and search for `+ekiga+`.
+
+[#sec-ekiga-configure]
+== Configuring Ekiga
+
+On first start, Ekiga opens a configuration assistant that requests all data needed to configure Ekiga. Proceed as follows:
+
+. In the welcome screen, click *Forward*.
+. Enter your full name (name and surname). Click *Forward*.
+. Enter your `+ekiga+` account data. Click *Forward*.
+. Enter your Ekiga Call Out Account data. Click *Forward*.
+. Set your connection type and speed. Click *Forward*.
+. Configure the audio devices to use by choosing the audio ringing, output and input device driver. In general, you can keep the *Default* setting. Click *Forward*.
+. Choose a video input device, if available. Click *Forward*.
+. Check the summary of your settings and confirm with *Apply*.
+. If registration fails after making changes to your configuration, restart Ekiga.
+
+Ekiga allows you to maintain multiple accounts. To configure an additional account, proceed as follows:
+
+. Open menu:Edit[Accounts].
+. Choose *Accounts* › *Add <account type>*. If you are unsure, select *Add a SIP Account*.
+. Enter *User* and *Password* according to the data provided by your provider.
+. Make sure *Enable account* is activated and leave the configuration dialog with *OK*. The account is displayed in the Ekiga main window, including its *Status*, which should change to `+Registered+`.
+
+[#sec-ekiga-ui]
+== The Ekiga user interface
+
+The user interface has different modes. To switch between views, use the toolbar. The following modes are available:
+
+* {empty}
++
+*Display images from your camera device*
++
+It displays images from your local Web cam (or from a remote Web cam during a call).
+* {empty}
++
+*View the contacts list*
+* {empty}
++
+*View the dial pad*
+* {empty}
++
+*View the call history*
+
+[#fig-ekiga-main]
+.Ekiga user interface
+image::ekiga_main.png["",width=55%]
+
+By default, Ekiga opens in the *Contacts* mode. This view shows you a local address book which lets you quickly open connections to often used numbers.
+
+Many of the functions of Ekiga are available with key combinations. <<tab-ekiga-shortcut,Key combinations for Ekiga>> summarizes the most important ones.
+
+[#tab-ekiga-shortcut]
+.Key combinations for Ekiga
+[cols="1,1",options="header"]
+|===
+a|Key Combination
+a|Description
+
+a|kbd:[Ctrl+O]
+a|Initiate a call with the current number.
+a|kbd:[Esc]
+a|Hang up.
+a|kbd:[Ctrl+N]
+a|Add a contact to your address book.
+a|kbd:[Ctrl+B]
+a|Open the *Address Book* dialog.
+a|kbd:[H]
+a|Hold the current call.
+a|kbd:[T]
+a|Transfer the current call to another party.
+a|kbd:[M]
+a|Suspend the audio stream of the current call.
+a|kbd:[P]
+a|Suspend the video stream of the current call.
+a|kbd:[Ctrl+W]
+a|Close the Ekiga user interface.
+a|kbd:[Ctrl+Q]
+a|Quit Ekiga.
+a|kbd:[Ctrl+E]
+a|Start the account manager.
+a|kbd:[Ctrl+J]
+a|Activate *Call Panel* on the main user interface.
+a|kbd:[Ctrl,{plus}]
+a|Zoom in to the picture from the Web cam.
+a|kbd:[Ctrl+-]
+a|Zoom out on the picture from the Web cam.
+a|kbd:[Ctrl+0]
+a|Return to the normal size of the Web cam display.
+a|kbd:[F11]
+a|Use full screen for the Web cam.
+|===
+
+[#sec-ekiga-firstcall]
+== Making a call
+
+After Ekiga is properly configured, making a call is easy.
+
+. Switch to the *Dialpad* mode.
+. Enter the SIP address of the party to call at the bottom of the window. The address should look like:
++
+* for direct local calls: `+sip:username@domainname+` or `+username@hostname+`
+* `+sip:username@domainname+` or `+userid@sipserver+`
+. Click *Call* or press kbd:[Ctrl+O] and wait for the other party to pick up the phone.
+. To end the call, click *Hang up* or press kbd:[Esc].
+
+If you need to tweak the sound parameters, click menu:Edit[Preferences].
+
+[#sec-ekiga-answer]
+== Answering a call
+
+Ekiga can receive calls in two different ways. First, it can be called directly with `+sip:user@host+`, or via SIP provider. Most SIP providers enable you to receive calls from a normal landline to your VoIP account. Depending on the mode in which you use Ekiga, there are several ways in which you are alerted to an incoming call:
+
+Normal application::
+Incoming calls can only be received and answered if Ekiga is already started. You can hear the ring sound on your headset or your speakers. If Ekiga is not started, the call cannot be received.
+Panel applet::
+Normally, the Ekiga panel applet runs silently, without giving any notice of its existence. This changes when a call comes in. The main window of Ekiga opens and you hear a ringing sound on your headset or speakers.
+
+Once you have noticed an incoming call, click *Accept* to answer the call, then start talking. If you do not want to accept this call, click *Reject*. It is also possible to transfer the call to another SIP address.
+
+[#sec-ekiga-calladd]
+== Using the address book
+
+Ekiga can manage your SIP contacts. All the contacts are displayed in the *Contacts list* tab, shown in the main window after start-up. To add a contact or a new contact group, select menu:Chat[Add Contact].
+
+If you want to add a new group, enter the group name into the bottom text box and click *Add Group*. The new group is then added to the group list and preselected.
+
+The following entries are required for a valid contact:
+
+Name::
+Enter the name of your contact. This may be a full name, but you can also use a nickname here.
+Address::
+Enter a valid SIP address for your contact.
+Groups::
+If you have many contacts, add your own groups.
+
+To call a contact from the address book, double-click the contact. The call is initiated immediately.
+
+[#sec-ekiga-moreinfo]
+== More information
+
+The official home page of Ekiga is link:https://www.ekiga.org/[]. This site offers answers to frequently asked questions and more detailed documentation.
+
+For information about the support of the `+H323+` teleconferencing protocol in Linux, see link:https://www.voip-info.org/wiki/view/H.323[]. This is also a good starting point when searching for projects supporting VoIP.
+
+To set up a private telephone network, you might be interested in the `+PBX+` software Asterisk link:https://www.asterisk.org/[]. Find information about it at link:https://www.voip-info.org/wiki-Asterisk[].

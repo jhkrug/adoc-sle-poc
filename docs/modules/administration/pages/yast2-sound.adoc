@@ -1,0 +1,66 @@
+// Converted from xml/yast2_sound.xml
+[#sec-yast-hw-sound]
+= Setting up sound cards
+:description: Configure sound cards in YaST by automatically detecting them, changing default settings, adding new ones, or adjusting their order via the YaST sound module
+:revdate: 2026-01-16
+
+{yast} detects most sound cards automatically and configures them with the appropriate values. To change the default settings, or to set up a sound card that could not be configured automatically, use the {yast} sound module. There, you can also set up additional sound cards or switch their order.
+
+[WARNING]
+====
+If you do not know all details about the setup of your sound system, do not change its settings manually. Instead, let your sound subsystem—PipeWire or PulseAudio— configure it for you. Use dedicated desktop application to switch audio devices. As a fallback, use the `+pavucontrol+` graphical application.
+====
+
+To start the sound module, start {yast} and click menu:Hardware[Sound]. Alternatively, start the *Sound Configuration* dialog directly by running `+yast2 sound &+` as user `+root+` from a command line. If the sound module is not available, install it using the `+sudo zypper install yast2-sound+` command.
+
+[#pro-yast2-sound-add]
+.Configuring sound cards
+If you have added a new sound card or {yast} could not automatically configure an existing sound card, follow the steps below. For configuring a new sound card, you need to know your sound card vendor and model. If in doubt, refer to your sound card documentation for the required information. For a reference list of sound cards supported by ALSA with their corresponding sound modules, see link:https://www.alsa-project.org/main/index.php/Matrix:Main[].
+
+During configuration, you can choose between the following setup options:
+
+*Quick automatic setup*::
+You are not required to go through any of the further configuration steps—the sound card is configured automatically. You can set the volume or any options you want to change later.
+*Normal setup*::
+Allows you to adjust the output volume and play a test sound during the configuration.
+*Advanced setup with possibility to change options*::
+For experts only. Allows you to customize all parameters of the sound card.
++
+[IMPORTANT]
+.Advanced configuration
+====
+Only use this option if you know exactly what you are doing. Otherwise leave the parameters untouched and use the normal or the automatic setup options.
+====
+
+. Start the {yast} sound module.
+. To configure a detected, but *Not Configured* sound card, select the respective entry from the list and click *Edit*.
++
+To configure a new sound card, click *Add*. Select your sound card vendor and model and click *Next*.
+. Choose one of the setup options and click *Next*.
+. If you have chosen *Normal Setup*, you can now *Test* your sound configuration and make adjustments to the volume. You should start at about ten percent volume to avoid damage to your hearing or the speakers.
+. If all options are set according to your wishes, click *Next*.
++
+The *Sound Configuration* dialog shows the newly configured or modified sound card.
+. To remove a sound card configuration that you no longer need, select the respective entry and click *Delete*.
+. Click *OK* to save the changes and leave the {yast} sound module.
+
+.Modifying sound card configurations
+. To change the configuration of an individual sound card (for experts only!), select the sound card entry in the *Sound Configuration* dialog and click *Edit*.
++
+This takes you to the *Sound Card Advanced Options* where you can fine-tune several parameters. For more information, click *Help*.
+. To adjust the volume of an already configured sound card or to test the sound card, select the sound card entry in the *Sound Configuration* dialog and click *Other*. Select the respective menu item.
++
+[NOTE]
+.{yast} mixer
+====
+The {yast} mixer settings provide only basic options. They are intended for troubleshooting (for example, if the test sound is not audible). Access the {yast} mixer settings from menu:Other[Volume]. For everyday use and fine-tuning of sound options, use the mixer applet provided by your desktop or the `+alsasound+` command line tool.
+====
+. For playback of MIDI files, select menu:Other[Start Sequencer].
+. When a supported sound card is detected, you can install SoundFonts for playback of MIDI files:
++
+.. Insert the original driver CD-ROM into your CD or DVD drive.
+.. Select menu:Other[Install SoundFonts] to copy SF2 SoundFonts™ to your hard disk. The SoundFonts are saved in the directory `+/usr/share/sfbank/creative/+`.
+. If you have configured more than one sound card in your system you can adjust the order of your sound cards. To set a sound card as primary device, select the sound card in the *Sound Configuration* and click menu:Other[Set as the Primary Card]. The sound device with index `+0+` is the default device and thus used by the system and the applications.
+. By default, {productname} uses the PulseAudio sound system. This is an abstraction layer that helps to mix multiple audio streams, bypassing any restrictions the hardware may have. To enable or disable the PulseAudio sound system, click menu:Other[PulseAudio Configuration]. If enabled, PulseAudio daemon is used to play sounds. Disable *PulseAudio Support* to use something else system-wide.
+
+The volume and configuration of all sound cards are saved when you click *OK* and leave the {yast} sound module. The mixer settings are saved to the file `+/etc/asound.state+`. The ALSA configuration data is appended to the end of the file `+/etc/modprobe.d/sound+` and written to `+/etc/sysconfig/sound+`.

@@ -1,0 +1,367 @@
+// Converted from xml/net_config_files.xml
+
+[#sec-network-manconf-files]
+=== Configuration files
+
+This section provides an overview of the network configuration files and explains their purpose and the format used.
+
+[#wicked-configuration-common-xml]
+==== `+/etc/wicked/common.xml+`
+
+The `+/etc/wicked/common.xml+` file contains common definitions that should be used by all applications. It is sourced/included by the other configuration files in this directory. Although you can use this file to enable debugging across all `+wicked+` components, we recommend to use the file `+/etc/wicked/local.xml+` for this purpose. After applying maintenance updates you might lose your changes as the `+/etc/wicked/common.xml+` might be overwritten. The `+/etc/wicked/common.xml+` file includes the `+/etc/wicked/local.xml+` in the default installation, thus you typically do not need to modify the `+/etc/wicked/common.xml+`.
+
+In case you want to disable `+nanny+` by setting the `+<use-nanny>+` to `+false+`, restart the `+wickedd.service+` and then run the following command to apply all configurations and policies:
+
+----
+> sudo wicked ifup all
+----
+
+[NOTE]
+.Configuration files
+====
+The `+wickedd+`, `+wicked+`, or `+nanny+` programs try to read `+/etc/wicked/common.xml+` if their own configuration files do not exist.
+====
+
+[#wicked-configuration-server-xml]
+==== `+/etc/wicked/server.xml+`
+
+The file `+/etc/wicked/server.xml+` is read by the `+wickedd+` server process at start-up. The file stores extensions to the `+/etc/wicked/common.xml+`. On top of that this file configures handling of a resolver and receiving information from `+addrconf+` supplicants, for example DHCP.
+
+We recommend to add changes required to this file into a separate file `+/etc/wicked/server-local.xml+`, that gets included by `+/etc/wicked/server.xml+`. By using a separate file you avoid overwriting of your changes during maintenance updates.
+
+[#wicked-configuration-client-xml]
+==== `+/etc/wicked/client.xml+`
+
+The `+/etc/wicked/client.xml+` is used by the `+wicked+` command. The file specifies the location of a script used when discovering devices managed by ibft and configures locations of network interface configurations.
+
+We recommend to add changes required to this file into a separate file `+/etc/wicked/client-local.xml+`, that gets included by `+/etc/wicked/server.xml+`. By using a separate file you avoid overwriting of your changes during maintenance updates.
+
+[#wicked-configuration-nanny-xml]
+==== `+/etc/wicked/nanny.xml+`
+
+The `+/etc/wicked/nanny.xml+` configures types of link layers. We recommend to add specific configuration into a separate file: `+/etc/wicked/nanny-local.xml+` to avoid losing the changes during maintenance updates.
+
+[#sec-network-manconf-files-ifcfg]
+==== `+/etc/sysconfig/network/ifcfg-*+`
+
+These files contain the traditional configurations for network interfaces.
+
+[NOTE]
+.`+wicked+` and the `+ifcfg-*+` files
+====
+`+wicked+` reads these files if you specify the `+compat:+` prefix. According to the {productname} default configuration in `+/etc/wicked/client.xml+`, `+wicked+` tries these files before the XML configuration files in `+/etc/wicked/ifconfig+`.
+
+The `+--ifconfig+` switch is provided mostly for testing only. If specified, default configuration sources defined in `+/etc/wicked/ifconfig+` are not applied.
+====
+
+The `+ifcfg-*+` files include information such as the start mode and the IP address. Possible parameters are described in the manual page of `+ifup+`. Additionally, most variables from the `+dhcp+` and `+wireless+` files can be used in the `+ifcfg-*+` files if a general setting should be used for only one interface. However, most of the `+/etc/sysconfig/network/config+` variables are global and cannot be overridden in `+ifcfg+` files. For example, `+NETCONFIG_*+` variables are global.
+
+For configuring `+macvlan+` and `+macvtab+` interfaces, see the `+ifcfg-macvlan+` and `+ifcfg-macvtap+` man pages. For example, for a macvlan interface provide a `+ifcfg-macvlan0+` with settings as follows:
+
+----
+STARTMODE='auto'
+MACVLAN_DEVICE='eth0'
+#MACVLAN_MODE='vepa'
+#LLADDR=02:03:04:05:06:aa
+----
+
+For `+ifcfg.template+`, see <<sec-network-manconf-files-config-etc,`+/etc/sysconfig/network/config+`, `+/etc/sysconfig/network/dhcp+`, and `+/etc/sysconfig/network/wireless+`>>.
+
+ifdef::os-sles[]
+ifdef::arch-zseries[]
+{zseries} does not support USB. The names of the interface files and network aliases contain {zseries}-specific elements like `+qeth+`.
+endif::[]
+endif::[]
+
+[#sec-network-manconf-files-config-etc]
+==== `+/etc/sysconfig/network/config+`, `+/etc/sysconfig/network/dhcp+`, and `+/etc/sysconfig/network/wireless+`
+
+The file `+config+` contains general settings for the behavior of `+ifup+`, `+ifdown+` and `+ifstatus+`. `+dhcp+` contains settings for DHCP and `+wireless+` for wireless LAN cards. The variables in all three configuration files are commented. Some variables from `+/etc/sysconfig/network/config+` can also be used in `+ifcfg-*+` files, where they are given a higher priority. The `+/etc/sysconfig/network/ifcfg.template+` file lists variables that can be specified in a per interface scope. However, most of the `+/etc/sysconfig/network/config+` variables are global and cannot be overridden in ifcfg-files. For example, `+NETWORKMANAGER+` or `+NETCONFIG_*+` variables are global.
+
+[NOTE]
+.Using DHCPv6
+====
+ifdef::os-sles,os-sled[In {sle} 11, DHCPv6 used to work even on networks where IPv6 Router Advertisements (RAs) were not configured properly. Starting with {sle} 12,]
+ DHCPv6 requires that at least one of the routers on the network sends out RAs that indicate that this network is managed by DHCPv6.
+
+For networks where the router cannot be configured correctly, the `+ifcfg+` option allows the user to override this behavior by specifying `+DHCLIENT6_MODE='managed'+` in the `+ifcfg+` file. You can also activate this workaround with a boot parameter in the installation system:
+
+----
+ifcfg=eth0=dhcp6,DHCLIENT6_MODE=managed
+----
+====
+
+[#sec-network-manconf-files-routes]
+==== `+/etc/sysconfig/network/routes+` and `+/etc/sysconfig/network/ifroute-*+`
+
+The static routing of TCP/IP packets is determined by the `+/etc/sysconfig/network/routes+` and `+/etc/sysconfig/network/ifroute-*+` files. All the static routes required by the various system tasks can be specified in `+/etc/sysconfig/network/routes+`: routes to a host, routes to a host via a gateway and routes to a network. For each interface that needs individual routing, define an additional configuration file: `+/etc/sysconfig/network/ifroute-*+`. Replace the wild card (`+*+`) with the name of the interface. The entries in the routing configuration files look like this:
+
+----
+# Destination     Gateway           Netmask            Interface  Options
+----
+
+The route's destination is in the first column. This column may contain the IP address of a network or host or, in the case of _reachable_ name servers, the fully qualified network or host name. The network should be written in CIDR notation (address with the associated routing prefix-length) such as 10.10.0.0/16 for IPv4 or fc00::/7 for IPv6 routes. The keyword `+default+` indicates that the route is the default gateway in the same address family as the gateway. For devices without a gateway use explicit 0.0.0.0/0 or ::/0 destinations.
+
+The second column contains the default gateway or a gateway through which a host or network can be accessed.
+
+The third column is deprecated; it used to contain the IPv4 netmask of the destination. For IPv6 routes, the default route, or when using a prefix-length (CIDR notation) in the first column, enter a dash (`+-+`) here.
+
+The fourth column contains the name of the interface. If you leave it empty using a dash (`+-+`), it can cause unintended behavior in `+/etc/sysconfig/network/routes+`. For more information, see the `+routes+` man page.
+
+An (optional) fifth column can be used to specify special options. For details, see the `+routes+` man page.
+
+.Common network interfaces and some static routes
+====
+----
+# --- IPv4 routes in CIDR prefix notation:
+# Destination     [Gateway]         -                  Interface
+127.0.0.0/8       -                 -                  lo
+204.127.235.0/24  -                 -                  eth0
+default           204.127.235.41    -                  eth0
+207.68.156.51/32  207.68.145.45     -                  eth1
+192.168.0.0/16    207.68.156.51     -                  eth1
+
+# --- IPv4 routes in deprecated netmask notation"
+# Destination     [Dummy/Gateway]   Netmask            Interface
+#
+127.0.0.0         0.0.0.0           255.255.255.0      lo
+204.127.235.0     0.0.0.0           255.255.255.0      eth0
+default           204.127.235.41    0.0.0.0            eth0
+207.68.156.51     207.68.145.45     255.255.255.255    eth1
+192.168.0.0       207.68.156.51     255.255.0.0        eth1
+
+# --- IPv6 routes are always using CIDR notation:
+# Destination     [Gateway]                -           Interface
+2001:DB8:100::/64 -                        -           eth0
+2001:DB8:100::/32 fe80::216:3eff:fe6d:c042 -           eth0
+----
+====
+
+[#sec-network-manconf-files-resolv]
+==== `+/var/run/netconfig/resolv.conf+`
+
+The domain to which the host belongs is specified in `+/var/run/netconfig/resolv.conf+` (keyword `+search+`). Up to six domains with a total of 256 characters can be specified with the `+search+` option. When resolving a name that is not fully qualified, an attempt is made to generate one by attaching the individual `+search+` entries. Up to three name servers can be specified with the `+nameserver+` option, each on a line of its own. Comments are preceded by hash mark or semicolon signs (`+#+` or `+;+`). As an example, see <<dat-net-etc-resolv-conf,`+/var/run/netconfig/resolv.conf+`>>.
+
+However, `+/etc/resolv.conf+` should not be edited by hand. It is generated by the `+netconfig+` script and is a symbolic link to `+/run/netconfig/resolv.conf+`. To define static DNS configuration without using {yast}, edit the appropriate variables manually in the `+/etc/sysconfig/network/config+` file:
+
+`+NETCONFIG_DNS_STATIC_SEARCHLIST+`::
+list of DNS domain names used for host name lookup
+`+NETCONFIG_DNS_STATIC_SERVERS+`::
+list of name server IP addresses to use for host name lookup
+`+NETCONFIG_DNS_FORWARDER+`::
+the name of the DNS forwarder that needs to be configured, for example `+bind+` or `+resolver+`
+`+NETCONFIG_DNS_RESOLVER_OPTIONS+`::
+arbitrary options that will be written to `+/var/run/netconfig/resolv.conf+`, for example:
++
+----
+debug attempts:1 timeout:10
+----
++
+For more information, see the `+resolv.conf+` man page.
+`+NETCONFIG_DNS_RESOLVER_SORTLIST+`::
+list of up to 10 items, for example:
++
+----
+130.155.160.0/255.255.240.0 130.155.0.0
+----
++
+For more information, see the `+resolv.conf+` man page.
+
+To disable DNS configuration using netconfig, set `+NETCONFIG_DNS_POLICY=''+`. For more information about `+netconfig+`, see the `+netconfig(8)+` man page (`+man 8 netconfig+`).
+
+[#dat-net-etc-resolv-conf]
+.`+/var/run/netconfig/resolv.conf+`
+====
+[subs="attributes+"]
+----
+# Our domain
+search {exampledomain}
+#
+# We use {dnsname} ({dnsip}) as nameserver
+nameserver {dnsip}
+----
+====
+
+[#sec-network-manconf-netconfig]
+==== `+/sbin/netconfig+`
+
+`+netconfig+` is a modular tool to manage additional network configuration settings. It merges statically defined settings with settings provided by autoconfiguration mechanisms as DHCP or PPP according to a predefined policy. The required changes are applied to the system by calling the netconfig modules that are responsible for modifying a configuration file and restarting a service or a similar action.
+
+`+netconfig+` recognizes three main actions. The `+netconfig modify+` and `+netconfig remove+` commands are used by daemons such as DHCP or PPP to provide or remove settings to netconfig. Only the `+netconfig update+` command is available for the user:
+
+`+modify+`::
+The `+netconfig modify+` command modifies the current interface and service specific dynamic settings and updates the network configuration. Netconfig reads settings from standard input or from a file specified with the `--lease-file _FILENAME_` option and internally stores them until a system reboot (or the next modify or remove action). Already existing settings for the same interface and service combination are overwritten. The interface is specified by the `-i _INTERFACE_NAME_` parameter. The service is specified by the `-s _SERVICE_NAME_` parameter.
+`+remove+`::
+The `+netconfig remove+` command removes the dynamic settings provided by an editing action for the specified interface and service combination and updates the network configuration. The interface is specified by the `-i _INTERFACE_NAME_` parameter. The service is specified by the `-s _SERVICE_NAME_` parameter.
+`+update+`::
+The `+netconfig update+` command updates the network configuration using current settings. This is useful when the policy or the static configuration has changed. Use the `-m _MODULE_TYPE_` parameter to update a specified service only (`+dns+`, `+nis+`, or `+ntp+`).
+
+The netconfig policy and the static configuration settings are defined either manually or using {yast} in the `+/etc/sysconfig/network/config+` file. The dynamic configuration settings provided by autoconfiguration tools such as DHCP or PPP are delivered directly by these tools with the `+netconfig modify+` and `+netconfig remove+` actions. When {nm} is enabled, netconfig (in policy mode `+auto+`) uses only {nm} settings, ignoring settings from any other interfaces configured using the traditional ifup method. If {nm} does not provide any setting, static settings are used as a fallback. A mixed usage of {nm} and the `+wicked+` method is not supported.
+
+For more information about `+netconfig+`, see `+man 8 netconfig+`.
+
+[#sec-network-manconf-hosts]
+==== `+/etc/hosts+`
+
+In this file, shown in <<dat-net-etc-hosts,`+/etc/hosts+`>>, IP addresses are assigned to host names. If no name server is implemented, all hosts to which an IP connection will be set up must be listed here. For each host, enter a line consisting of the IP address, the fully qualified host name, and the host name into the file. The IP address must be at the beginning of the line and the entries separated by blanks and tabs. Comments are always preceded by the `+#+` sign.
+
+[#dat-net-etc-hosts]
+.`+/etc/hosts+`
+====
+[subs="attributes+"]
+----
+127.0.0.1 localhost
+{wsiip} {wsiname} {wsi}
+{wsiiip} {wsiiname} {wsii}
+----
+====
+
+[#sec-network-manconf-files-networks]
+==== `+/etc/networks+`
+
+Here, network names are converted to network addresses. The format is similar to that of the `+hosts+` file, except the network names precede the addresses. See <<dat-net-networks,`+/etc/networks+`>>.
+
+[#dat-net-networks]
+.`+/etc/networks+`
+====
+----
+loopback     127.0.0.0
+localnet     192.168.0.0
+----
+====
+
+[#sec-network-manconf-files-host]
+==== `+/etc/host.conf+`
+
+Name resolution—the translation of host and network names via the _resolver_ library—is controlled by this file. This file is only used for programs linked to libc4 or libc5. For current glibc programs, refer to the settings in `+/etc/nsswitch.conf+`. Each parameter must always be entered on a separate line. Comments are preceded by a `+#+` sign. <<tab-net-param-hostconf,Parameters for /etc/host.conf>> shows the parameters available. A sample `+/etc/host.conf+` is shown in <<dat-net-etc-hostconf,`+/etc/host.conf+`>>.
+
+[#tab-net-param-hostconf]
+.Parameters for /etc/host.conf
+[cols="1,1"]
+|===
+a|order _hosts_, _bind_
+a|Specifies in which order the services are accessed for the name resolution. Available arguments are (separated by blank spaces or commas):
+a|
+a|_hosts_: searches the `+/etc/hosts+` file
+a|
+a|_bind_: accesses a name server
+a|
+a|_nis_: uses NIS
+a|multi _on_/_off_
+a|Defines if a host entered in `+/etc/hosts+` can have multiple IP addresses.
+a|nospoof _on_ spoofalert _on_/_off_
+a|These parameters influence the name server _spoofing_ but do not exert any influence on the network configuration.
+a|trim _domainname_
+a|The specified domain name is separated from the host name after host name resolution (as long as the host name includes the domain name). This option is useful only if names from the local domain are in the `+/etc/hosts+` file, but should still be recognized with the attached domain names.
+|===
+
+[#dat-net-etc-hostconf]
+.`+/etc/host.conf+`
+====
+----
+# We have named running
+order hosts bind
+# Allow multiple address
+multi on
+----
+====
+
+[#sec-network-manconf-files-nsswitch]
+==== `+/etc/nsswitch.conf+`
+
+The introduction of the GNU C Library 2.0 was accompanied by the introduction of the _Name Service Switch_ (NSS). Refer to the `+nsswitch.conf(5)+` man page and _The GNU C Library Reference Manual_ for details.
+
+The order for queries is defined in the file `+/etc/nsswitch.conf+`. A sample `+nsswitch.conf+` is shown in <<dat-net-nsswitchconf,`+/etc/nsswitch.conf+`>>. Comments are preceded by `+#+` signs. In this example, the entry under the `+hosts+` database means that a request is sent to `+/etc/hosts+` (`+files+`) via DNS
+ifdef::os-sles,os-osuse[ (see xref:net-dns.adoc[])]
+{empty}.
+
+[#dat-net-nsswitchconf]
+.`+/etc/nsswitch.conf+`
+====
+----
+passwd:     compat
+group:      compat
+
+hosts:      files dns
+networks:   files dns
+
+services:   db files
+protocols:  db files
+rpc:        files
+ethers:     files
+netmasks:   files
+netgroup:   files nis
+publickey:  files
+
+bootparams: files
+automount:  files nis
+aliases:    files nis
+shadow:     compat
+----
+====
+
+The “databases” available over NSS are listed in <<tab-net-nnswitch-db,Databases available via /etc/nsswitch.conf>>. The configuration options for NSS databases are listed in <<tab-net-nnswitch-conf,Configuration options for NSS “databases”>>.
+
+[#tab-net-nnswitch-db]
+.Databases available via /etc/nsswitch.conf
+[cols="1,1"]
+|===
+a|`+aliases+`
+a|Mail aliases implemented by `+sendmail+`; see `+man+` `+5 aliases+`.
+a|`+ethers+`
+a|Ethernet addresses.
+a|`+netmasks+`
+a|List of networks and their subnet masks. Only needed, if you use subnetting.
+a|`+group+`
+a|User groups used by `+getgrent+`. See also the man page for `+group+`.
+a|`+hosts+`
+a|Host names and IP addresses, used by `+gethostbyname+` and similar functions.
+a|`+netgroup+`
+a|Valid host and user lists in the network for controlling access permissions; see the `+netgroup(5)+` man page.
+a|`+networks+`
+a|Network names and addresses, used by `+getnetent+`.
+a|`+publickey+`
+a|Public and secret keys for Secure_RPC used by NFS and NIS{plus}.
+a|`+passwd+`
+a|User passwords, used by `+getpwent+`; see the `+passwd(5)+` man page.
+a|`+protocols+`
+a|Network protocols, used by `+getprotoent+`; see the `+protocols(5)+` man page.
+a|`+rpc+`
+a|Remote procedure call names and addresses, used by `+getrpcbyname+` and similar functions.
+a|`+services+`
+a|Network services, used by `+getservent+`.
+a|`+shadow+`
+a|Shadow passwords of users, used by `+getspnam+`; see the `+shadow(5)+` man page.
+|===
+
+[#tab-net-nnswitch-conf]
+.Configuration options for NSS “databases”
+[cols="1,1"]
+|===
+a|`+files+`
+a|directly access files, for example, `+/etc/aliases+`
+a|`+db+`
+a|access via a database
+a|`+nis+`, `+nisplus+`
+a|NIS, see also xref:security:security-nis.adoc[]
+a|`+dns+`
+a|can only be used as an extension for `+hosts+` and `+networks+`
+a|`+compat+`
+a|can only be used as an extension for `+passwd+`, `+shadow+` and `+group+`
+|===
+
+[#sec-network-manconf-files-nscd]
+==== `+/etc/nscd.conf+`
+
+This file is used to configure nscd (name service cache daemon). See the `+nscd(8)+` and `+nscd.conf(5)+` man pages. By default, the system entries of `+passwd+`, `+groups+` and ``+hosts+``are cached by nscd. This is important for the performance of directory services, like NIS and LDAP, because otherwise the network connection needs to be used for every access to names, groups or hosts.
+
+If the caching for `+passwd+` is activated, it usually takes about fifteen seconds until a newly added local user is recognized. Reduce this waiting time by restarting nscd with:
+
+----
+> sudo systemctl restart nscd
+----
+
+[#sec-network-manconf-files-hostname]
+==== `+/etc/hostname+`
+
+`+/etc/hostname+` contains the fully qualified host name (FQHN). The fully qualified host name is the host name with the domain name attached. This file must contain only one line (in which the host name is set). It is read while the machine is booting.

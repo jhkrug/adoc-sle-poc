@@ -1,0 +1,620 @@
+[
+ {
+  "op": "insert",
+  "context": "Administration Guide",
+  "docbook": "",
+  "antora": "This guide covers system administration tasks like maintaining, monitoring and customizing an initially installed system."
+ },
+ {
+  "op": "delete",
+  "context": "possible errors or the consequences thereof.",
+  "docbook": "This guide covers system administration tasks like maintaining, monitoring and customizing an initially installed system.",
+  "antora": ""
+ },
+ {
+  "op": "delete",
+  "context": "see the release notes at https://www.suse.com/releasenotes.",
+  "docbook": "Common tasks",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "Linux Audit Framework. Refer to the",
+  "docbook": "",
+  "antora": "The Linux Audit Framework"
+ },
+ {
+  "op": "replace",
+  "context": "more information on kdump, refer to",
+  "docbook": "the.",
+  "antora": "the Basic Kdump configuration."
+ },
+ {
+  "op": "replace",
+  "context": "locale settings for the user root,",
+  "docbook": "see.",
+  "antora": "see this step."
+ },
+ {
+  "op": "replace",
+  "context": "secure the root account, refer to",
+  "docbook": "and.",
+  "antora": "Restricting root logins and Restricting SSH logins."
+ },
+ {
+  "op": "replace",
+  "context": "are handled differently. For more information,",
+  "docbook": "see.",
+  "antora": "see Btrfs quota support for subvolumes."
+ },
+ {
+  "op": "insert",
+  "context": "more information about umask, refer to",
+  "docbook": "",
+  "antora": "security:security-acls.adoc"
+ },
+ {
+  "op": "replace",
+  "context": "systems in the network. For details,",
+  "docbook": "see.",
+  "antora": "see security:security-nis.adoc."
+ },
+ {
+  "op": "replace",
+  "context": "service is (temporarily) unreachable. For details,",
+  "docbook": "see.",
+  "antora": "see SSSD."
+ },
+ {
+  "op": "replace",
+  "context": "Linux and Windows networks. For details,",
+  "docbook": "see.",
+  "antora": "see storage:net-samba.adoc."
+ },
+ {
+  "op": "insert",
+  "context": "refer to the following sections: NIS:",
+  "docbook": "",
+  "antora": "Configuring NIS clients"
+ },
+ {
+  "op": "insert",
+  "context": "to the following sections: NIS: LDAP:",
+  "docbook": "",
+  "antora": "Configuring an authentication client with YaST"
+ },
+ {
+  "op": "insert",
+  "context": "the following sections: NIS: LDAP: Samba:",
+  "docbook": "",
+  "antora": "Configuring a Samba client with YaST"
+ },
+ {
+  "op": "insert",
+  "context": "following sections: NIS: LDAP: Samba: SSSD:",
+  "docbook": "",
+  "antora": "SSSD"
+ },
+ {
+  "op": "replace",
+  "context": "Common user names installed by default",
+  "docbook": "bin",
+  "antora": "bin,"
+ },
+ {
+  "op": "replace",
+  "context": "For more information about registration, see",
+  "docbook": "or.",
+  "antora": "Registration or Registering your system."
+ },
+ {
+  "op": "replace",
+  "context": "SUSE Linux Enterprise Server is discussed",
+  "docbook": "in.",
+  "antora": "in upgrade:sle-update-upgrading.adoc."
+ },
+ {
+  "op": "replace",
+  "context": "setup instructions on LVM volumes, refer",
+  "docbook": "to.",
+  "antora": "to LVM configuration."
+ },
+ {
+  "op": "replace",
+  "context": "snapshots from being automatically deleted, refer",
+  "docbook": "to.",
+  "antora": "to faq-snapper-permanent."
+ },
+ {
+  "op": "delete",
+  "context": "vncviewer CLI and click Connect. vncviewer",
+  "docbook": "vncviewer",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "vncviewer vncviewer asking for connection details",
+  "docbook": "",
+  "antora": "vncviewer"
+ },
+ {
+  "op": "insert",
+  "context": "additional ports for VNC sessions. See",
+  "docbook": "",
+  "antora": "security:security-firewall.adoc"
+ },
+ {
+  "op": "replace",
+  "context": "the path to store your backups",
+  "docbook": "(from).",
+  "antora": "(from this step)."
+ },
+ {
+  "op": "delete",
+  "context": "chapter Disaster Recovery with Rear (Relax-and-Recover).",
+  "docbook": "Booting a Linux system",
+  "antora": ""
+ },
+ {
+  "op": "replace",
+  "context": "of the booting iSCSI target refer",
+  "docbook": "to.",
+  "antora": "to Using YaST for the iSCSI initiator configuration."
+ },
+ {
+  "op": "insert",
+  "context": "Secure Boot support. /boot/grub2/x86_64-efi, /boot/grub2/power-ieee1275, /boot/grub2/s390x",
+  "docbook": "",
+  "antora": "endif::[]"
+ },
+ {
+  "op": "replace",
+  "context": "the only one available when booting.",
+  "docbook": "See.",
+  "antora": "See US keyboard layout."
+ },
+ {
+  "op": "replace",
+  "context": "a boot password. Alternatively use YaST",
+  "docbook": "().",
+  "antora": "(Protect Boot Loader with Password)."
+ },
+ {
+  "op": "insert",
+  "context": "where it can be reviewed. Use",
+  "docbook": "",
+  "antora": "grub2-script-check"
+ },
+ {
+  "op": "insert",
+  "context": "│ └─1436 /usr/sbin/sshd -D [...] See",
+  "docbook": "",
+  "antora": "tuning:tuning-cgroups.adoc"
+ },
+ {
+  "op": "delete",
+  "context": "this chapter). Find them at https://0pointer.de/blog/projects/.",
+  "docbook": "System",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "underlying hardware-dependent protocol, such as Ethernet.",
+  "docbook": "",
+  "antora": "OSI and TCP"
+ },
+ {
+  "op": "delete",
+  "context": "Ethernet. Simplified layer model for TCP/IP",
+  "docbook": "OSI and TCP",
+  "antora": ""
+ },
+ {
+  "op": "replace",
+  "context": "configuration. For more information about FCoE,",
+  "docbook": "see.",
+  "antora": "see Managing FCoE services with YaST."
+ },
+ {
+  "op": "replace",
+  "context": "the detailed firewall setup as described",
+  "docbook": "in,",
+  "antora": "in firewalld,"
+ },
+ {
+  "op": "replace",
+  "context": "or down, assigning an MTU, etc.",
+  "docbook": "org.opensuse.Network.Addrconf.ipv4.dhcp org.opensuse.Network.Addrconf.ipv6.dhcp",
+  "antora": "org.opensuse.Network.Addrconf.ipv4.dhcp, org.opensuse.Network.Addrconf.ipv6.dhcp,"
+ },
+ {
+  "op": "insert",
+  "context": "database nis, nisplus NIS, see also",
+  "docbook": "",
+  "antora": "security:security-nis.adoc"
+ },
+ {
+  "op": "replace",
+  "context": "information on the usage of KVM/QEMU,",
+  "docbook": "see.",
+  "antora": "see Managing virtual machines with QEMU."
+ },
+ {
+  "op": "replace",
+  "context": "information on the usage of libvirt,",
+  "docbook": "see.",
+  "antora": "see Managing virtual machines with libvirt."
+ },
+ {
+  "op": "insert",
+  "context": "the firewalld configuration is available in",
+  "docbook": "",
+  "antora": "firewalld"
+ },
+ {
+  "op": "replace",
+  "context": "for IBM Z can be found",
+  "docbook": "in.",
+  "antora": "in deployment:deployment-prep-zseries.adoc."
+ },
+ {
+  "op": "insert",
+  "context": "different actions are performed: <default> from",
+  "docbook": "",
+  "antora": "Rule 1"
+ },
+ {
+  "op": "insert",
+  "context": "end of the PFL. <prefer> from",
+  "docbook": "",
+  "antora": "Rule 2"
+ },
+ {
+  "op": "insert",
+  "context": "SC is in PFL. <accept> from",
+  "docbook": "",
+  "antora": "Rule 3"
+ },
+ {
+  "op": "insert",
+  "context": "when snippets occur in the order",
+  "docbook": "",
+  "antora": "Rule 1"
+ },
+ {
+  "op": "insert",
+  "context": "snippets occur in the order -",
+  "docbook": "",
+  "antora": "Rule 2"
+ },
+ {
+  "op": "insert",
+  "context": "occur in the order - -",
+  "docbook": "",
+  "antora": "Rule 3"
+ },
+ {
+  "op": "insert",
+  "context": "Order Current PFL Request Alegreya SC",
+  "docbook": "",
+  "antora": "Rule 1"
+ },
+ {
+  "op": "insert",
+  "context": "Request Alegreya SC Alegreya SC, serif",
+  "docbook": "",
+  "antora": "Rule 2"
+ },
+ {
+  "op": "insert",
+  "context": "serif Alegreya SC, Droid Serif, serif",
+  "docbook": "",
+  "antora": "Rule 3"
+ },
+ {
+  "op": "insert",
+  "context": "Request Alegreya SC Same request performed.",
+  "docbook": "",
+  "antora": "Rule 2"
+ },
+ {
+  "op": "insert",
+  "context": "not in PFL, nothing is substituted",
+  "docbook": "",
+  "antora": "Rule 3"
+ },
+ {
+  "op": "insert",
+  "context": "not in PFL, nothing is substituted",
+  "docbook": "",
+  "antora": "Rule 1"
+ },
+ {
+  "op": "insert",
+  "context": "Order Current PFL Request Alegreya SC",
+  "docbook": "",
+  "antora": "Rule 1"
+ },
+ {
+  "op": "insert",
+  "context": "Request Alegreya SC Alegreya SC, serif",
+  "docbook": "",
+  "antora": "Rule 2"
+ },
+ {
+  "op": "insert",
+  "context": "serif Alegreya SC, Droid Serif, serif",
+  "docbook": "",
+  "antora": "Rule 3"
+ },
+ {
+  "op": "insert",
+  "context": "Alegreya SC, Droid Serif, serif, STIXGeneral",
+  "docbook": "",
+  "antora": "Rule 4"
+ },
+ {
+  "op": "insert",
+  "context": "Droid Serif, serif, Liberation Serif, STIXGeneral",
+  "docbook": "",
+  "antora": "Rule 5"
+ },
+ {
+  "op": "replace",
+  "context": "SEND_MAIL_ON_NO_ERROR in /etc/sysconfig/cron is set to",
+  "docbook": "no",
+  "antora": "`no"
+ },
+ {
+  "op": "replace",
+  "context": "will still be sent to the",
+  "docbook": "MAILTO",
+  "antora": "`MAILTO"
+ },
+ {
+  "op": "replace",
+  "context": "these files. For more details refer",
+  "docbook": "to.",
+  "antora": "to Managing log files with logrotate."
+ },
+ {
+  "op": "replace",
+  "context": "zone trusted. For details about firewalld,",
+  "docbook": "see.",
+  "antora": "see firewalld."
+ },
+ {
+  "op": "delete",
+  "context": "and the GNOME applet: /usr/share/doc/packages/NetworkManager/, /usr/share/doc/packages/NetworkManager-gnome/.",
+  "docbook": "Hardware configuration",
+  "antora": ""
+ },
+ {
+  "op": "replace",
+  "context": "to do. For in-depth information, refer",
+  "docbook": "to.",
+  "antora": "to tuning:tuning-power.adoc."
+ },
+ {
+  "op": "delete",
+  "context": "well as unit tests and documentation.",
+  "docbook": "Services",
+  "antora": ""
+ },
+ {
+  "op": "replace",
+  "context": "and 0.0.127.in-addr.arpa. The type hint entry",
+  "docbook": "under.",
+  "antora": "under ."
+ },
+ {
+  "op": "replace",
+  "context": "that each entry is closed with",
+  "docbook": "a;",
+  "antora": "a ;"
+ },
+ {
+  "op": "replace",
+  "context": "server. For more information about LDAP,",
+  "docbook": "see.",
+  "antora": "see security:security-ldap.adoc."
+ },
+ {
+  "op": "insert",
+  "context": "required via SLP query. Refer to",
+  "docbook": "",
+  "antora": "deployment:deployment-installserver.adoc"
+ },
+ {
+  "op": "insert",
+  "context": "http in the public zone. See",
+  "docbook": "",
+  "antora": "Configuring the firewall on the command line"
+ },
+ {
+  "op": "insert",
+  "context": "mod_php8. Package Name: apache2-mod_apparmor More Information:",
+  "docbook": "",
+  "antora": "Confining privileges with AppArmor"
+ },
+ {
+  "op": "replace",
+  "context": "you want to leave it blank,",
+  "docbook": "use..",
+  "antora": "use .."
+ },
+ {
+  "op": "replace",
+  "context": "be done with firewalld as described",
+  "docbook": "in.",
+  "antora": "in Configuring the firewall on the command line."
+ },
+ {
+  "op": "replace",
+  "context": "to check: Output of the apache2.service",
+  "docbook": "subcommand:",
+  "antora": "subcommand"
+ },
+ {
+  "op": "replace",
+  "context": "in the file /var/run/netconfig/resolv.conf as described",
+  "docbook": "in.",
+  "antora": "in Dynamic DNS."
+ },
+ {
+  "op": "replace",
+  "context": "cache, specify several cache_dir lines. cache_access_log",
+  "docbook": "LOG_FILE",
+  "antora": "LOG_FILE,"
+ },
+ {
+  "op": "replace",
+  "context": "several cache_dir lines. cache_access_log LOG_FILE cache_log",
+  "docbook": "LOG_FILE",
+  "antora": "LOG_FILE,"
+ },
+ {
+  "op": "replace",
+  "context": "the client from HTTP requests. negative_ttl",
+  "docbook": "TIME",
+  "antora": "TIME,"
+ },
+ {
+  "op": "delete",
+  "context": "Common Information Model (CIM) Web site",
+  "docbook": "Troubleshooting",
+  "antora": ""
+ },
+ {
+  "op": "replace",
+  "context": "where you can search all bugs.",
+  "docbook": "CHANGES",
+  "antora": "CHANGES,"
+ },
+ {
+  "op": "replace",
+  "context": "for developers, because it is detailed.",
+  "docbook": "COPYING",
+  "antora": "COPYING,"
+ },
+ {
+  "op": "replace",
+  "context": "is the one that YaST suggests",
+  "docbook": "in.",
+  "antora": "in this step."
+ },
+ {
+  "op": "replace",
+  "context": "displayed in the following list: -E",
+  "docbook": "MAIL",
+  "antora": "MAIL,"
+ },
+ {
+  "op": "replace",
+  "context": "the following list: -E MAIL -N",
+  "docbook": "NAME",
+  "antora": "NAME,"
+ },
+ {
+  "op": "replace",
+  "context": "list: -E MAIL -N NAME -O",
+  "docbook": "COMPANY",
+  "antora": "COMPANY,"
+ },
+ {
+  "op": "replace",
+  "context": "and your phone number (-P). -i",
+  "docbook": "KEYWORDS",
+  "antora": "KEYWORDS,"
+ },
+ {
+  "op": "replace",
+  "context": "directory is archived as tar file,",
+  "docbook": "see.",
+  "antora": "see co-admsupport-script-archive."
+ },
+ {
+  "op": "replace",
+  "context": "Including additional contact information in the",
+  "docbook": "output:",
+  "antora": "output"
+ },
+ {
+  "op": "replace",
+  "context": "in Creating a supportconfig archive with",
+  "docbook": "YaST,.",
+  "antora": "YaST, this step."
+ },
+ {
+  "op": "replace",
+  "context": "Supportconfig archive can be found. sudo",
+  "docbook": "scatool -s",
+  "antora": "scatool-s"
+ },
+ {
+  "op": "replace",
+  "context": "the path specified with -o. sudo",
+  "docbook": "scatool -a",
+  "antora": "scatool-a"
+ },
+ {
+  "op": "replace",
+  "context": "the Supportconfig archive or directory. sudo",
+  "docbook": "scatool -a",
+  "antora": "scatool-a"
+ },
+ {
+  "op": "replace",
+  "context": "files can be viewed with YaST",
+  "docbook": "( Miscellaneous",
+  "antora": "(Miscellaneous"
+ },
+ {
+  "op": "insert",
+  "context": "/var/log/apparmor/ Log files from AppArmor, see",
+  "docbook": "",
+  "antora": "Confining privileges with AppArmor"
+ },
+ {
+  "op": "insert",
+  "context": "system, and trace system calls. See",
+  "docbook": "",
+  "antora": "The Linux Audit Framework"
+ },
+ {
+  "op": "insert",
+  "context": "for system analysis and monitoring. See",
+  "docbook": "",
+  "antora": "tuning:utilities.adoc"
+ },
+ {
+  "op": "replace",
+  "context": "of the configuration files involved, refer",
+  "docbook": "to.",
+  "antora": "to security:security-pam.adoc."
+ },
+ {
+  "op": "replace",
+  "context": "further checks on this matter, refer",
+  "docbook": "to.",
+  "antora": "to this step."
+ },
+ {
+  "op": "replace",
+  "context": "using Wake on LAN, as described",
+  "docbook": "in.",
+  "antora": "in Using wake-on-LAN for remote wakeups."
+ },
+ {
+  "op": "insert",
+  "context": "using an LVM setup (refer to",
+  "docbook": "",
+  "antora": "Logical volumes (LVM)"
+ },
+ {
+  "op": "replace",
+  "context": "IBM Z installation system as described",
+  "docbook": "in.",
+  "antora": "in Preparing for installation."
+ }
+]

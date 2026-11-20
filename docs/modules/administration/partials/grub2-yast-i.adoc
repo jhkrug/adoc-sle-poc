@@ -1,0 +1,138 @@
+// Converted from xml/grub2_yast_i.xml
+
+[#sec-grub2-yast2-config]
+== Configuring the boot loader with {yast}
+
+The easiest way to configure general options of the boot loader in your {productname} system is to use the {yast} module. In the *{yast} Control Center*, select menu:System[Boot Loader]. The module shows the current boot loader configuration of your system and allows you to make changes.
+
+Use the *Boot Code Options* tab to view and change settings related to type, location and advanced loader settings. You can choose whether to use {grub} in standard or EFI mode.
+
+[IMPORTANT]
+.EFI systems require GRUB2-EFI
+====
+If you have an EFI system you can only install GRUB2-EFI, otherwise your system is no longer bootable.
+====
+
+[IMPORTANT]
+.Reinstalling the boot loader
+====
+To reinstall the boot loader, make sure to change a setting in {yast} and then change it back. For example, to reinstall GRUB2-EFI, select *GRUB2* first and then immediately switch back to *GRUB2-EFI*.
+
+Otherwise, the boot loader may only be partially reinstalled.
+====
+
+[NOTE]
+.Custom boot loader
+====
+To use a boot loader other than the ones listed, select *Do Not Install Any Boot Loader*. Read the documentation of your boot loader carefully before choosing this option.
+====
+
+[#sec-grub2-yast2-location]
+=== Boot loader location and boot code options
+
+The default location of the boot loader depends on the partition setup and is either the Master Boot Record (MBR) or the boot sector of the `+/+` partition. To modify the location of the boot loader, follow these steps:
+
+[#pro-sec-grub2-yast2-location]
+.Changing the boot loader location
+. Select the *Boot Code Options* tab and then choose one of the following options for *Boot Loader Location*:
++
+*Boot from Master Boot Record*::
+This installs the boot loader in the MBR of the disk containing the directory `+/boot+`. Usually this will be the disk mounted to `+/+`, but if `+/boot+` is mounted to a separate partition on a different disk, the MBR of that disk will be used.
+*Boot from Root Partition*::
+This installs the boot loader in the boot sector of the `+/+` partition.
+*Custom Root Partition*::
+Use this option to specify the location of the boot loader manually.
+. Click *OK* to apply the changes.
+
+[#fig-grub2-yast-boot-code-options0]
+.Boot code options
+image::yast2_bootloader_boot_code.png["",width=75%]
+
+The *Boot Code Options* tab includes the following additional options:
+
+*Set Active Flag in Partition Table for Boot Partition*::
+Activates the partition that contains the `+/boot+` directory. For {power} systems it activates the PReP partition. Use this option on systems with old BIOS and/or legacy operating systems because they may fail to boot from a non-active partition. It is safe to leave this option active.
+*Write Generic Boot Code to MBR*::
+If MBR contains a custom 'non-GRUB' code, this option replaces it with a generic, operating system independent code. If you deactivate this option, the system may become unbootable.
+*Enable Trusted Boot Support*::
+Starts TrustedGRUB2, which supports trusted computing functionality (Trusted Platform Module (TPM)). For more information refer to link:https://github.com/Sirrix-AG/TrustedGRUB2[].
+
+The *Protective MBR flag* section includes the following options:
+
+*set*::
+This is appropriate for traditional legacy BIOS booting.
+*remove*::
+This is appropriate for UEFI booting.
+*do not change*::
+This is usually the best choice if you have an already working system.
+
+In most cases {yast} defaults to the appropriate choice.
+
+[#sec-grub2-yast2-config-order]
+=== Adjusting the disk order
+
+If your computer has more than one hard disk, you can specify the boot sequence of the disks. The first disk in the list is where {grub} will be installed in the case of booting from MBR. It is the disk where {productname} is installed by default. The rest of the list is a hint for {grub}'s device mapper (see <<sec-grub2-map,Mapping between BIOS drives and Linux devices>>).
+
+[WARNING]
+.Unbootable system
+====
+The default value is usually valid for almost all deployments. If you change the boot order of disks wrongly, the system may become unbootable on the next reboot. For example, if the first disk in the list is not part of the BIOS boot order, and the other disks in the list have empty MBRs.
+====
+
+[#pro-sec-grub2-yast2-config-order]
+.Setting the disk order
+. Open the *Boot Code Options* tab.
+. Click *Edit Disk Boot Order*.
+. If more than one disk is listed, select a disk and click *Up* or *Down* to reorder the displayed disks.
+. Click *OK* two times to save the changes.
+
+[#sec-grub2-yast2-config-advanced]
+=== Configuring advanced options
+
+Advanced boot parameters can be configured via the *Boot Loader Options* tab.
+
+[#sec-grub2-yast2-config-advanced-boot-loader]
+==== *Boot Loader Options* tab
+
+[#fig-grub2-yast-bootloader-options]
+.Boot loader options
+image::yast2_bootloader_options.png["",width=75%]
+
+*Boot Loader Time-Out*::
+Change the value of *Time-Out in Seconds* by typing in a new value and clicking the appropriate arrow key with your mouse.
+*Probe Foreign OS*::
+When selected, the boot loader searches for other systems like Windows or other Linux installations.
+*Hide Menu on Boot*::
+Hides the boot menu and boots the default entry.
+*Adjusting the Default Boot Entry*::
+Select the desired entry from the “Default Boot Section” list. Note that the “>” sign in the boot entry name delimits the boot section and its subsection.
+[[vle-grub2-yast2-boot-password]]*Protect Boot Loader with Password*::
+Protects the boot loader and the system with an additional password. For details on manual configuration, see <<sec-grub2-password,Setting a boot password>>. If this option is activated, the boot password is required on every boot, which means the system does not boot automatically. However, if you prefer the behavior of GRUB 1, additionally enable *Protect Entry Modification Only*. With this setting, anybody is allowed to select a boot entry and boot the system, whereas the password for the {grub} `+root+` user is only required for modifying boot entries.
+
+[#sec-grub2-yast2-config-advanced-kernel-parameters]
+==== *Kernel Parameters* tab
+
+[#fig-grub2-yast-kernel-parameters]
+.Kernel parameters
+image::yast2_bootloader_kernel_parameters.png["",width=75%]
+
+*Optional Kernel Command Line Parameter*::
+Specify optional kernel parameters here to enable/disable system features, add drivers, etc.
+[[vle-grub2-yast2-cpu-mitigations]]*CPU Mitigations*::
+{suse} has released one or more kernel boot command line parameters for all software mitigations that have been deployed to prevent CPU side-channel attacks. Some of those may result in performance loss. Choose one the following options to strike a balance between security and performance, depending on your setting:
++
+.*Auto*
+Enables all mitigations required for your CPU model, but does not protect against cross-CPU thread attacks. This setting may impact performance to some degree, depending on the workload.
++
+.*Auto + No SMT*
+Provides the full set of available security mitigations. Enables all mitigations required for your CPU model. In addition, it disables Simultaneous Multithreading (SMT) to avoid side-channel attacks across multiple CPU threads. This setting may further impact performance, depending on the workload.
++
+.*Off*
+Disables all mitigations. Side-channel attacks against your CPU are possible, depending on the CPU model. This setting has no impact on performance.
++
+.*Manual*
+Does not set any mitigation level. Specify your CPU mitigations manually by using the kernel command line options.
+*Use Graphical Console*::
+When checked, the boot menu appears on a graphical splash screen rather than in a text mode. The resolution of the boot screen is set automatically by default, but you can manually set it via *Console resolution*. The graphical theme definition file can be specified with the *Console theme* file chooser. Only change this if you want to apply your own, custom-made theme.
+*Use Serial Console*::
+If your machine is controlled via a serial console, activate this option and specify which COM port to use at which speed. See `+info grub+` or link:https://www.gnu.org/software/grub/manual/grub.html#Serial-terminal[]

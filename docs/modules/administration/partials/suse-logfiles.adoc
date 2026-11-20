@@ -1,0 +1,6 @@
+// Converted from xml/suse_logfiles.xml
+
+[#sec-suse-log]
+=== Log files: package logrotate
+
+There are several system services (_daemons_) that, along with the kernel itself, regularly record the system status and specific events onto log files. This way, the administrator can regularly check the status of the system at a certain point in time, recognize errors or faulty functions and troubleshoot them with pinpoint precision. These log files are normally stored in `+/var/log+` as specified by FHS and grow on a daily basis. The `+logrotate+` package helps control the growth of these files. For more details refer to xref:tuning:tuning-logfiles.adoc#sec-tuning-syslog-logrotate[Managing log files with `+logrotate+`].

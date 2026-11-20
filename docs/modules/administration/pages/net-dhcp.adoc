@@ -1,0 +1,262 @@
+// Converted from xml/net_dhcp.xml
+[#cha-dhcp]
+= DHCP
+:description: Learn how to assign network settings centrally using DHCP to enable automatic host configuration on your network
+:revdate: 2026-01-16
+
+[abstract]
+--
+The purpose of the _Dynamic Host Configuration Protocol_ (DHCP) is to assign network settings centrally (from a server) rather than configuring them locally on every workstation. A host configured to use DHCP does not have control over its own static address. It is enabled to configure itself automatically according to directions from the server. If you use the {nm} on the client side, you do not need to configure the client. This is useful if you have changing environments and only one interface active at a time. Never use {nm} on a machine that runs a DHCP server.
+--
+
+ifdef::os-sles[]
+ifdef::arch-zseries[]
+[TIP]
+.{zseries}: DHCP support
+====
+On {zseries} platforms, DHCP only works on interfaces using the OSA and OSA Express network cards. These cards are the only ones with a MAC, which is required for the DHCP autoconfiguration features.
+====
+endif::[]
+endif::[]
+
+One way to configure a DHCP server is to identify each client using the hardware address of its network card (which should usually be fixed), then supply that client with identical settings each time it connects to the server. DHCP can also be configured to assign addresses to each relevant client dynamically from an address pool set up for this purpose. In the latter case, the DHCP server tries to assign the same address to the client each time it receives a request, even over extended periods. This works only if the network does not have more clients than addresses.
+
+DHCP makes life easier for system administrators. Any changes, even bigger ones, related to addresses and the network configuration can be implemented centrally by editing the server's configuration file. This is much more convenient than reconfiguring multiple workstations. It is also much easier to integrate machines, particularly new machines, into the network, because they can be given an IP address from the pool. Retrieving the appropriate network settings from a DHCP server is especially useful in case of laptops regularly used in different networks.
+
+In this chapter, the DHCP server runs in the same subnet as the workstations, `{subnetiimask}` with `{routerintipii}` as gateway. It has the fixed IP address `{dhcpip}` and serves two address ranges, `{subnetii}.10` to `{subnetii}.20` and `{subnetii}.100` to `{subnetii}.200`.
+
+A DHCP server supplies not only the IP address and the netmask, but also the host name, domain name, gateway and name server addresses for the client to use. Besides that, DHCP allows several parameters to be configured in a centralized way, for example, a time server from which clients may poll the current time or even a print server.
+
+[#sec-dhcp-yast]
+== Configuring a DHCP server with {yast}
+
+To install a DHCP server, start {yast} and select menu:Software[Software Management]. Choose menu:Filter[Patterns] and select *DHCP and DNS Server*. Confirm the installation of the dependent packages to finish the installation process.
+
+[IMPORTANT]
+.LDAP support
+====
+The {yast} DHCP module can be set up to store the server configuration locally (on the host that runs the DHCP server) or to have its configuration data managed by an LDAP server. To use LDAP, set up your LDAP environment before configuring the DHCP server.
+
+For more information about LDAP, see xref:security:security-ldap.adoc[].
+====
+
+The {yast} DHCP module (`+yast2-dhcp-server+`) allows you to set up your own DHCP server for the local network. The module can run in wizard mode or expert configuration mode.
+
+[#sec-dhcp-yast-init]
+=== Initial configuration (wizard)
+
+When the module is started for the first time, a wizard starts, prompting you to make a few basic decisions concerning server administration. Completing this initial setup produces a basic server configuration that should function in its essential aspects. The expert mode can be used to deal with more advanced configuration tasks. Proceed as follows:
+
+[#pro-dhcp-yast-init]
+. Select the interface from the list to which the DHCP server should listen and click *Select* and then *Next*. See <<fig-yast2-dhcp-wiz1,DHCP server: card selection>>.
++
+[NOTE]
+.DHCP and `+firewalld+`
+====
+The option *Open Firewall for Selected Interfaces* does not (yet) support `+firewalld+` in {productname} {productnumber}. To manually open the DHCP port, run
+
+----
+       > sudo firewall-cmd --zone=public --permanent --add-service=dhcp
+       > sudo firewall-cmd --reload
+      
+----
+====
++
+[#fig-yast2-dhcp-wiz1]
+.DHCP server: card selection
+image::yast2_dhcp_wiz1.png["",width=75%]
+. Use the check box to determine whether your DHCP settings should be automatically stored by an LDAP server. In the text boxes, provide the network specifics for all clients the DHCP server should manage. These specifics are the domain name, address of a time server, addresses of the primary and secondary name server, addresses of a print and a WINS server (for a mixed network with both Windows and Linux clients), gateway address, and lease time. See <<fig-yast2-dhcp-wiz2,DHCP server: global settings>>.
++
+[#fig-yast2-dhcp-wiz2]
+.DHCP server: global settings
+image::yast2_dhcp_wiz2.png["",width=75%]
+. Configure how dynamic IP addresses should be assigned to clients. To do so, specify an IP range from which the server can assign addresses to DHCP clients. All these addresses must be covered by the same netmask. Also specify the lease time during which a client may keep its IP address without needing to request an extension of the lease. Optionally, specify the maximum lease time—the period during which the server reserves an IP address for a particular client. See <<fig-yast2-dhcp-wiz3,DHCP server: dynamic DHCP>>.
++
+[#fig-yast2-dhcp-wiz3]
+.DHCP server: dynamic DHCP
+image::yast2_dhcp_wiz3.png["",width=75%]
+. Define how the DHCP server should be started. Specify whether to start the DHCP server automatically when the system is booted or manually when needed (for example, for testing purposes). Click *Finish* to complete the configuration of the server. See <<fig-yast2-dhcp-start,DHCP server: start-up>>.
++
+[#fig-yast2-dhcp-start]
+.DHCP server: start-up
+image::yast2_dhcp_start.png["",width=75%]
+ifdef::os-sles,os-osuse[]
+. Instead of using dynamic DHCP in the way described in the preceding steps, you can also configure the server to assign addresses in quasi-static fashion. Use the text boxes provided in the lower part to specify a list of the clients to manage in this way. Specifically, provide the *Name* and the *IP Address* to give to such a client, the *Hardware Address*, and the *Network Type* (token ring or Ethernet). Modify the list of clients, which is shown in the upper part with *Add*, *Edit*, and *Delete from List*. See <<fig-yast2-dhcp-statdhcp,DHCP server: host management>>.
++
+[#fig-yast2-dhcp-statdhcp]
+.DHCP server: host management
+image::yast2_dhcp_statdhcp.png["",width=75%]
+endif::[]
+
+ifdef::os-sles,os-osuse[]
+[#sec-dhcp-yast-expert]
+=== DHCP server configuration (expert)
+
+Besides the configuration method discussed earlier, there is also an expert configuration mode that allows you to change the DHCP server setup in every detail. Start the expert configuration by clicking *DHCP Server Expert Configuration* in the *Start-Up* dialog (see <<fig-yast2-dhcp-start,DHCP server: start-up>>).
+
+Chroot environment and declarations::
+In this first dialog, make the existing configuration editable by selecting *Start DHCP Server*. An important feature of the behavior of the DHCP server is its ability to run in a chroot environment, or chroot jail, to secure the server host. If the DHCP server is compromised by an outside attack, the attacker is still in the chroot jail, which prevents them from accessing the rest of the system. The lower part of the dialog displays a tree view with the declarations that have already been defined. Modify these with *Add*, *Delete* and *Edit*. Selecting *Advanced* takes you to additional expert dialogs. See <<fig-yast2-dhcp-chroot,DHCP server: chroot jail and declarations>>. After selecting *Add*, define the type of declaration to add. With *Advanced*, view the log file of the server, configure TSIG key management, and adjust the configuration of the firewall according to the setup of the DHCP server.
++
+[#fig-yast2-dhcp-chroot]
+.DHCP server: chroot jail and declarations
+image::yast2_dhcp_chroot.png["",width=75%]
+Selecting the declaration type::
+The *Global Options* of the DHCP server are made up of several declarations. This dialog lets you set the declaration types *Subnet*, *Host*, *Shared Network*, *Group*, *Pool of Addresses*, and *Class*. This example shows the selection of a new subnet (see <<fig-yast2-dhcp-newdec,DHCP server: selecting a declaration type>>).
++
+[#fig-yast2-dhcp-newdec]
+.DHCP server: selecting a declaration type
+image::yast2_dhcp_newdec.png["",width=75%]
+Subnet configuration::
+This dialog allows you specify a new subnet with its IP address and netmask. In the middle part of the dialog, modify the DHCP server start options for the selected subnet using *Add*, *Edit*, and *Delete*. To set up dynamic DNS for the subnet, select *Dynamic DNS*.
++
+[#fig-yast2-dhcp-sub]
+.DHCP server: configuring subnets
+image::yast2_dhcp_sub.png["",width=75%]
+TSIG key management::
+If you chose to configure dynamic DNS in the previous dialog, you can now configure the key management for a secure zone transfer. Selecting *OK* takes you to another dialog in which to configure the interface for dynamic DNS (see <<fig-yast2-dhcp-dyndns,DHCP server: interface configuration for dynamic DNS>>).
++
+[#fig-yast2-dhcp-tsig]
+.DHCP server: TSIG configuration
+image::yast2_dhcp_tsig.png["",width=75%]
+Dynamic DNS: interface configuration::
+You can now activate dynamic DNS for the subnet by selecting *Enable Dynamic DNS for This Subnet*. After doing so, use the drop-down box to activate the TSIG keys for forward and reverse zones, making sure that the keys are the same for the DNS and the DHCP server. With *Update Global Dynamic DNS Settings*, enable the automatic update and adjustment of the global DHCP server settings according to the dynamic DNS environment. Finally, define which forward and reverse zones should be updated per dynamic DNS, specifying the name of the primary name server for each of the two zones. Selecting *OK* returns to the subnet configuration dialog (see <<fig-yast2-dhcp-sub,DHCP server: configuring subnets>>). Selecting *OK* again returns to the original expert configuration dialog.
++
+[#fig-yast2-dhcp-dyndns]
+.DHCP server: interface configuration for dynamic DNS
+image::yast2_dhcp_dyndns.png["",width=75%]
++
+[NOTE]
+.`+ignore client-updates+` option
+====
+When enabling Dynamic DNS for a zone, {yast} automatically adds the `+ignore client-updates+` option to improve client compatibility. The option can be disabled if it is not required.
+====
+Network interface configuration::
+To define the interfaces the DHCP server should listen to and to adjust the firewall configuration, select menu:Advanced[Interface Configuration] from the expert configuration dialog. From the list of interfaces displayed, select one or more that should be attended by the DHCP server. If clients in all subnets need to be able to communicate with the server and the server host also runs a firewall, adjust the firewall accordingly.
++
+[NOTE]
+.DHCP and `+firewalld+`
+====
+The option *Open Firewall for Selected Interfaces* does not (yet) support `+firewalld+` in {productname} {productnumber}. To manually open the DHCP port, run
+
+----
+        > sudo firewall-cmd --zone=public --permanent --add-service=dhcp
+        > sudo firewall-cmd --reload
+       
+----
+====
++
+[#fig-yast2-dhcp-fire]
+.DHCP server: network interface and firewall
+image::yast2_dhcp_fire.png["",width=75%]
+
+After completing all configuration steps, close the dialog with *OK*. The server is now started with its new configuration.
+endif::[]
+
+[#sec-dhcp-soft]
+== DHCP software packages
+
+Both the DHCP server and the DHCP clients are available for {productname}. The DHCP server available is `+dhcpd+` (published by the Internet Systems Consortium). On the client side, there is `+dhcp-client+` (also from ISC) and tools coming with the `+wicked+` package.
+
+[NOTE]
+.KEA DHCP replaces ISC DHCP Server
+====
+The ISC (Internet Systems Consortium) has developed a new DHCP server, KEA, which replaces ISC DHCP servers. For more information, refer to link:https://www.isc.org/kea/[].
+====
+
+By default, the `+wicked+` tools are installed with the services `+wickedd-dhcp4+` and `+wickedd-dhcp6+`. Both are launched automatically on each system boot to watch for a DHCP server. They do not need a configuration file to do their job and work out of the box in most standard setups. For more complex situations, use the ISC `+dhcp-client+`, which is controlled by the configuration files `+/etc/dhclient.conf+` and `+/etc/dhclient6.conf+`.
+
+[#sec-dhcp-server]
+== The DHCP server dhcpd
+
+The core of any DHCP system is the dynamic host configuration protocol daemon. This server _leases_ addresses and watches how they are used, according to the settings defined in the configuration file `+/etc/dhcpd.conf+`. By changing the parameters and values in this file, a system administrator can influence the program's behavior in many ways. Look at the basic sample `+/etc/dhcpd.conf+` file in <<dat-dhcp-conf,The configuration file /etc/dhcpd.conf>>.
+
+[#dat-dhcp-conf]
+.The configuration file /etc/dhcpd.conf
+====
+[subs="attributes+"]
+----
+default-lease-time 600;         # 10 minutes
+max-lease-time 7200;            # 2  hours
+
+option domain-name "{exampledomain}";
+option domain-name-servers {dnsip};
+option broadcast-address {subnetiibc};
+option routers {routerintipii};
+option subnet-mask {subnetmask};
+
+subnet {subnetii}.0 netmask {subnetmask}
+ {
+  range {subnetii}.10 {subnetii}.20;
+  range {subnetii}.100 {subnetii}.200;
+ }
+----
+====
+
+This simple configuration file should be sufficient to get the DHCP server to assign IP addresses in the network. Make sure that a semicolon is inserted at the end of each line, because otherwise dhcpd is not started.
+
+The sample file can be divided into three sections. The first one defines how many seconds an IP address is leased to a requesting client by default (`+default-lease-time+`) before it should apply for renewal. This section also includes a statement of the maximum period for which a machine may keep an IP address assigned by the DHCP server without applying for renewal (`+max-lease-time+`).
+
+In the second part, certain basic network parameters are defined on a global level:
+
+* The line `+option domain-name+` defines the default domain of your network.
+* With the entry `+option domain-name-servers+`, specify up to three values for the DNS servers used to resolve IP addresses into host names and vice versa. Ideally, configure a name server on your machine or somewhere else in your network before setting up DHCP. That name server should also define a host name for each dynamic address and vice versa. To learn how to configure your own name server, read xref:net-dns.adoc[].
+* The line `+option broadcast-address+` defines the broadcast address the requesting client should use.
+* With `+option routers+`, set where the server should send data packets that cannot be delivered to a host on the local network (according to the source and target host address and the subnet mask provided). Especially in smaller networks, this router is identical to the Internet gateway.
+* With `+option subnet-mask+`, specify the netmask assigned to clients.
+
+The last section of the file defines a network, including a subnet mask. To finish, specify the address range that the DHCP daemon should use to assign IP addresses to interested clients. In <<dat-dhcp-conf,The configuration file /etc/dhcpd.conf>>, clients may be given any address between `{subnetii}.10` and `{subnetii}.20` or `{subnetii}.100` and `{subnetii}.200`.
+
+After editing these few lines, you should be able to activate the DHCP daemon with the command `+systemctl start dhcpd+`. It will be ready for use immediately. Use the command `+rcdhcpd+` `+check-syntax+` to perform a brief syntax check. If you encounter any unexpected problems with your configuration (the server aborts with an error or does not return `+done+` on start), you should be able to find out what has gone wrong by looking for information either in the main system log that can be queried with the command `+journalctl+` (see xref:journalctl.adoc[] for more information).
+
+On a default {productname} system, the DHCP daemon is started in a chroot environment for security reasons. The configuration files must be copied to the chroot environment so the daemon can find them. Normally, there is no need to worry about this because the command `+systemctl start dhcpd+` automatically copies the files.
+
+[#sec-dhcp-statip]
+=== Clients with fixed IP addresses
+
+DHCP can also be used to assign a predefined, static address to a specific client. Addresses assigned explicitly always take priority over dynamic addresses from the pool. A static address never expires in the way a dynamic address would, for example, if there were not enough addresses available and the server needed to redistribute them among clients.
+
+To identify a client configured with a static address, dhcpd uses the hardware address (which is a globally unique, fixed numerical code consisting of six octet pairs) for the identification of all network devices (for example, `{wsimac}`). If the respective lines, like the ones in <<dat-dhcp-conf-add,Additions to the configuration file>>, are added to the configuration file of <<dat-dhcp-conf,The configuration file /etc/dhcpd.conf>>, the DHCP daemon always assigns the same set of data to the corresponding client.
+
+[#dat-dhcp-conf-add]
+.Additions to the configuration file
+====
+[subs="attributes+"]
+----
+host {wsi} {
+hardware ethernet {wsimac};
+fixed-address {wsiip};
+}
+----
+====
+
+The name of the respective client (`+host+` _HOSTNAME_, here `{wsi}`) is entered in the first line and the MAC address in the second line. On Linux hosts, find the MAC address with the command `+ip+` `+link show+` followed by the network device (for example, `+eth0+`). The output should contain something like
+
+[subs="attributes+"]
+----
+link/ether {wsimac}
+----
+
+In the preceding example, a client with a network card having the MAC address `{wsimac}` is assigned the IP address `{wsiip}` and the host name `{wsi}` automatically. The type of hardware to enter is `+ethernet+` in nearly all cases, although `+token-ring+`, which is often found on IBM systems, is also supported.
+
+[#sec-dhcp-sle]
+=== The {productname} version
+
+To improve security, the {productname} version of the ISC's DHCP server comes with the non-root/chroot patch by Ari Edelkind applied. This enables dhcpd to run with the user ID `+nobody+` and run in a chroot environment (`+/var/lib/dhcp+`). To make this possible, the configuration file `+dhcpd.conf+` must be located in `+/var/lib/dhcp/etc+`. The init script automatically copies the file to this directory when starting.
+
+Control the server's behavior regarding this feature via entries in the file `+/etc/sysconfig/dhcpd+`. To run dhcpd without the chroot environment, set the variable `+DHCPD_RUN_CHROOTED+` in `+/etc/sysconfig/dhcpd+` to “no”.
+
+To enable dhcpd to resolve host names even from within the chroot environment, the following configuration files must be copied as well:
+
+* `+/etc/localtime+`
+* `+/etc/host.conf+`
+* `+/etc/hosts+`
+* `+/var/run/netconfig/resolv.conf+`
+
+These files are copied to `+/var/lib/dhcp/etc/+` when starting the init script. Take these copies into account for any changes that they require if they are dynamically modified by scripts like `+/etc/ppp/ip-up+`. However, there should be no need to worry about this if the configuration file only specifies IP addresses (instead of host names).
+
+If your configuration includes additional files that should be copied into the chroot environment, set these under the variable `+DHCPD_CONF_INCLUDE_FILES+` in the file `+/etc/sysconfig/dhcpd+`. To ensure that the DHCP logging facility keeps working even after a restart of the syslog daemon, there is an additional entry `+SYSLOGD_ADDITIONAL_SOCKET_DHCP+` in the file `+/etc/sysconfig/syslog+`.
+
+[#sec-dhcp-addinfo]
+== More information
+
+More information about DHCP is available at the Web site of the _Internet Systems Consortium_ (link:https://www.isc.org/dhcp/[]). Information is also available in the `+dhcpd+`, `+dhcpd.conf+`, `+dhcpd.leases+`, and `+dhcp-options+` man pages.

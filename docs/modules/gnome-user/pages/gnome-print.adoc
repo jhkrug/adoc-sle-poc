@@ -1,0 +1,65 @@
+// Converted from xml/gnome_print.xml
+[#cha-gnome-print]
+= Managing printers
+:description: Configure network connectivity to enable installation of printer hardware and software, then deploy and manage print queues using YaST tools
+:revdate: 2026-01-16
+
+[abstract]
+--
+Learn how to set up printers and manage print jobs.
+--
+
+{productnamereg} makes it easy to print your documents, whether your computer is connected directly to a printer or linked remotely on a network. This chapter describes how to set up printers in {productname} and manage print jobs.
+
+[#sec-gnome-print-inst]
+== Installing a printer
+
+Before you can install a printer, you need to know the `+root+` password and have your printer information ready. Depending on how you connect the printer, you might also need the printer URI, TCP/IP address or host, and the driver for the printer. Common printer drivers ship with {productname}. If you cannot find a driver for the printer, check the printer manufacturer's Web site.
+
+. Make sure the CUPS printing service is available and automatically started at boot time:
++
+----
+> sudo systemctl enable cups.service
+> sudo systemctl start cups.service
+----
+. Start the printer configuration by right-clicking the desktop and choosing *Settings* and then *Printers*.
+. Click *Unlock* in the upper right corner and enter the `+root+` password.
+. Click the *Add* button.
+. If there are too many printers in the list, filter them by entering an IP address or a keyword into the search field in the lower part of the dialog.
+. Select a printer from the list of available printers and click *Add*.
+
+The installed printer appears in the Printers panel. You can now print to the printer from any application.
+
+=== Installing a local printer
+
+Connect the printer cable to your computer and connect the printer's power supply. Your system can recognize many types of printers once they are connected.
+
+If your printer was not recognized automatically, proceed as follows:
+
+. Open the *Activities* overview and start typing `+Printers+`.
++
+Click *Printers*. You may have to press *Unlock* in the top-right corner and type in your `+root+` password.
+. Press the *Add* button.
+. In the pop-up window, select your printer and press *Add*.
+
+The installed printer appears in the Printers dialog. You can now print to the printer from any application.
+
+== Modifying printer settings
+
+. Open the *Activities* overview and start typing `+Printers+`.
+. Click *Printers* to open the panel.
+. Depending on your system, you may have to press *Unlock* in the top-right corner and type in your `+root+` password.
+. Click the *Settings* button next to the printer.
+. Select *Printer Details*.
+. Modify the printer settings to your needs and close the dialog.
+
+== Canceling print jobs
+
+If you accidentally started a print job, you can cancel the print to save paper and ink.
+
+. Open the *Activities* overview and start typing `+Printers+`.
+. Click *Printers* to open the panel.
+. Click the *Show Jobs* button on the right hand-side of the *Printers* dialog.
++
+If the print job does not appear in the list, it may be printed already.
+. Cancel the print job by clicking the *Stop* button.

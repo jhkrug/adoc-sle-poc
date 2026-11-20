@@ -1,0 +1,328 @@
+// Converted from xml/gnome_crypto.xml
+[#cha-gnome-crypto]
+= *Passwords and Keys*: signing and encrypting data
+:description: Configure your system's cryptographic infrastructure using these instructions for creating and managing PGP and SSH keys
+:revdate: 2026-01-16
+
+[abstract]
+--
+Learn how to create and manage PGP and SSH keys.
+--
+
+The {gnome} Passwords and Keys program is an important component of the encryption infrastructure on your system. With this program, you can create and manage PGP and SSH keys, import, export and share keys, back up your keys and keyring, and cache your passphrase.
+
+To start the application, open the *Activities* overview by pressing kbd:[Meta] and search for `+pass+`.
+
+[#fig-gnome-passwords-and-keys]
+.*Passwords and Keys* main window
+image::seahorse_main.png["Passwords and Keys application window showing an empty Login password collection with sections for GnuPG keys, OpenSSH keys and certificates",width=70%]
+
+[#sec-gnome-crypto-sign-encrypt]
+== Signing and encryption
+
+.Signing
+Attaching electronic signatures to pieces of information, such as e-mail messages or software, to prove its origin. To keep someone else from writing messages using your name, and to protect both you and the people you send them to, you should sign your mails. Signatures help you check the sender of the messages you receive and distinguish authentic messages from malicious ones.
+
+Software developers sign their software so that you can check the integrity. Even if you get the software from an unofficial server, you can verify the package with the signature.
+
+.Encryption
+You might also have sensitive information you want to protect from other parties. Encryption helps you transform data and make it unreadable for others. This is important for companies so they can protect internal information and their employees' privacy.
+
+[#cha-gnome-crypto-gen-key]
+== Generating a new key pair
+
+To exchange encrypted messages with other users, you must first generate your own pair of keys. It consists of two parts:
+
+* {empty}
++
+.Public key
+This key is used for encryption. Distribute it to your communication partners, so they can use it to encrypt files or messages for you.
+* {empty}
++
+.Private key
+This key is used for decryption. Use it to make encrypted files or messages from others (or yourself) legible again.
+
+[IMPORTANT]
+.Access to the private key
+====
+If others gain access to your private key, they can decrypt files and messages intended only for you. Never grant others access to your private key.
+====
+
+[#cha-gnome-crypto-gen-key-openpgp]
+=== Creating OpenPGP keys
+
+OpenPGP is a non-proprietary protocol for encrypting e-mail with the use of public-key cryptography based on PGP. It defines standard formats for encrypted messages, signatures, private keys, and certificates for exchanging public keys.
+
+. Open the *Activities* overview and type `+pass+`.
+. Open *Passwords and Keys*.
+. Press the *{plus}* button in the upper left corner of the window.
+. Select *GPP Key* from the list.
+. Enter your name in the *Full Name* field.
++
+Optionally, add your e-mail address and a comment to describe the key.
+. Click *Create* to create the new key pair.
++
+In the password dialog, enter a password for the key.
+. Confirm with *OK*.
++
+When you specify a passphrase, use the same practices you use when you create a strong password.
+
+[#cha-gnome-crypto-gen-key-ssh]
+=== Creating secure shell keys
+
+Secure Shell (SSH) is a method of logging in to a remote computer to execute commands on that machine. SSH keys are used in a key-based authentication system as an alternative to the default password authentication system. With key-based authentication, there is no need to manually type a password to authenticate.
+
+. Open the *Activities* overview and type `+pass+`.
+. Open *Passwords and Keys*.
+. Press the *{plus}* button in the upper left corner of the window.
+. Select *Secure Shell Key* from the list.
+. Enter a description for the key.
++
+Optionally, change the default settings for encryption type or key strength.
++
+.Encryption type
+Specifies the encryption algorithms used to generate your keys. Select *RSA* to use the Rivest-Shamir-Adleman (RSA) algorithm to create the SSH key. This is the preferred and more secure choice. Select *DSA* to use the Digital Signature Algorithm (DSA) to create the SSH key.
++
+.Key strength
+Specifies the length of the key in bits. The longer the key, the more secure it is (provided a strong passphrase is used). Keep in mind that performing any operation with a longer key requires more time than it does with a shorter key. Acceptable values are between 1024 and 4096 bits. At least 2048 bits are recommended.
+. Confirm either with *Just Create Key* or *Create and Set Up*. The latter guides you through the installation of the public key.
+
+[#cha-gnome-crypto-modify-key]
+== Modifying key properties
+
+You can modify properties of existing OpenPGP or SSH keys.
+
+[#cha-gnome-crypto-modify-key-openpgp]
+=== Editing OpenPGP key properties
+
+The descriptions in this section apply to all OpenPGP keys.
+
+. Open the *Activities* overview and type `+pass+`.
+. Open *Passwords and Keys*.
+. Select *GnuPG keys* from the left side panel.
+. Right-click the PGP key you want to edit and select *Properties*.
++
+A dialog opens, showing the following key properties:
++
+.Key ID:
+The Key ID is similar to the Fingerprint, but the Key ID contains only the last eight characters of the fingerprint. It is generally possible to identify a key with only the Key ID, but sometimes two keys might have the same Key ID.
++
+.Fingerprint:
+A unique string of characters that exactly identifies a key.
++
+.Expires:
+The date the key can no longer be used (a key can no longer be used to perform key operations after it has expired). Changing a key's expiration date to a point in the future re-enables it. A good general practice is to have a primary key that never expires and multiple subkeys that do expire and are signed by the primary key.
++
+.Subkeys:
+See <<cha-gnome-crypto-modify-key-openpgp-edit-subkey,Editing OpenPGP subkey properties>> for more information.
++
+.Override owner trust:
+Set the level of trust for the owner of the key. Trust is an indication of how sure you are of a person's ability to correctly extend the Web of trust. When there is a key that you have not signed, the validity of the key is determined from its signatures and how much you trust the people who made those signatures.
+. Click the plus button to add a photo to the key or change the passphrase associated with the key.
++
+Photo IDs allow a key owner to embed one or more pictures of themselves in a key. These identities can be signed like normal user IDs. A photo ID must be in JPEG format. The recommended size is 120×150 pixels.
++
+If the chosen image does not meet the required file type or size, *Passwords and Keys* can resize and convert it on the fly from any image format supported by the GDK library.
+. Close the dialog to finish.
+
+[#cha-gnome-crypto-modify-key-openpgp-add-user]
+==== Adding a user ID
+
+User IDs allow multiple identities and e-mail addresses to be used with the same key. Adding a user ID is useful, for example, when you want to have an identity for your job and one for your friends. They take the following form:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+Name (__COMMENT__) <__E-MAIL__>
+----
+
+. Open the *Activities* overview and type `+pass+`.
+. Open *Passwords and Keys*.
+. Select the *GnuPG keys* keyring from the left side panel.
+. From the list, select the *Personal PGP key*.
+. Right-click the key and select menu:Properties[Add user ID].
+. In the dialog, fill in *Full Name*, *Email Address* and *Key Comment* for the new user ID and click *OK*.
++
+Your e-mail address is how most people can locate your key on a key server or other key provider. Make sure it is correct before continuing.
+. Enter the passphrase and click *OK* to finish.
+
+[#cha-gnome-crypto-modify-key-openpgp-edit-subkey]
+==== Editing OpenPGP subkey properties
+
+Each OpenPGP key has a single primary key used to sign only. Subkeys are used to encrypt and to sign as well. In this way, if your subkey is compromised, you do not need to revoke your primary key.
+
+. Open the *Activities* overview and type `+pass+`.
+. Open *Passwords and Keys*.
+. Select *GnuPG keys* from the list.
+. Select the *Personal PGP* from the list.
+. Right-click the selected key and select *Properties*.
+. Choose the properties for your key.
+. Close the box to confirm the changes.
+
+[#cha-gnome-crypto-modify-key-ssh]
+=== Editing secure shell key properties
+
+The descriptions in this section apply to all SSH keys.
+
+. Open the *Activities* overview and type `+pass+`.
+. Open *Passwords and Keys*.
+. Select *OpenSSH keys* from the list and right-click the key you want to edit.
+. A dialog opens where you can see and edit the following properties:
++
+.Algorithm:
+Specifies the encryption algorithm used to generate a key.
++
+.Location:
+The location where the private key has been stored.
++
+.Fingerprint:
+A unique string of characters that exactly identifies a key.
++
+.Export
+Exports the key to a file.
+. Close the dialog to confirm the changes.
+
+[#cha-gnome-crypto-import-key]
+== Importing keys
+
+Keys can be exported to text files. These files contain human-readable text at the beginning and at the end of a key. This format is called an ASCII-armored key.
+
+To import keys, proceed as follows:
+
+. Open the *Activities* overview and type `+pass+`.
+. Open *Passwords and Keys*.
+. Press the *{plus}* button in the upper left corner.
+. Select *Import from file* from the list.
+. In the dialog, select the key to import. Public SSH keys end with `+pub+`.
+. Click *Open* to import the key.
+
+You can also paste keys inside *Passwords and Keys*:
+
+. Select an ASCII-armored public block of text, then copy it to the clipboard.
+. Open the *Activities* overview and type `+pass+`.
+. Open *Passwords and Keys*.
+. Press the *{plus}* button in the upper left corner.
+. Paste the key to the appropriate location.
+
+[#cha-gnome-crypto-export-key]
+== Exporting keys
+
+To export keys, proceed as follows:
+
+. Open the *Activities* overview and type `+pass+`.
+. Open *Passwords and Keys*.
++
+Select the *GnuPG keys* keyring you want to export from the left side panel.
+. Select the *Personal PGP key* to be exported.
+. Right-click the key and select *Export*.
+. To store the key in `+ASCII+` format, select *Armored PGP keys*.
+. Choose a location and confirm with *Export*.
+
+[#cha-gnome-crypto-sign-key]
+== Signing a key
+
+Signing another person's key means that you are giving trust to that person. Before signing a key, carefully check the key's fingerprint to ensure that the key really belongs to that person.
+
+Trust is an indication of how sure you are of a person's ability to correctly extend the Web of trust. When there is a key that you have not signed, the validity of the key is determined from its signatures and how much you trust the people who made those signatures.
+
+. Open the *Activities* overview and type `+pass+`.
+. Open *Passwords and Keys*.
+. Import the key to be signed.
+. From the list of *GnuPG keys*, select the imported key.
+. Right-click the key and select menu:Properties[Trust].
+. Click the *Sign this Key* button.
+. Choose how carefully you have checked the key.
+. Decide if you want to revoke your signature at a later date and to make your signature public.
+. Confirm with *Sign*.
+
+ifdef::os-osuse[]
+[#cha-gnome-crypto-nautilus]
+== File manager integration
+
+Passwords and Keys integrates with {nautilus}. You can encrypt, decrypt, sign, verify files, and import public keys from the file manager window without launching *Passwords and Keys*.
+
+[NOTE]
+.Enabling file manager integration
+====
+The package `+nautilus-extension-seahorse+` has to be installed to enable file manager integration.
+====
+
+[#cha-gnome-crypto-nautilus-encrypt]
+=== Encrypting files from {nautilus}
+
+. In {nautilus}, right-click the files you want to encrypt.
+. Select *Encrypt*.
+. Select the people (recipients) you want to encrypt the file to, then click *OK*.
+. If prompted, specify the passphrase of your private key, then click *OK*.
+
+[#cha-gnome-crypto-nautilus-sign]
+=== Signing files from {nautilus}
+
+. In {nautilus}, right-click the files you want to sign.
+. Select *Sign*.
+. Select a signer, then click *OK*.
+. If prompted, specify the passphrase of your private key, then click *OK*.
+
+[#cha-gnome-crypto-nautilus-decrypt]
+=== Decrypting files from {nautilus}
+
+To decrypt an encrypted file in {nautilus}, simply double-click the file you want to decrypt.
+
+If prompted, specify the passphrase of your private key.
+
+[#cha-gnome-crypto-nautilus-verify]
+=== Verifying signatures from {nautilus}
+
+To verify files, simply double-click the detached signature file. Detached signature file names often have a `+.sig+` extension.
+endif::[]
+
+[#cha-gnome-crypto-prefs-keyrings]
+== Password keyrings
+
+You can use password keyring preferences to create or remove keyrings, to set the default keyring for application passwords or to change the unlock password of a keyring. To create a new keyring, follow these steps:
+
+. Open the *Activities* overview and type `+pass+`.
+. Open *Passwords and Keys*.
+. Click the *{plus}* button in the upper left corner.
+. Select *Password keyring* from the list.
+. Enter a name for the keyring and click *Add*.
+. Set and confirm a new *Password* for the keyring and click *Continue* to create the keyring.
+
+To change the unlock password of an existing keyring, right-click the keyring in the *Passwords* tab and click *Change Password*. You need to provide the old password to be able to change it.
+
+To change the default keyring for application passwords, right-click the keyring in the *Passwords* tab and click *Set as Default*.
+
+[#cha-gnome-crypto-prefs-servers]
+== Key servers
+
+You can keep your keys up-to-date by synchronizing keys periodically with remote key servers. Synchronizing ensures that you have the latest signatures made on all your keys, so that the Web of trust is becoming effective.
+
+. Open the *Activities* overview and type `+pass+`.
+. Open *Passwords and Keys*.
+. Select the PGP key you want to synchronize.
+. Press the menu button in the header bar.
+. Select *Sync and publish keys*.
++
+.HKP key servers:
+HKP key servers are ordinary Web-based key servers, such as the popular `+hkp://pgp.mit.edu:11371+`, also accessible at link:https://pgp.mit.edu[http://pgp.mit.edu].
++
+.LDAP key servers:
+LDAP key servers are less common, but use the standard LDAP protocol to serve keys. `+ldap://keyserver.pgp.com+` is a recommended LDAP server.
++
+You can *Add* or *Remove* key servers to be used using the buttons on the left. To add a new key server, set its type, host and port, if necessary.
+. Set whether you want to automatically publish your public keys and which key server to use. Set whether you want to automatically retrieve keys from key servers and whether to synchronize modified keys with key servers.
+. Click the *Sync* button to synchronize your key.
+
+[#cha-gnome-crypto-prefs-sharing]
+== Key sharing
+
+Key Sharing is provided by DNS-SD, also known as Bonjour or Rendezvous. Enabling key sharing adds the local *Passwords and Keys* users' public key rings to the remote search dialog. Using these local key servers is generally faster than accessing remote servers.
+
+. Open the *Activities* overview and type `+pass+`.
+. Open *Passwords and Keys*.
+. Select *GnuPG keys* from the left side panel.
+. From the list, select the *Personal PGP key* you want to share.
+. Press the menu button in the header bar.
+. Select *Sync and publish keys*.
+. Press the *Key Servers* button to see the list of key servers.
+. To publish your key, select a server from the menu. Close the window and go back to the previous dialog.
+. Press *Sync* to finish.

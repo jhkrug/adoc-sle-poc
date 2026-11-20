@@ -1,0 +1,94 @@
+// Converted from xml/rmt_public_cloud.xml
+[#rmt-public-cloud]
+= Deploying a {sls} instance to support {rmt} in the public cloud
+:description: Deploy SUSE Linux Enterprise Server instances for RMT in public cloud environments using BYOS images on AWS, GCP or Microsoft Azure
+:revdate: 2026-01-16
+
+You can deploy a {sls} instance to support {rmt} in Amazon Web Services (AWS), Google Cloud Platform (GCP) and Microsoft Azure. {rmt} is included in {slsa} starting with version 15.
+
+The following example shows a generic cloud architecture for the {rmt} deployment. Your deployment may look different based on your networking requirements.
+
+.An example of cloud architecture for {rmt} deployment
+image::rmt-architecture-example.png["",width=70%]
+
+[#sec-rmt-byos-image]
+== Using a bring-your-own-subscription image
+
+SUSE provides images for {slsa} in Amazon Web Services, Google Cloud and Microsoft Azure. There are two types of images available: PAYG (Pay-As-You-Go) and BYOS (Bring-Your-Own-Subscription). These images are updated at regular intervals and it is suggested that you deploy new instances from the latest version of the image to ensure the most recent security updates are in place. To support {rmt} deployment, we recommend deploying an {rmt} instance from a BYOS image.
+
+[#sec-rmt-byos-image-where]
+=== Finding images in the cloud marketplace
+
+The location of the relevant image in each of the cloud providers is shown below:
+
+.Google Cloud
+image::gcp-launch-sles-instance-cloud-rmt-marketplace.png["",width=70%]
+
+.Amazon Web Services
+image::aws-launch-sles-instance-cloud-rmt-marketplace.png["",width=70%]
+
+.Microsoft Azure
+image::azure-launch-sles-instance-cloud-rmt-marketplace.png["",width=70%]
+
+It is recommended to start with an instance type that has at least two vCPUs and a minimum of 8 GB RAM to support the {rmt} deployment. For example, on Amazon EC2, this could be a `+t3.large+` instance type, and in Microsoft Azure, it could be `+B2as_v2+`. The instance can be rightsized as needed and depends on the number of clients being managed and updated by the {rmt} server.
+
+[#sec-rmt-byos-image-registration]
+=== Registering the {slsa} instance
+
+After the {slsa} instance deployment, you must register the instance with the SUSE Customer Center.
+
+[NOTE]
+.{suse} account
+====
+Registering with the {scc} requires a SUSE account. If you do not have a SUSE account yet, go to the {scc} home page (link:https://scc.suse.com/[]) to create one.
+====
+
+To connect your instance:
+
+AWS:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+>  ssh -i __SSH{underscore}KEY__ __EC2{underscore}USER{underscore}ID__@__SERVER{underscore}IP__
+----
+
+Google Cloud:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+>  gcloud compute ssh __GCE{underscore}INSTANCE{underscore}IP__
+----
+
+Azure:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+>  ssh __AZURE{underscore}USER{underscore}ID__@__SERVER{underscore}IP__
+----
+
+To register the {slsa} instance with SCC:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo  SUSEConnect -e __EMAIL{underscore}ADDRESS__ -r __REGISTRATION{underscore}CODE__ 
+----
+
+The registration code is available once you log in to SCC.
+
+== Considerations when using {rmt}
+
+You must consider the following requirements when you use {rmt}:
+
+Disk space::
+The {rmt} server requires sufficient disk space to mirror the repositories. Downloaded packages are available in `+/var/lib/rmt/public/repo/+`. Disk space is dependent on the number of repositories you mirror. We recommend a minimum of 1.5 times the total size of all enabled repositories. It is a best practice to provision an additional disk volume to support this requirement. You can either mount the volume to `+/var/lib/rmt/public/repo/+` on instance creation or immediately after the launch. For Azure, this is an additional disk volume. For AWS, it is an Amazon EBS volume, and for GCP, it is a persistent disk volume.
+IP or DNS resolution::
+A static IP address or a DNS name is required in order for clients to connect to the {rmt} server. In Azure, AWS and GCP, a DNS provided by the Cloud Service Provider (CSP) is assigned when the instance is launched. This IP or DNS may change if the instance is re-created. For Azure, consider using a static IP address to provide a consistent connection point for your clients. In AWS, this would be an elastic IP or Route53. In GCP, this would be a cloud DNS record that uses a static IP address.
+Connectivity for the {rmt} server::
+The {rmt} server can connect to SCC on ports 80 and 443. There are many ways to provide connectivity. For example, in AWS, connectivity to SCC can be provided via an AWS Internet Gateway, an AWS NAT Gateway, or via a local data center (VPN/DX Connection), but this depends on whether the {rmt} instance is in a public or private subnet. GCP provides direct access to the Internet via the VPC routes or Cloud NAT services. Azure offers similar services.
+Connectivity for clients::
+Clients can connect to {rmt} on ports 80 and 443. When launching the {slsa} instance to support {rmt}, check if network connectivity allows inbound access to the {rmt} server from your clients (HTTP/HTTPS). For AWS, when a {slsa} instance is launched to support {rmt}, it is possible to use an existing AWS security group or a new one. The security group must be configured to allow inbound access to the {rmt} server from your clients. For GCP, the firewall rules must be configured to allow inbound access to the {rmt} server from your clients.
+
+== More information
+
+* link:https://documentation.suse.com/sles/15-SP6/html/SLES-all/cha-rmt-mirroring.html#sec-rmt-mirroring-credentials[] Organization credentials to create a local mirror of the {sle} repositories.
+* link:https://documentation.suse.com/sles/15-SP6/html/SLES-all/cha-register-sle.html#sec-register-sle-installation[] Register and activate {sles} with the SUSE Customer Center.

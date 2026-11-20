@@ -1,0 +1,373 @@
+// Converted from xml/rmt_mirroring.xml
+[#cha-rmt-mirroring]
+= Mirroring repositories on the {rmt} server
+:description: Learn how to set up and manage a remote repository server using RMT, which lets you mirror installations, update repositories and configure settings
+:revdate: 2026-01-16
+
+You can mirror the installation and update repositories on the {rmt} server. This way, you do not need to download updates on each machine, which saves time and capacity.
+
+In its default configuration, {rmt} mirrors enabled product repositories automatically once every night.
+
+By default, the mirrored repositories are stored in `+/var/lib/rmt/public/repo+`.
+
+[NOTE]
+.Change the default location of the mirrored repositories
+====
+To change the default location of the mirrored repositories, point the `+/usr/share/rmt/public/repo+` symbolic link to the desired directory. This can be done using the command:
+
+`ln -sfn _TARGET_ /usr/share/rmt/public/repo`
+
+(Replace `+TARGET+` with the desired destination). Make sure that the target has read and write permissions for the `+rmt+` user and `+nginx+` group.
+====
+
+When enabled repositories are fully mirrored, you can register your client systems against {rmt} by running `SUSEConnect --url https://_{rmt}{underscore}HOSTNAME_` on the client machine. After successful registration, the repositories from the {rmt} server are used by Zypper on the client machine.
+
+[IMPORTANT]
+.{sls} 11 clients
+====
+{rmt} does not support clients with {sls} versions 11 and older.
+====
+
+[#sec-rmt-mirroring-credentials]
+== Mirroring credentials
+
+You need organization credentials to create a local mirror of the {sle} repositories. You can obtain the credentials from {scc}.
+
+To get the credentials from {scc}, follow these steps:
+
+. Visit {scc} at link:https://scc.suse.com[] and log in.
+. If you are a member of multiple organizations, select the organization you want to work with from the sidebar on the left.
+. Select *Proxies* in the top menu.
+. The credentials are displayed in the top right corner.
+. To see the password, click the image:scc_eye_icon.png["Eye icon"] icon.
+
+The obtained credentials should be set with the {yast} {rmt} Server Configuration module or added directly to the `+/etc/rmt.conf+` file. For more information about the `+/etc/rmt.conf+` file, see xref:rmt-tools.adoc#sec-rmt-config-rmtconf[/etc/rmt.conf].
+
+[#sec-rmt-mirroring-synchronization]
+== Synchronizing repository metadata
+
+The local {rmt} database needs to be updated periodically with the information downloaded from {scc}. This includes information about available products and repositories.
+
+The synchronization is activated by the `+systemd+` timer `+rmt-server-sync.timer+`. To view its status, for example, the next running time, use `+systemctl status+`.
+
+----
+> sudo systemctl status rmt-server-sync.timer
+● rmt-server-sync.timer - RMT Sync timer
+   Loaded: loaded (/usr/lib/systemd/system/rmt-server-sync.timer; enabled; vendor preset: disabled)
+   Active: active (waiting) since Fri 2018-06-22 04:22:34 EDT; 2h 34min ago
+  Trigger: Sat 2018-06-23 03:53:00 EDT; 20h left
+
+Jun 22 04:22:34 d31 systemd[1]: Started RMT Sync timer.
+----
+
+If the timer is not enabled or started, start it manually.
+
+----
+> sudo systemctl enable --now rmt-server-sync.timer
+----
+
+To update the {rmt} database manually, use the `+rmt-cli sync+` command. For details, see xref:rmt-tools.adoc#sec-rmt-tools-rmt-cli-sync[`+sync+`].
+
+[#sec-rmt-mirroring-mirroring]
+== Mirroring packages
+
+Packages for enabled repositories are mirrored on your {rmt} server. Packages are downloaded periodically once a day. But the download can also be triggered manually at any time.
+
+The periodic mirroring is activated by the `+systemd+` timer `+rmt-server-mirror.timer+`. To show its status, for example, the next running time, use `+systemctl status+`.
+
+----
+# systemctl status rmt-server-mirror.timer
+● rmt-server-mirror.timer - RMT Mirror timer
+   Loaded: loaded (/usr/lib/systemd/system/rmt-server-mirror.timer; enabled; vendor preset: disabled)
+   Active: active (waiting) since Fri 2018-06-22 04:22:34 EDT; 2h 34min ago
+  Trigger: Sat 2018-06-23 02:17:57 EDT; 19h left
+
+Jun 22 04:22:34 d31 systemd[1]: Started RMT Mirror timer.
+----
+
+If the timer is not enabled or started, start it manually.
+
+----
+> sudo systemctl enable --now rmt-server-mirror.timer
+----
+
+To update the mirrored packages manually, use the `+rmt-cli mirror+` command. For details, see xref:rmt-tools.adoc#sec-rmt-tools-rmt-cli-mirror[`+mirror+`].
+
+[#sec-rmt-mirroring-enable-disable]
+== Enabling and disabling mirroring of repositories
+
+You can enable or disable the mirroring of repositories individually or by product. You can specify one or more repositories or products at once. When repositories are enabled, their packages are downloaded and updated during the mirroring process. To enable or disable mirroring of repositories, you either need the product string or ID, or the repository name or ID. Enabling or disabling a product is desired, because this automatically enables or disables all repositories associated with the product.
+
+[#sec-rmt-mirroring-enable-disable-product]
+=== Using products
+
+To enable or disable all repositories of a product, use the `rmt-cli products enable _ID_` and `rmt-cli products disable _ID_` commands. To retrieve an ID for an enabled product, use the `+rmt-cli products list+` command. To get the ID of a disabled product that is still available, run the `+rmt-cli products list --all+` command.
+
+Example:
+
+----
+> sudo rmt-cli products list --all
++------+----------------------+---------+--------+--------------+---------------
+| ID   | Product              | Version | Arch   | Mirror?      | Last mirrored
++------+----------------------+---------+--------+--------------+---------------
+[...]
+| 1743 | SUSE Package Hub     | 15      | x86_64 | Don't Mirror |
+|      | PackageHub/15/x86_64 |         |        |              |
+[...]
+
+> sudo rmt-cli products enable 1743
+Found product by target 1743: SUSE Package Hub 15 x86_64.
+Enabling SUSE Package Hub 15 x86_64:
+  SUSE Package Hub 15 x86_64:
+    Enabled repository SLE-Module-Packagehub-Subpackages15-Pool.
+    Enabled repository SLE-Module-Packagehub-Subpackages15-Updates.
+    Enabled repository SUSE-PackageHub-15-Pool.
+    Enabled repository SUSE-PackageHub-15-Standard-Pool..
+
+> sudo rmt-cli products disable 1743
+Found product by target 1743: SUSE Package Hub 15 x86_64.
+Disabling SUSE Package Hub 15 x86_64:
+  SUSE Package Hub 15 x86_64:
+    Disabled repository SLE-Module-Packagehub-Subpackages15-Pool.
+    Disabled repository SLE-Module-Packagehub-Subpackages15-Updates.
+    Disabled repository SUSE-PackageHub-15-Pool.
+    Disabled repository SUSE-PackageHub-15-Standard-Pool.
+
+ To clean up downloaded files, run 'rmt-cli repos clean'
+----
+
+[TIP]
+.Enabling and disabling multiple products at once
+====
+To enable or disable multiple products at once, specify a space-delimited list of their IDs or product strings, for example:
+
+----
+> sudo rmt-cli products enable 1743 SLES/15/x86_64 SLES/12
+Found product by target 1743: SUSE Package Hub 15 x86_64.
+Enabling SUSE Package Hub 15 x86_64:
+  SUSE Package Hub 15 x86_64:
+    Enabled repository SLE-Module-Packagehub-Subpackages15-Pool.
+    Enabled repository SLE-Module-Packagehub-Subpackages15-Updates.
+    Enabled repository SUSE-PackageHub-15-Pool.
+    Enabled repository SUSE-PackageHub-15-Standard-Pool.
+Found product by target SLES/15/x86_64: SUSE Linux Enterprise Server 15 x86_64.
+Enabling SUSE Linux Enterprise Server 15 x86_64:
+  SUSE Linux Enterprise Server 15 x86_64:
+    Enabled repository SLE-Product-SLES15-Pool.
+    Enabled repository SLE-Product-SLES15-Updates.
+    Enabled repository SLE15-Installer-Updates.
+  Basesystem Module 15 x86_64:
+    Enabled repository SLE-Module-Basesystem15-Pool.
+    Enabled repository SLE-Module-Basesystem15-Updates.
+  Server Applications Module 15 x86_64:
+    Enabled repository SLE-Module-Server-Applications15-Pool.
+    Enabled repository SLE-Module-Server-Applications15-Updates.
+Found product by target SLES/12: SUSE Linux Enterprise Server 12 x86_64.
+Enabling SUSE Linux Enterprise Server 12 x86_64:
+  SUSE Linux Enterprise Server 12 x86_64:
+    Enabled repository SLES12-Pool.
+    Enabled repository SLES12-Updates.
+----
+====
+
+[#sec-rmt-mirroring-enable-disable-repository]
+=== Using repositories
+
+To enable or disable mirroring of specific repositories, use the `rmt-cli repos enable _ID_` and `rmt-cli repos disable _ID_` commands. To retrieve an ID for an enabled repository, use the ``+rmt-cli repos list+``command. If you need to get the ID of a disabled but accessible repository, execute the command `+rmt-cli repos list --all+`.
+
+Example:
+
+----
+> sudo rmt-cli repos list --all
++--------+-------------------------+-------------------------------------------+
+| ID     | Name                    | Description                               |
++--------+-------------------------+-------------------------------------------+
+[...]
+| 3061   | SUSE-PackageHub-15-Pool | SUSE-PackageHub-15-Pool for sle-15-x86_64 |
+[...]
++--------+-------------------------+-------------------------------------------+
+
+> sudo rmt-cli repos enable 3061
+Repository by ID 3061 successfully enabled.
+
+> sudo rmt-cli repos disable 3061
+Repository by ID 3061 successfully disabled.
+
+To clean up downloaded files, please run 'rmt-cli repos clean'
+----
+
+[TIP]
+.Enabling and disabling multiple repositories at once
+====
+To enable or disable multiple repositories at once, specify a space-delimited list of their IDs, for example:
+
+----
+> sudo rmt-cli repos enable 2526 3263
+Repository by ID 2526 successfully enabled.
+Repository by ID 3263 successfully enabled.
+
+> sudo rmt-cli repos disable 2526 3263
+Repository by ID 2526 successfully disabled.
+Repository by ID 3263 successfully disabled.
+
+To clean up downloaded files, run 'rmt-cli repos clean'
+----
+====
+
+[#sec-rmt-mirroring-delete]
+== Deleting mirrored data
+
+After you disable the mirroring of a repository or product as described in <<sec-rmt-mirroring-enable-disable,Enabling and disabling mirroring of repositories>>, the mirrored data remains on your local hard disk. This includes the mirrored RPM packages.
+
+To delete disabled repository data, use the command `+rmt-cli repos clean+`. With this command, RMT verifies that only enabled repositories are mirrored and provides a way to delete invalid data.
+
+Before removing any data, the command lists the affected repositories and requires the user to input `+yes+` to continue.
+
+----
+> sudo rmt-cli repos clean
+RMT found locally mirrored files from the following repositories which are not marked to be mirrored:
+
+SLE-Product-SLES15-Updates for sle-15-x86_64
+SLE-Product-SLES15-Pool for sle-15-x86_64
+SLE15-Installer-Updates for sle-15-x86_64
+
+Would you like to continue and remove the locally mirrored files of these repositories?
+Only 'yes' will be accepted.
+
+Enter a value:  yes
+
+Deleted locally mirrored files from repository 'SLE-Product-SLES15-Updates for sle-15-x86_64'.
+Deleted locally mirrored files from repository 'SLE-Product-SLES15-Pool for sle-15-x86_64'.
+Deleted locally mirrored files from repository 'SLE15-Installer-Updates for sle-15-x86_64'.
+
+Clean finished. An estimated 157 MB were removed.
+   
+----
+
+[TIP]
+.Manually remove repository data
+====
+To delete disabled repository data, manually remove its corresponding directory:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo rm -r /usr/share/rmt/public/repo/SUSE/Products/__PRODUCT__/__VERSION__/__ARCHITECTURE__/
+----
+====
+
+[#sec-rmt-mirroring-custom-repository]
+== Adding custom repositories
+
+You can mirror custom repositories with the {rmt} server. These repositories are not provided by {scc}. Repositories can be provided by, for example, the {obs}, third-party vendors, or created with `+createrepo+`.
+
+Custom repositories can either be stand-alone, or you can attach them to products. This allows you to connect multiple repositories with one command on a client registered to the {rmt} server.
+
+The following example procedure illustrates the mirroring of a third-party repository.
+
+. Add the remote repository to the {rmt} server. Replace _URL_ with the URL to the repository. Replace _NAME_ with a name of your choice for the repository.
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} rmt-cli repos custom add __URL__ __NAME__
+----
+. List all custom repositories to get the ID of the new repository.
++
+----
+# rmt-cli repos custom list
+----
+. Optionally attach the new custom repository to a product. For example, if the new custom repository is required by all desktop clients, it can be attached to the `{sled}` product.
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} rmt-cli repos custom attach __REPOSITORY{underscore}ID__ __PRODUCT{underscore}ID__
+----
++
+Replace _REPOSITORY_ID_ with the ID of the new custom repository. Replace _PRODUCT_ID_ with the ID of a product you want the repository to be attached to. If you need to retrieve the _PRODUCT_ID_, use the command `+rmt-cli products list --all+`.
++
+[IMPORTANT]
+====
+When custom repositories are associated with a product, clients registering with that product see it as disabled. To enable the repository, find its ID with the command `+zypper lr+` and run:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} zypper mr -e __REPO{underscore}ID__
+----
+====
+. Enable mirroring of the new custom repository.
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} rmt-cli repos custom enable __REPOSITORY{underscore}ID__
+----
+
+To get a list of all available custom repositories commands, see xref:rmt-tools.adoc#sec-rmt-tools-rmt-cli-repos[`+repos+`].
+
+[#sec-rmt-mirroring-export-import]
+== Exporting and importing repositories
+
+{rmt} has built-in functions to import and export data about available repositories and the mirrored packages. For example, this can be used to speed up the setup of a new {rmt} server by locally copying already mirrored RPM packages.
+
+Another use case is the _offline mode_. It allows the transfer of data to a disconnected {rmt} server, for example, to provide updates to computers in an air-gapped network.
+
+The following procedure describes the transfer of data and mirrored RPMs between two {rmt} servers with a USB drive. The server `+sun+` is connected to {scc}, while `+sirius+` is a server in an air-gapped network.
+
+. Log in on the server `+sun+`.
++
+----
+root@sun # rmt-cli sync
+root@sun # rmt-cli mirror
+----
+. Connect a USB drive, assumed to be `+/dev/sdb+` and mount it, for example, in `+/mnt/external+`.
++
+----
+root@sun # mount /dev/sdb1 /mnt/external
+----
+. {empty}
++
+.. Export the data about available repositories and products.
++
+----
+root@sun # rmt-cli export data /mnt/external/
+----
+.. Export the list of enabled repositories. The exported file is required for exporting the repositories in the next step.
++
+----
+root@sun # rmt-cli export settings /mnt/external/
+----
+.. Export mirrored RPM packages. Depending on the size of mirrored repositories, this can take a long time.
++
+----
+root@sun # rmt-cli export repos /mnt/external/
+----
+. Unmount and unplug the disk from `+sun+` and go to `+sirius+`.
++
+----
+root@sun # umount /mnt/external
+----
+. If not yet done, set up {rmt} on `+sirius+` by running the `+yast2 rmt+`. In case of an offline {rmt} setup, select *Skip* on the *Organization Credentials* screen.
+. Connect the USB drive to `+sirius+` and mount it in `+/mnt/external+`.
++
+----
+root@sirius # mount /dev/sdb1 /mnt/external
+----
+. {empty}
++
+.. Import the metadata about available repositories and products.
++
+----
+root@sirius # rmt-cli import data /mnt/external/
+----
+.. Import mirrored RPM packages. Depending on the size of mirrored repositories, this can take a long time.
++
+----
+root@sirius # rmt-cli import repos /mnt/external/
+----
+. Enable repositories as required on the `+sirius+`. For details, see <<sec-rmt-mirroring-enable-disable,Enabling and disabling mirroring of repositories>>.
+
+[NOTE]
+.Exporting enabled settings from air-gapped server
+====
+If your air-gapped server (`+sirius+`) has many enabled repositories, or if the enabled repositories change frequently, we recommend exporting the repository settings from this server.
+
+The server connected to {scc} (`+sun+`) can then import the exported settings. This ensures that `+sun+` downloads all data required by `+sirius+`.
+====

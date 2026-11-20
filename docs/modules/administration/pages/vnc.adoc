@@ -1,0 +1,369 @@
+// Converted from xml/vnc.xml
+[#cha-vnc]
+= Remote graphical sessions with VNC
+:description: Connect to a remote computer via graphical desktop using the VNC protocol with either VNCViewer or Remmina clients
+:revdate: 2026-01-16
+
+[abstract]
+--
+Virtual Network Computing (VNC) enables you to access a remote computer via a graphical desktop, and run remote graphical applications. VNC is platform-independent and accesses the remote machine from any operating system. This chapter describes how to connect to a VNC server with the desktop clients vncviewer and Remmina, and how to operate a VNC server.
+
+{productname} supports two different kinds of VNC sessions: one-time sessions that “live” While the VNC connection from the client is kept up, and persistent sessions that “live” until they are explicitly terminated.
+
+A VNC server can offer both kinds of sessions simultaneously on different ports, but an open session cannot be converted from one type to the other.
+--
+
+[#sec-vnc-viewer]
+== The `+vncviewer+` client
+
+ifdef::os-osuse[]
+[IMPORTANT]
+.Supported display managers
+====
+A machine can reliably accept VNC connections only if it uses a display manager that supports the XDMCP protocol. While `+gdm+`, `+lxdm+`, or `+lightdm+` support XDMCP, the KDE 5 default display manager `+sddm+` does not support it. When changing the default display manager, remember to log out of the current X session and restart the display manager with
+
+----
+> sudo systemctl restart xdm.service
+----
+====
+endif::[]
+
+To connect to a VNC service provided by a server, a client is needed. The default in {productname} is `+vncviewer+`, provided by the `+tigervnc+` package.
+
+[#sec-vnc-viewer-connectcli]
+=== Connecting using the vncviewer CLI
+
+To start your VNC viewer and initiate a session with the server, use the command:
+
+[subs="attributes+"]
+----
+> vncviewer {wsiname}:1
+----
+
+Instead of the VNC display number you can also specify the port number with two colons:
+
+[subs="attributes+"]
+----
+> vncviewer {wsiname}::5901
+----
+
+[NOTE]
+.Display and port number
+====
+The actual display or port number you specify in the VNC client must be the same as the display or port number selected when configuring a VNC server on the target machine. See <<sec-vnc-persistent,Configuring persistent VNC server sessions>> for further info.
+====
+
+[#sec-vnc-viewer-connectgui]
+=== Connecting using the vncviewer GUI
+
+When running `+vncviewer+` without specifying `+--listen+` or a host to connect to, it shows a window asking for connection details. Enter the host into the *VNC server* field like in <<sec-vnc-viewer-connectcli,Connecting using the vncviewer CLI>> and click *Connect*.
+
+[#fig-vnc-viewer-connectgui]
+.vncviewer
+image::vnc_connect.png["vncviewer asking for connection details"]
+
+[#sec-vnc-viewer-encrypt]
+=== Notification of unencrypted connections
+
+The VNC protocol supports different kinds of encrypted connections, not to be confused with password authentication. If a connection does not use TLS, the text “(Connection not encrypted!)” can be seen in the window title of the VNC viewer.
+
+[#vnc-remmina]
+== Remmina: the remote desktop client
+
+Remmina is a modern and feature-rich remote desktop client. It supports several access methods, for example, VNC, SSH, RDP and Spice.
+
+[#vnc-remmina-install]
+=== Installation
+
+To use Remmina, verify whether the `+remmina+` package is installed on your system, and install it if not. Remember to install the VNC plug-in for Remmina as well:
+
+----
+# zypper in remmina remmina-plugin-vnc
+----
+
+[#vnc-remmina-usage]
+=== Main window
+
+Run Remmina by entering the `+remmina+` command.
+
+.Remmina's main window
+image::remmina.png["",width=50%]
+
+The main application window shows the list of stored remote sessions. Here you can add and save a new remote session, quick-start a new session without saving it, start a previously saved session, or set Remmina's global preferences.
+
+[#vnc-remmina-addnew]
+=== Adding remote sessions
+
+To add and save a new remote session, click image:remmina_plus.png["Add new session"] in the top left of the main window. The *Remote Desktop Preference* window opens.
+
+.Remote desktop preference
+image::remmina_session_details.png["",width=80%]
+
+Complete the fields that specify your newly added remote session profile. The most important are:
+
+Name::
+Name of the profile. It will be listed in the main window.
+Protocol::
+The protocol to use when connecting to the remote session, for example, VNC.
+Server::
+The IP or DNS address and display number of the remote server.
+User name, password::
+Credentials to use for remote authentication. Leave empty for no authentication.
+Color depth, quality::
+Select the best options according to your connection speed and quality.
+
+Select the *Advanced* tab to enter more specific settings.
+
+[TIP]
+.Disable encryption
+====
+If the communication between the client and the remote server is not encrypted, activate *Disable encryption*, otherwise the connection fails.
+====
+
+Select the *SSH* tab for advanced SSH tunneling and authentication options.
+
+Confirm with *Save*. Your new profile is now listed in the main window.
+
+[#vnc-remmina-start]
+=== Starting remote sessions
+
+You can either start a previously saved session, or quick-start a remote session without saving the connection details.
+
+[#vnc-remmina-quickstart]
+==== Quick-starting remote sessions
+
+To start a remote session quickly without adding and saving connection details, use the drop-down box and text box at the top of the main window.
+
+.Quick-starting
+image::remmina_quickstart.png["",width=40%]
+
+Select the communication protocol from the drop-down list, for example, “VNC”, then enter the VNC server DNS or IP address followed by a colon and a display number, and confirm with kbd:[Enter].
+
+==== Opening saved remote sessions
+
+To open a specific remote session, double-click it from the list of sessions.
+
+==== Remote sessions window
+
+Remote sessions are opened in tabs of a separate window. Each tab hosts one session. The toolbar on the left of the window helps you manage the windows/sessions. For example, toggle full-screen mode, resize the window to match the display size of the session, send specific keystrokes to the session, take screenshots of the session, or set the image quality.
+
+.Remmina viewing remote session
+image::remmina_sle15inside.png["",width=80%]
+
+[#vnc-remmina-edit-delete-clone]
+=== Editing, copying, and deleting saved sessions
+
+To _edit_ a saved remote session, right-click its name in Remmina's main window and select *Edit*. Refer to <<vnc-remmina-addnew,Adding remote sessions>> for the description of the relevant fields.
+
+To _copy_ a saved remote session, right-click its name in Remmina's main window and select *Copy*. In the *Remote Desktop Preference* window, change the name of the profile, optionally adjust relevant options, and confirm with *Save*.
+
+To _Delete_ a saved remote session, right-click its name in Remmina's main window and select *Delete*. Confirm with *Yes* in the next dialog.
+
+[#vnc-remmina-cmdline]
+=== Running remote sessions from the command line
+
+If you need to open a remote session from the command line or from a batch file without first opening the main application window, use the following syntax:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+ > remmina -c __profile{underscore}name__.remmina
+----
+
+Remmina's profile files are stored in the `+.local/share/remmina/+` directory in your home directory. To determine which profile file belongs to the session you want to open, run Remmina, click the session name in the main window, and read the path to the profile file in the window's status line at the bottom.
+
+.Reading path to the profile file
+image::remmina_status.png["",width=50%]
+
+While Remmina is not running, you can rename the profile file to a more reasonable file name, such as `+sle15.remmina+`. You can even copy the profile file to your custom directory and run it using the `+remmina -c+` command from there.
+
+[#sec-vnc-one-time]
+== Configuring one-time sessions on the VNC server
+
+A one-time session is initiated by the remote client. It starts a graphical login screen on the server. This way you can choose the user which starts the session and, if supported by the login manager, the desktop environment. When you cancel the client connection to such a VNC session, all applications started within that session are terminated, too. One-time VNC sessions cannot be shared, but it is possible to have multiple sessions on a single host at the same time.
+
+[#pro-vnc-one-time-activate]
+.Enabling one-time VNC sessions
+. Start menu:{yast}[Network Services > Remote Administration (VNC)].
+. Check *Allow Remote Administration Without Session Management*.
+. Activate *Enable access using a web browser* if you plan to access the VNC session in a Web browser window.
+. If necessary, also check *Open Port in Firewall* (for example, when your network interface is configured to be in the External Zone). If you have more than one network interface, restrict opening the firewall ports to a specific interface via *Firewall Details*.
+. Confirm your settings with *Next*.
+. In case not all needed packages are available yet, you need to approve the installation of missing packages.
++
+[TIP]
+.Restart the display manager
+====
+{yast} makes changes to the display manager settings. You need to log out of your current graphical session and restart the display manager for the changes to take effect.
+====
+
+.Remote administration
+image::vnc_nosession.png["",width=70%]
+
+[#sec-vnc-one-time-configs]
+=== Available configurations
+
+The default configuration on {productname} serves sessions with a resolution of 1024x768 pixels at a color depth of 16-bit. The sessions are available on ports `+5901+` for “regular” VNC viewers (equivalent to VNC display `+1+`) and on port `+5801+` for Web browsers.
+
+Other configurations can be made available on different ports
+ifdef::os-sles,os-osuse[, see <<sec-vnc-one-time-config,Configuring one-time VNC sessions>>]
+{empty}.
+ifdef::os-sled[ Ask your system administrator for details if you need to modify the configuration.]
+
+VNC display numbers and X display numbers are independent in one-time sessions. A VNC display number is manually assigned to every configuration that the server supports (:1 in the example above). Whenever a VNC session is initiated with one of the configurations, it automatically gets a free X display number.
+
+By default, both the VNC client and server try to communicate securely via a self-signed SSL certificate, which is generated after installation. You can either use the default one, or replace it with your own. When using the self-signed certificate, you need to confirm its signature before the first connection—both in the VNC viewer and the Web browser.
+
+[TIP]
+====
+Certain VNC clients refuse to establish a secure connection via the default self-signed certificate. For example, the Vinagre client verifies the certification against the GnuTLS global trust store and fails if the certificate is self-signed. In such a case, either use an encryption method other than `+x509+`, or generate a properly signed certificate for the VNC server and import it to the client's system trust store.
+====
+
+[#sec-vnc-one-time-connect]
+=== Initiating a one-time VNC session
+
+To connect to a one-time VNC session, a VNC viewer must be installed, see also <<sec-vnc-viewer,The `+vncviewer+` client>>. Alternatively use a JavaScript-capable Web browser to view the VNC session by entering the following URL: `http://{wsiname}:5801`
+
+[#sec-vnc-one-time-config]
+=== Configuring one-time VNC sessions
+
+You can skip this section, if you do not need or want to modify the default configuration.
+
+One-time VNC sessions are started via the `+systemd+` socket `+xvnc.socket+`. By default it offers six configuration blocks: three for VNC viewers (`+vnc1+` to `+vnc3+`), and three serving a JavaScript client (`+vnchttpd1+` to `+vnchttpd3+`). By default only `+vnc1+` and `+vnchttpd1+` are active.
+
+To activate the VNC server socket at boot time, run the following command:
+
+----
+> sudo  systemctl enable xvnc.socket
+----
+
+To start the socket immediately, run:
+
+----
+> sudo  systemctl start xvnc.socket
+----
+
+The `+Xvnc+` server can be configured via the `+server_args+` option. For a list of options, see `+Xvnc --help+`.
+
+When adding custom configurations, make sure they are not using ports that are already in use by other configurations, other services, or existing persistent VNC sessions on the same host.
+
+Activate configuration changes by entering the following command:
+
+----
+> sudo systemctl reload xvnc.socket
+----
+
+[IMPORTANT]
+.Firewall and VNC ports
+====
+When activating Remote Administration as described in <<pro-vnc-one-time-activate,Enabling one-time VNC sessions>>, the ports `+5801+` and `+5901+` are opened in the firewall. If the network interface serving the VNC sessions is protected by a firewall, you need to manually open the respective ports when activating additional ports for VNC sessions. See xref:security:security-firewall.adoc[] for instructions.
+====
+
+[#sec-vnc-persistent]
+== Configuring persistent VNC server sessions
+
+A persistent session can be accessed from multiple clients simultaneously. This is ideal for demonstration purposes where one client has full access and all other clients have view-only access. Another use case are training sessions where the trainer may need access to the trainee's desktop.
+
+[#sec-vnc-persistent-connect]
+[TIP]
+.Connecting to a persistent VNC session
+====
+To connect to a persistent VNC session, a VNC viewer must be installed. Refer to <<sec-vnc-viewer,The `+vncviewer+` client>> for more details. Alternatively, use a JavaScript-capable Web browser to view the VNC session by entering the following URL: `http://{wsiname}:5801`.
+====
+
+[#vnc-persistent-vncmanager]
+=== VNC session initiated using `+vncmanager+`
+
+[#vnc-persistent-vncmanager-enable]
+.Enabling persistent VNC sessions
+. Start menu:{yast}[Network Services > Remote Administration (VNC)].
+. Activate *Allow Remote Administration With Session Management*.
+. Activate *Enable access using a web browser* if you plan to access the VNC session in a Web browser window.
+. If necessary, also check *Open Port in Firewall* (for example, when your network interface is configured to be in the External Zone). If you have more than one network interface, restrict opening the firewall ports to a specific interface via *Firewall Details*.
+. Confirm your settings with *Next*.
+. In case not all needed packages are available yet, you need to approve the installation of missing packages.
++
+[TIP]
+.Restart the display manager
+====
+{yast} makes changes to the display manager settings. You need to log out of your current graphical session and restart the display manager for the changes to take effect.
+====
+
+[#vnc-persistent-vncmanager-configure]
+==== Configuring persistent VNC sessions
+
+After you enable the VNC session management as described in <<vnc-persistent-vncmanager-enable,Enabling persistent VNC sessions>>, you can normally connect to the remote session with your favorite VNC viewer, such as `+vncviewer+` or Remmina. After you log in, the “VNC” icon appears in the system tray of your desktop environment. Click the icon to open the *VNC Session* window. If your desktop environment does not support icons in the system tray, run `+vncmanager-controller+` manually.
+
+.VNC session settings
+image::vncmanager_session.png["",width=85%]
+
+There are several settings that influence the VNC session's behavior:
+
+*Non-persistent, private*::
+This is equivalent to a one-time session. It is not visible to others and is terminated after you disconnect from it. Refer to <<sec-vnc-one-time,Configuring one-time sessions on the VNC server>> for more information.
+*Persistent, visible*::
+The session is visible to other users and keeps running even after you disconnect from it.
+*Session name*::
+Specify the name of the persistent session so that it is easily identified when reconnecting.
+*No password required*::
+The session is freely accessible without having to log in under user credentials.
+*Require user login*::
+You need to log in with a valid user name and password to access the session. Lists the valid user names in the *Allowed users* text box.
+*Allow one client at a time*::
+Prevents multiple users from joining the session at the same time.
+*Allow multiple clients at a time*::
+Allows multiple users to join the persistent session at the same time. Useful for remote presentations or training sessions.
+
+Confirm with *OK*.
+
+[#vnc-persistent-vncmanager-join]
+==== Joining persistent VNC sessions
+
+After you set up a persistent VNC session as described in <<vnc-persistent-vncmanager-configure,Configuring persistent VNC sessions>>, you can join it with your VNC viewer. After your VNC client connects to the server, you are prompted to choose whether you want to create a new session or join the existing one:
+
+.Joining a persistent VNC session
+image::vncmanager_whether.png["",width=80%]
+
+After you click the name of the existing session, you may be asked for login credentials, depending on the persistent session settings.
+
+[#sec-vnc-encrypt]
+== Configuring encryption on the VNC server
+
+If the VNC server is set up properly, all communication between the VNC server and the client is encrypted. The authentication happens at the beginning of the session; the actual data transfer only begins afterward.
+
+Whether for a one-time or a persistent VNC session, security options are configured via the `+-securitytypes+` parameter of the `+/usr/bin/Xvnc+` command located on the `+server_args+` line. The `+-securitytypes+` parameter selects both authentication method and encryption. It has the following options:
+
+.Authentications
+None, TLSNone, x509None::
+No authentication.
+VncAuth, TLSVnc, x509Vnc::
+Authentication using custom password.
+Plain, TLSPlain, x509Plain::
+Authentication using PAM to verify user's password.
+
+.Encryptions
+None, vncAuth, plain::
+No encryption.
+TLSNone, TLSVnc, TLSPlain::
+Anonymous TLS encryption. Everything is encrypted, but there is no verification of the remote host. So you are protected against passive attackers, but not against man-in-the-middle attackers.
+X509None, x509Vnc, x509Plain::
+TLS encryption with certificate. If you use a self-signed certificate, you will be asked to verify it on the first connection. On subsequent connections you will be warned only if the certificate changed. So you are protected against everything except man-in-the-middle on the first connection (similar to typical SSH usage). If you use a certificate signed by a certificate authority matching the machine name, then you get full security (similar to typical HTTPS usage).
++
+[TIP]
+====
+Certain VNC clients refuse to establish a secure connection via the default self-signed certificate. For example, the Vinagre client verifies the certification against the GnuTLS global trust store and fails if the certificate is self-signed. In such a case, either use an encryption method other than `+x509+`, or generate a properly signed certificate for the VNC server and import it to the client's system trust store.
+====
++
+[TIP]
+.Path to certificate and key
+====
+With X509 based encryption, you need to specify the path to the X509 certificate and the key with `+-X509Cert+` and `+-X509Key+` options.
+====
+
+If you select multiple security types separated by comma, the first one supported and allowed by both client and server is used. That way, you can configure opportunistic encryption on the server. This is useful if you need to support VNC clients that do not support encryption.
+
+On the client, you can also specify the allowed security types to prevent a downgrade attack if you are connecting to a server which you know has encryption enabled (although our vncviewer warns you with the `+Connection not encrypted!+` message in that case).
+
+[#sec-vnc-wayland]
+== Compatibility with Wayland
+
+The Remote Administration (VNC) feature relies on X11 and may result in an empty screen if Wayland is enabled. The display manager must be configured to use X11 instead of Wayland. For `+gdm+`, edit `+/etc/gdm/custom.conf+`. In the `+[daemon]+` section, add `+WaylandEnable=false+` to the configuration file. When logging in, the user must choose an X11-compatible session as well. If you wish to remove the Wayland option for {gnome}, you can remove and lock the `+gnome-session-wayland+` package.

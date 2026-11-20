@@ -1,0 +1,367 @@
+// Converted from xml/apps_firefox.xml
+[#cha-firefox]
+= Firefox: browsing the Web
+:description: Learn how to navigate the YaST tools and manage Mozilla Firefox browser features for optimal performance and security settings
+:revdate: 2026-01-16
+
+[abstract]
+--
+The Mozilla Firefox Web browser is included with {productnamereg}. With features like tabbed browsing, pop-up window blocking and download management, Firefox combines the latest browsing and security technologies with an easy-to-use interface. It gives you easy access to different search engines to help you find the information you need.
+--
+
+[#sec-firefox-start]
+== Starting Firefox
+
+Open the *Activities* overview by pressing kbd:[Meta] and search for `+fire+`.
+
+[#sec-firefox-navigating]
+== Navigating Web sites
+
+The look and feel of Firefox is similar to that of other browsers. It is shown in <<fig-firefox-main,The browser window of Firefox>>. At the top of the window, you find the address bar for a Web address and the search bar. Bookmarks are also available for quick access from the bookmarks toolbar. For more information about the Firefox features, use the *Help* menu in the menu bar.
+
+[#fig-firefox-main]
+.The browser window of Firefox
+image::firefox_main.png["Firefox browser window showing the SUSE website, showcasing SUSE's recognition by Gartner for container management",width=100%]
+
+[#sec-firefox-locationbar]
+=== The address bar
+
+When typing into the address bar, an auto-completion drop-down box opens. It shows all previous location addresses and bookmarks containing the characters you type. The matching phrase is highlighted in bold. Entries visited most frequently and recently are listed first.
+
+List entries from the bookmark list are marked with a star. Bookmarks with tags are marked with an additional label, followed by the tag names. List entries from the browsing history are not marked. To search in your bookmarks only, type kbd:[*] as the first character of your search.
+
+Use kbd:[up] and kbd:[down] or the mouse wheel to navigate the list. Press kbd:[Enter] or click an entry to go to the selected page. kbd:[Del] removes an entry from the list if it is an entry from the history. Bookmarked entries can only be removed by deleting the associated bookmark.
+
+[#sec-firefox-menubar]
+=== The menu bar
+
+While most functions of Firefox are available through the menu button, some are only available from the menu bar.
+
+==== Using the menu bar
+
+The Firefox menu bar is hidden by default.
+
+Showing the menu bar temporarily::
+Press kbd:[Alt]. The menu bar is displayed until you click elsewhere in the browser window.
+Showing the menu bar permanently::
+To permanently enable the menu bar, right-click an empty area of the Top bar. Select *Menu bar* from the drop-down list.
+
+[#sec-firefox-zoom]
+=== Zooming
+
+Firefox offers two zooming options: page zoom, the default and text zoom. Page zoom enlarges the entire page as is, with all elements of a page, including graphics, expanding equally while text zoom only changes the text size.
+
+To toggle between page and text zoom, from the menu bar, choose menu:View[Zoom > Zoom Text Only]. To zoom in or out, either use the mouse wheel while holding the kbd:[Ctrl] key, or use kbd:[Ctrl,{plus}] and kbd:[Ctrl+-]. Reset the zoom factor with kbd:[Ctrl+0].
+
+[#sec-firefox-tabbedbrowsing]
+=== Tabbed browsing
+
+Tabbed browsing allows you to load multiple Web sites in a single window. To switch between pages in use, use the tabs at the top of the window. If you often use more than one Web page at a time, tabbed browsing makes it easier to switch between pages.
+
+Opening tabs::
+To open a new tab, from the menu bar, select menu:File[New Tab] or press kbd:[Ctrl+T]. This opens an empty tab in the Firefox window. To open a link on a Web page or a bookmark in a tab, middle-click it. Alternatively, right-click a link and select *Open Link in New Tab*. You may also open an address in the address bar in a new tab with a middle-click or by pressing kbd:[Ctrl+Enter].
+Closing tabs::
+Right-click a tab to open a context menu, giving you access to tab managing options such as closing, reloading or bookmarking. To close a tab, you may also use kbd:[Ctrl+W] or click the close button. Any closed tab can be restored by choosing from the menu bar menu:History[Recently Closed Tabs]. To reopen the last closed tab, either choose *Undo Close Tab* from the context menu or press kbd:[Ctrl+Shift+T].
+Sorting tabs::
+By default, tabs are sorted in the order you opened them. Rearrange the tab order by dragging and dropping a tab to the new position. If you have opened a lot of tabs, they cannot all be displayed in the tab bar at the same time. Use the arrows at the ends of the bar to move left or right-click the down arrow at the right end of the tab bar to get a list of all tabs.
+Dragging and dropping::
+Drag and drop also works with tabs. Drag a link onto an existing tab to open it in that tab or drag and drop a link on an empty space in the tab bar to open a new tab. Drag and drop a tab outside of the tab bar to open it in a new browser window.
+
+[#sec-firefox-sidebar]
+=== Using the sidebar
+
+Use the left side of your browser window for viewing bookmarks or browsing history. Extensions may add new ways to use the sidebar as well. To display the sidebar, from the menu bar, select menu:View[Sidebar] and select the contents.
+
+[#sec-firefox-findinfo]
+== Finding information
+
+There are two ways to find information in Firefox. To search the Internet with a search engine, use the search bar. To search the page currently displayed, use the find bar.
+
+[#sec-firefox-searchengine]
+=== Finding information on the Web
+
+Firefox has a search bar that can access different engines like Google, Yahoo or Amazon. For example, if you are looking for information about {suse} using the current engine, click in the search bar, type `{suse}` and press kbd:[Enter]. The results appear in your window.
+
+To choose a different search engine, type your search term, then click one of the search provider icons at the bottom of the appearing pop-up.
+
+[#sec-firefox-searchengine-add]
+==== Customizing the search bar
+
+To change the order, add or delete a search engine, proceed as follows.
+
+. Click the menu button to the right of the search bar.
+. From the list, select *Settings*.
+. In the *Settings* window, go to *Search*.
+. The *Default Search Engine* section shows the engine that is currently set as the default search engine.
+. To select another search engine, click the drop-down menu and select an engine from the list.
+
+[#fig-firefox-manage-search]
+.Firefox—manage search engines
+image::firefox_manage_searchengines.png["Firefox browser's search settings page, showing options for the default search engine and search suggestions",width=70%]
+
+Some Web sites offer search engines that you can add directly to the search bar. Whenever you are visiting such a Web site, the icon to the left of the search bar gains a `{plus}` sign. Click the icon and select *Add*.
+
+[#sec-firefox-searchengine-smartkeywords]
+==== Adding keywords to your online searches
+
+Firefox lets you define own _keywords_: abbreviations to use as a URL shortcut for a particular search engine. If you have defined `+ws+` as a keyword for the Wikipedia search, for example, you can type `ws _SEARCHTERM_` into the address bar to search Wikipedia for _SEARCHTERM_.
+
+To assign a shortcut for a search engine from the search bar, click the menu button to the right of the search bar and select menu:Settings[Search]. In the *Search Shortcuts* section, select a search engine, double-click its *Keyword* column, enter a keyword and press kbd:[Enter].
+
+It is also possible to define a keyword for any search field on a Web site. Proceed as follows:
+
+. Right-click the search field and choose *Add a Keyword for this Search* from the menu that opens. The *Add bookmark* dialog appears.
+. In *Name*, enter a descriptive name for this keyword.
+. Enter your *Keyword* for this search.
+. {empty}
++
+*Save* this keyword.
+
+[TIP]
+.Keywords for regular Web sites
+====
+Using keywords is not restricted to search engines. You can also add a keyword to a bookmark (via the bookmark's properties). For example, if you assign `+suse+` to the {suse} home page bookmark, you can open it by typing `+suse+` into the address bar.
+====
+
+[#sec-firefox-findinfo-page]
+=== Searching in the current page
+
+To search inside a Web page, in the menu bar, click menu:Edit[Find in Page] or press kbd:[Ctrl+F]. The find bar opens at the bottom of the window. Type your query in the text box. Firefox finds the first occurrence of this phrase as you type. You can find other occurrences of the phrase by pressing kbd:[F3] or the *Next* button in the find bar. Clicking the *Highlight All* button highlights all occurrences of the phrase. Checking the *Match Case* option makes the query case-sensitive.
+
+Firefox also offers two quick-find options. Click anywhere you like to start a search on a Web page, type the key kbd:[/] followed by the search term. The first occurrence of the search term is highlighted as you type. Use kbd:[F3] to find the next occurrence. It is also possible to limit quick-find to links only. This search option is available by typing the key kbd:['].
+
+[#sec-firefox-bookmarks]
+== Managing bookmarks
+
+Bookmarks offer a convenient way of saving links to your favorite Web sites. Firefox not only makes it very easy to add new bookmarks with just one mouse click, it also offers multiple ways to manage large bookmark collections. You can sort bookmarks into folders, classify them with tags or filter them with smart bookmark folders.
+
+Add a bookmark by clicking the star in the address bar. The star turns blue to indicate the page was bookmarked. The bookmark is saved in the *Bookmarks Toolbar* folder under the page title. To change the name and folder of your bookmark or add tags, after bookmarking, click the star again. This opens a pop-up where you can make your changes.
+
+To bookmark all open tabs, right-click in a tab and choose *Select All Tabs*. Right-click any tab again and select *Bookmark Tabs*. Firefox asks you to create a new folder for the tab links.
+
+To remove a bookmark, open the bookmarked location. Then, click the star and click *Remove Bookmark*.
+
+[#sec-firefox-bookmarks-organise]
+=== Organizing bookmarks
+
+The *Library* can be used to manage the properties (name and address location) for each bookmark and organize the bookmarks into folders and sections. It resembles <<fig-firefox-library,The Firefox bookmark library>>.
+
+[#fig-firefox-library]
+.The Firefox bookmark library
+image::firefox_library.png["Firefox Bookmark Manager, specifically showing the section Other Bookmarks with no items currently saved",width=85%]
+
+To open the *Library*, in the menu bar, click menu:Bookmarks[Manage Bookmarks]. The library window is split into two parts: the left pane shows the folder tree view, the right pane the subfolders and bookmarks of the selected folder. Use *Views* to customize the right pane. The left pane contains three main folders:
+
+History::
+Contains your complete browsing history. You cannot alter this list other than by deleting entries from it.
+Tags::
+Lists bookmarks for each tag you have specified. See <<sec-firefox-bookmarks-tags,Tags>> for more information on tags.
+All Bookmarks::
+This category contains three main bookmark folders:
++
+Bookmarks Toolbar:::
+Contains the bookmarks and folders displayed beneath the location bar. See <<sec-firefox-bookmarks-toolbar,The bookmarks toolbar>> for more information.
+Bookmarks Menu:::
+Holds the bookmarks and folder accessible via the *Bookmarks* entry in the main menu or the bookmarks side menu.
+Other Bookmarks:::
+Contains all bookmarks created with a single click on the star in the address bar. This folder is only visible in the library and the bookmarks sidebar.
+
+Organize your bookmarks using the right pane. Choose actions for folders or bookmarks either from the context menu that opens when you right-click an item or from the *Organize* menu. The properties of a chosen folder or bookmark can be edited in the bottom part of the right pane. By default, only *Name*, *URL* and *Tags* are displayed for a bookmark.
+
+To rearrange your bookmarks, use the mouse to drag them. You can use this to move a bookmark or a folder to a different folder or to change the order of bookmarks in a folder.
+
+[#sec-firefox-bookmarks-tags]
+=== Tags
+
+Tags offer a convenient way to file a bookmark under several categories. You can tag a bookmark with as many terms as you want. For example, to access all sites tagged with `+suse+`, enter `+suse+` into the address bar. For each tag, an item is automatically created in the `+Tags+` folder of the library. Drag and drop an item for a tag onto the bookmark toolbar to easily access it.
+
+To add tags to a bookmark, open the bookmark in Firefox and click the blue star in the address bar. The *Edit bookmark* dialog opens where you can add a comma-separated list of tags. It is also possible to add tags via the bookmark properties dialog which you can open in the library, or by right-clicking a bookmark in the menu or the toolbar.
+
+[#sec-firefox-bookmarks-imexport]
+=== Importing and exporting bookmarks
+
+To import bookmarks from another browser or from a file in HTML format, open the library by choosing from the menu bar, menu:Bookmarks[Manage Bookmarks]. To start the Import Wizard, click menu:Import and Backup[Import Bookmarks from HTML] and choose an import location. Start the import by clicking *Next*. Imports from an HTML file are imported as is.
+
+Exporting bookmarks is also done via *Import and Backup* in the library window. To save your bookmarks as an HTML file, choose *Export Bookmarks to HTML*. To create a backup of your bookmarks, choose *Backup*. Firefox uses a JavaScript Object Notation file format (`+.json+`) for backups.
+
+To restore a bookmark backup, click menu:Import and Backup[Restore]. Then locate the backup you want to restore from.
+
+[#sec-firefox-bookmarks-toolbar]
+=== The bookmarks toolbar
+
+The *Bookmarks Toolbar* is displayed beneath the address bar and lets you quickly access bookmarks. You can also add, organize and edit bookmarks directly. To activate the *Bookmarks Toolbar*, select menu:View[Toolbars > Bookmarks Toolbar > Always Show].
+
+To edit the `+Bookmarks Toolbar+`, you can use the library as described in <<sec-firefox-bookmarks-organise,Organizing bookmarks>>. Its content is located in the folder *Bookmarks Toolbar*. It is also possible to manage the toolbar directly. To add a folder, bookmark or separator, right-click an empty space in the toolbar and select the appropriate entry from the pop-up menu. To add the current page to the bar, click the icon of the Web page in the address bar and drag it to the final position on the `+Bookmarks Toolbar+`.
+
+To edit a certain folder or bookmark, right-click it. A menu opens where you can *Remove Folder* or change other settings. To move or copy an entry, choose *Cut* or *Copy* and *Paste* it to the final position.
+
+[#sec-firefox-downloadmanager]
+== Using the download manager
+
+Keep track of your current and past downloads with the download manager. To start the download manager, in the menu bar, click menu:Tools[Downloads]. While downloading a file, a progress bar indicates the download status. If necessary, pause the download and resume it later. To open a downloaded file with the associated application, click *Open*. To open the location to which the file was saved, choose *Open Containing Folder*. *Remove From History* only deletes the entry from the download manager. However, it does not delete the file from the hard disk.
+
+By default, all files are downloaded to `+~/Downloads+`. To change this behavior, in the menu bar, click menu:Edit[Settings]. Go to *General*. Under *Downloads*, either choose another location or *Always ask you where to save files*.
+
+[TIP]
+.Resuming downloads
+====
+If your browser crashes or is closed while downloading, all pending downloads are automatically resumed in the background when starting Firefox the next time. A download that was paused before the browser was closed can be resumed manually via the download manager.
+====
+
+[#sec-firefox-security]
+== Security
+
+[NOTE]
+.FTP support stopped
+====
+For security reasons, Mozilla has removed the default support for clicking on FTP links in Firefox. You can enable this support by adding `+network.gio.supported-protocols=ftp:+` via the `+about:config+` settings. This enables desktop support via the {gnome} Virtual File System (GVFS). See the GVFS documentation for all supported protocols at link:https://wiki.gnome.org/Projects/gvfs/doc[].
+====
+
+Firefox offers various measures for safe browsing. It automatically checks whether you are trying to access a site known to contain harmful software (malware) or a site known to steal sensitive data (phishing) and stops you from entering these sites. The Instant Web Site ID lets you easily check a site's legitimacy, while the password manager and pop-up blocker provide additional security. With Private Browsing, you can surf the Internet without Firefox recording data on your computer.
+
+[#sec-firefox-security-instant-id]
+=== Instant Web site ID
+
+Firefox allows you to check the identity of a Web page with a single glance. The icon in the address bar next to the address indicates which identity information is available and whether communication is encrypted:
+
+Gray globe::
+The site does not provide any identity information and communication between Web server and browser is not encrypted. Do not exchange sensitive information with such sites.
+Gray triangle::
+This site is from a domain that has been verified by a certificate, so you can be sure that you are connected to the site it claims to be. However, the site tried to load additional elements, such as images or scripts, over an insecure connection. Firefox has blocked these items. Therefore, the page can look broken.
+Gray padlock::
+This site is from a domain that has been verified by a certificate, so you can be sure that you are connected to the site it claims to be. Communication with a “gray-padlock” site is always encrypted.
+Green padlock::
+This site completely identifies itself by a certificate that ensures a site is owned by the person or organization it claims to be. This is especially important when exchanging sensitive data (for example, when doing money transactions over the Internet). In this case, you can be sure to be on the Web site of your bank when it sends complete identity information. Communication with a “green-padlock” server is always encrypted.
+
+To view detailed identity information, click the padlock icon in the address bar. In the opening pop-up, click *Connection secure* and then *More information* to open the *Page Info* window. Here, on the *Security* tab, you can view the site's certificate, the encryption level, and information about stored passwords and cookies.
+
+On the *Permissions* tab, you can set per-site permissions for image loading, pop-ups, cookies and installation permissions.
+
+[#fig-firefox-pageinfo-permissions]
+.Firefox Page Info—Permissions tab
+image::firefox_page_info_permissions.png["Firefox Page Info window, specifically the Permissions tab, showing customizable access settings",width=90%]
+
+The *Media* tab lists all images, background graphics and embedded objects from a site and displays further information on each item together with a preview. It also lets you save individual items.
+
+[#sec-firefox-security-instant-id-cert-import]
+=== Importing certificates
+
+Firefox comes with a certificate store for identifying certificate authorities (CA). Using these certificates enables the browser to automatically verify certificates issued by Web sites. If a Web site issues a certificate that has not been signed by one of the CAs from the certificate store, it is not trusted. This ensures that no spoofed certificates are accepted.
+
+Large organizations usually use their own certificate authorities in-house and distribute the respective certificates via the system-wide certificate store located at `+/etc/pki/nssdb+`. To configure Firefox (and other Mozilla tools, such as Thunderbird) to use this system-wide CA store in addition to its own, export the `+NSS_USE_SHARED_DB+` variable. For example, you can add the following line to `+~/.bashrc+`:
+
+----
+export NSS_USE_SHARED_DB=1
+----
+
+Alternatively, or additionally, you can import certificates manually. To do so, in the menu bar, open the *Preferences* dialog by clicking menu:Edit[Settings]. Select menu:Privacy & Security[Certificates > View Certificates > Your Certificates > Import] and select the certificate to import. Only import certificates you absolutely trust.
+
+[#sec-firefox-security-passwords]
+=== Password management
+
+Each time you enter a user name and a password on a Web site, Firefox offers to store this data. A pop-up at the top of the page opens, asking you whether you want Firefox to save the password. If you accept by clicking *Save*, the password is stored on your hard disk in an encrypted format. The next time you access this site, Firefox automatically fills in the login data.
+
+To review or manage your passwords, open the password manager by clicking menu:Edit[Settings > Privacy & Security > Logins and Passwords > Saved Logins] in the menu bar. The password manager opens with a list of sites and their corresponding user names. By default, the passwords are not displayed. You can click the eye icon to display them. To delete single or all entries from the list, click *Remove* or *Remove All*, respectively.
+
+To protect your passwords from unauthorized access, you can set a master password that is required when managing or adding passwords. In the menu bar, click menu:Edit[Settings], choose the category *Privacy & Security* and activate *Use a Primary Password*.
+
+[#sec-firefox-security-private-browsing]
+=== Private browsing
+
+By default, Firefox keeps track of your browsing history by storing content and links of visited Web sites, cookies, downloads, passwords, search terms, and formula data. Collecting and storing this data makes browsing faster and more convenient. However, when you use a public terminal or a friend's computer, for example, you could turn this behavior off. In Private Browsing mode, Firefox will not keep track of your browsing history nor will it cache the content of pages you have visited.
+
+To enable the Private Browsing mode, in the menu bar, click menu:File[New Private Window]. The current Web site and all open tabs are replaced by the Private Browsing information screen. As long as you browse in private mode, the string `+Private Browsing+` is displayed in the titlebar of the window.
+
+Disable Private Browsing by closing the private window.
+
+To make Private Browsing the default mode, open the *Privacy & Security* tab in the *Settings* window as described in <<sec-firefox-preferences,Preferences>>. Go to the *History* section. Choose *Use custom settings for History* from the drop-down menu and check the *Always use private browsing mode*.
+
+[NOTE]
+.Bookmarks and downloads
+====
+Downloads and bookmarks you made during Private Browsing mode are kept.
+====
+
+[#sec-firefox-customizing]
+== Customizing Firefox
+
+Firefox can be customized extensively.
+
+* Change the way Firefox behaves by altering the preferences.
+* Add functionality by installing extensions.
+* Change the look and feel by installing themes.
+
+To manage extensions, themes and plug-ins, Firefox has an add-ons manager.
+
+[#sec-firefox-preferences]
+=== Preferences
+
+Firefox offers a wide range of configuration options. These are available by opening *Settings* in the menu bar. Each option is described in detail in the online help, which can be accessed by clicking the question mark icon in the dialog.
+
+[#fig-firefox-preferences]
+.Firefox preferences in General settings
+image::firefox_preferences.png["The General section within the Firefox browser's Settings, showing options for startup, importing data and tab behavior",width=90%]
+
+[#sec-firefox-preferences-sessions]
+==== Session management
+
+By default, Firefox automatically restores your session—windows and tabs—only after it has crashed, or after a restart because of an extension. However, it can be configured to restore a session every time it is started: open the Preferences dialog as described in <<sec-firefox-preferences,Preferences>> and go to the category *General*. In the *Startup* section, set the option *Restore previous session*.
+
+When you have multiple windows open they will only be restored the next time when you close all of them at once with menu:File[Quit] (from the menu bar) or with kbd:[Ctrl+Q]. If you close the windows one by one, only the last window is restored.
+
+[#sec-firefox-preferences-language]
+==== Language preferences for Web sites
+
+When sending a request to a Web server, the browser always sends the information about which language is preferred by the user. Web sites that are available in more than one language (and are configured to evaluate this language parameter) display their pages in the language the browser requests. On {productname}, the preferred language is preconfigured to use the same language as the desktop. To change this setting, open the *Preferences* window as described in <<sec-firefox-preferences,Preferences>>, go to the category *General* and choose your preferred language in the *Language and Appearance* section.
+
+[#sec-firefox-preferences-spelling]
+==== Spell-checking
+
+By default, Firefox spell-checks what you type when typing into multiple-line text boxes. Misspelled words are underlined in red. To correct a word, right-click it and select the correct spelling from the context menu. You may also add the word to the dictionary, if it is correct.
+
+To change or add a dictionary, right-click anywhere in a multi-line text box and select the appropriate option from the context menu. Here you may also disable spell-checking for this text box. To globally disable spell-checking, open the *Preferences* window as described in <<sec-firefox-preferences,Preferences>> and go to the category *General*. Deactivate *Check your spelling as you type* in the *Language and Appearance* section.
+
+[#sec-firefox-extensions]
+=== Add-ons
+
+Extensions let you personalize Firefox to fit your needs. With extensions, you can change the look and feel of *Firefox*, enhance existing functionality, and add functions. For example, extensions can enhance the download manager, show the weather, or control Web music players. Other extensions assist Web developers or increase security by blocking content such as ads or scripts.
+
+There are thousands of extensions available for Firefox. With the add-ons manager, you can install, enable, disable, update, and remove extensions.
+
+If you do not like the standard look and feel of Firefox, install a new _theme_. Themes do not change the functionality, only the appearance of the browser.
+
+[#sec-firefox-extensions-install]
+==== Installing add-ons
+
+To add an extension or theme, click the *Extensions* icon on the menu bar. It opens the *Add-ons Manager* that displays a choice of recommended add-ons or the results of your last search.
+
+Use the *Find more add-ons* field to search for specific add-ons. Click an entry in the list to view a short description. Install the add-on by clicking *Add to Firefox*.
+
+[#fig-firefox-extensions]
+.Installing Firefox extensions
+image::firefox_addon_manager.png["Firefox Add-ons Manager, highlighting options to personalize the browser with extensions and themes",width=80%]
+
+To activate freshly installed extensions or themes, Firefox sometimes needs to be restarted by clicking *Restart now* in the add-ons manager. Restart this way to make sure that your browsing session is restored.
+
+[#sec-firefox-extensions-manage]
+==== Managing add-ons
+
+The Add-ons Manager also offers a convenient interface to manage extensions, themes and plug-ins. *Extensions* can be enabled, disabled or uninstalled. If an extension is configurable, its configuration options can be accessed via the *Preferences* button. In the *Themes* tab, you can *Uninstall* a theme or activate a different theme by clicking *Enable*. Pending extension and theme installations are also listed. Select *Cancel* to stop the installation. Although you cannot install *Plugins* as a user, you may disable or enable them with the Add-ons Manager.
+
+Some add-ons require you to restart the browser when you uninstall or disable them. In such cases, after clicking either of these actions, a *Restart now* link appears in the add-ons manager.
+
+[#sec-firefox-printing]
+== Printing from Firefox
+
+Before you actually print a Web page, a print preview is shown. From the menu bar, choose menu:File[Print] or press kbd:[Ctrl+P]. The *Printer* dialog opens. Configure paper size and orientation per printer.
+
+[#sec-firefox-moreinfo]
+== More information
+
+To get more information about Firefox, see the following links:
+
+[none]
+* _Mozilla forums_: link:https://www.mozilla.org/about/forums/[]
+* _Main Menu reference_: link:https://support.mozilla.org/kb/Menu+reference[]
+* _Preferences reference_: link:https://support.mozilla.org/kb/Options+window[]
+* _Key combinations_: link:https://support.mozilla.org/kb/Keyboard+shortcuts[]

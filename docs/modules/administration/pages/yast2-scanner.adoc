@@ -1,0 +1,49 @@
+// Converted from xml/yast2_scanner.xml
+[#sec-yast-hw-scan]
+= Setting up a scanner
+:description: Learn how to configure and share a USB or SCSI scanner over your local network using YaST tools and hardware drivers
+:revdate: 2026-01-16
+
+You can configure a USB or SCSI scanner with {yast}. The `+sane-backends+` package contains hardware drivers and other essentials needed to use a scanner. If you own an HP All-In-One device, see <<sec-yast-hw-scan-hp-allinone,Configuring an HP all-in-one device>>, instructions on how to configure a network scanner are available at <<sec-yast-hw-scan-network-client,Scanning over the network>>.
+
+[#proc-y2-hw-scan-usb]
+.Configuring a USB or SCSI scanner
+. Connect your USB or SCSI scanner to your computer and turn it on.
+. Start {yast} and select menu:Hardware[Scanner]. {yast} builds the scanner database and tries to detect your scanner model automatically.
++
+If a USB or SCSI scanner is not properly detected, try menu:Other[Restart Detection].
+. To activate the scanner select it from the list of detected scanners and click *Edit*.
+. Choose your model form the list and click *Next* and *Finish*.
+. Use menu:Other[Test] to make sure you have chosen the correct driver.
+. Leave the configuration screen with *OK*.
+
+[#sec-yast-hw-scan-hp-allinone]
+== Configuring an HP all-in-one device
+
+An HP All-In-One device can be configured with {yast} even if it is made available via the network. If you own a USB HP All-In-One device, start configuring as described in <<proc-y2-hw-scan-usb,Configuring a USB or SCSI scanner>>. If it is detected properly and the *Test* succeeds, it is ready to use.
+
+If your USB device is not properly detected, or your HP All-In-One device is connected to the network, run the HP Device Manager:
+
+. Start {yast} and select menu:Hardware[Scanner]. {yast} loads the scanner database.
+. Start the HP Device Manager with menu:Other[Run hp-setup] and follow the on-screen instructions. After having finished the HP Device Manager, the {yast} scanner module automatically restarts the auto detection.
+. Test it by choosing menu:Other[Test].
+. Leave the configuration screen with *OK*.
+
+[#sec-yast-hw-scan-network-server]
+== Sharing a scanner over the network
+
+{productname} allows the sharing of a scanner over the network. To do so, configure your scanner as follows:
+
+. Configure the scanner as described in <<sec-yast-hw-scan,Setting up a scanner>>.
+. Choose menu:Other[Scanning via Network].
+. Enter the host names of the clients (separated by a comma) that should be allowed to use the scanner under menu:Server Settings[Permitted Clients for saned] and leave the configuration dialog with *OK*.
+
+[#sec-yast-hw-scan-network-client]
+== Scanning over the network
+
+To use a scanner that is shared over the network, proceed as follows:
+
+. Start {yast} and select menu:Hardware[Scanner].
+. Open the network scanner configuration menu by menu:Other[Scanning via Network].
+. Enter the host name of the machine the scanner is connected to under menu:Client Settings[Servers Used for the net Metadriver]
+. Leave with *OK*. The network scanner is now listed in the Scanner Configuration window and is ready to use.

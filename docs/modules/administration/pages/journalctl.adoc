@@ -1,0 +1,295 @@
+// Converted from xml/journalctl.xml
+[#cha-journalctl]
+= `+journalctl+`: query the `+systemd+` journal
+:description: Learn how to query and analyze system logs with journalctl, a powerful tool that views and manages systemds logging system through structured indexed journals
+:revdate: 2026-01-16
+
+`+systemd+` features its own logging system called _journal_. There is no need to run a `+syslog+`-based service, as all system events are written to the journal.
+
+The journal itself is a system service managed by `+systemd+`. Its full name is `+systemd-journald.service+`. It collects and stores logging data by maintaining structured indexed journals based on logging information received from the kernel, user processes, standard input, and system service errors. The `+systemd-journald+` service is on by default:
+
+----
+> sudo systemctl status systemd-journald
+systemd-journald.service - Journal Service
+   Loaded: loaded (/usr/lib/systemd/system/systemd-journald.service; static)
+   Active: active (running) since Mon 2014-05-26 08:36:59 EDT; 3 days ago
+     Docs: man:systemd-journald.service(8)
+           man:journald.conf(5)
+ Main PID: 413 (systemd-journal)
+   Status: "Processing requests..."
+   CGroup: /system.slice/systemd-journald.service
+           └─413 /usr/lib/systemd/systemd-journald
+[...]
+----
+
+[#sec-journalctl-persistent]
+== Making the journal persistent
+
+The journal stores log data in `+/run/log/journal/+` by default. Because the `+/run/+` directory is volatile by nature, log data is lost at reboot. To make the log data persistent, create the directory `+/var/log/journal/+` and make sure it has the correct access modes and ownership, so the systemd-journald service can store its data. To switch to persistent logging, execute the following commands:
+
+----
+> sudo  mkdir /var/log/journal
+> sudo  systemd-tmpfiles --create --prefix=/var/log/journal
+> sudo  journalctl --flush
+----
+
+Any log data stored in `+/run/log/journal/+` will be flushed into `+/var/log/journal/+`.
+
+[#sec-journalctl-switches]
+== `+journalctl+`: useful switches
+
+This section introduces several common useful options to enhance the default `+journalctl+` behavior. All switches are described in the `+journalctl+` man page, `+man 1 journalctl+`.
+
+[TIP]
+.Messages related to a specific executable
+====
+To show all journal messages related to a specific executable, specify the full path to the executable:
+
+----
+> sudo journalctl /usr/lib/systemd/systemd
+----
+====
+
+-f::
+Shows only the most recent journal messages, and prints new log entries as they are added to the journal.
+{empty}::
+Prints the messages and jumps to the end of the journal, so that the latest entries are visible within the pager.
+-r::
+Prints the messages of the journal in reverse order, so that the latest entries are listed first.
+-k::
+Shows only kernel messages. This is equivalent to the field match `+_TRANSPORT=kernel+` (see <<sec-journalctl-filter-fields,Filtering based on fields>>).
+-u::
+Shows only messages for the specified `+systemd+` unit. This is equivalent to the field match `{underscore}SYSTEMD_UNIT=_UNIT_` (see <<sec-journalctl-filter-fields,Filtering based on fields>>).
++
+----
+> sudo journalctl -u apache2
+[...]
+Jun 03 10:07:11 pinkiepie systemd[1]: Starting The Apache Webserver...
+Jun 03 10:07:12 pinkiepie systemd[1]: Started The Apache Webserver.
+----
+
+[#sec-journalctl-filter]
+== Filtering the journal output
+
+When called without switches, `+journalctl+` shows the full content of the journal, the oldest entries listed first. The output can be filtered by specific switches and fields.
+
+[#sec-journalctl-filter-boot]
+=== Filtering based on a boot number
+
+`+journalctl+` can filter messages based on a specific system boot. To list all available boots, run
+
+----
+> sudo journalctl --list-boots
+-1 097ed2cd99124a2391d2cffab1b566f0 Mon 2014-05-26 08:36:56 EDT—Fri 2014-05-30 05:33:44 EDT
+ 0 156019a44a774a0bb0148a92df4af81b Fri 2014-05-30 05:34:09 EDT—Fri 2014-05-30 06:15:01 EDT
+----
+
+The first column lists the boot offset: `+0+` for the current boot, `+-1+` for the previous one, `+-2+` for the one before that, etc. The second column contains the boot ID followed by the limiting time stamps of the specific boot.
+
+Show all messages from the current boot:
+
+----
+> sudo journalctl -b
+----
+
+If you need to see journal messages from the previous boot, add an offset parameter. The following example outputs the previous boot messages:
+
+----
+> sudo journalctl -b -1
+----
+
+Another way is to list boot messages based on the boot ID. For this purpose, use the {underscore}BOOT_ID field:
+
+----
+> sudo journalctl _BOOT_ID=156019a44a774a0bb0148a92df4af81b
+----
+
+[#sec-journalctl-filter-time]
+=== Filtering based on time interval
+
+You can filter the output of `+journalctl+` by specifying the starting and/or ending date. The date specification should be of the format `+2014-06-30 9:17:16+`. If the time part is omitted, midnight is assumed. If seconds are omitted, `+:00+` is assumed. If the date part is omitted, the current day is assumed. Instead of numeric expression, you can specify the keywords `+yesterday+`, `+today+` or `+tomorrow+`. They refer to midnight of the day before the current day, of the current day, or of the day after the current day. If you specify `+now+`, it refers to the current time. You can also specify relative times prefixed with `+-+` or `{plus}`, referring to times before or after the current time.
+
+Show only new messages since now, and update the output continuously:
+
+----
+> sudo journalctl --since "now" -f
+----
+
+Show all messages since last midnight till 3:20am:
+
+----
+> sudo journalctl --since "today" --until "3:20"
+----
+
+[#sec-journalctl-filter-fields]
+=== Filtering based on fields
+
+You can filter the output of the journal by specific fields. The syntax of a field to be matched is `+FIELD_NAME=MATCHED_VALUE+`, such as `+_SYSTEMD_UNIT=httpd.service+`. You can specify multiple matches in a single query to filter the output messages even more. See `+man 7 systemd.journal-fields+` for a list of default fields.
+
+Show messages produced by a specific process ID:
+
+----
+> sudo journalctl _PID=1039
+----
+
+Show messages belonging to a specific user ID:
+
+----
+# journalctl _UID=1000
+----
+
+Show messages from the kernel ring buffer (the same as `+dmesg+` produces):
+
+----
+> sudo journalctl _TRANSPORT=kernel
+----
+
+Show messages from the service's standard or error output:
+
+----
+> sudo journalctl _TRANSPORT=stdout
+----
+
+Show messages produced by a specified service only:
+
+----
+> sudo journalctl _SYSTEMD_UNIT=avahi-daemon.service
+----
+
+If two different fields are specified, only entries that match both expressions at the same time are shown:
+
+----
+> sudo journalctl _SYSTEMD_UNIT=avahi-daemon.service _PID=1488
+----
+
+If two matches refer to the same field, all entries matching either expression are shown:
+
+----
+> sudo journalctl _SYSTEMD_UNIT=avahi-daemon.service _SYSTEMD_UNIT=dbus.service
+----
+
+You can use the `{plus}` separator to combine two expressions in a logical `+OR+`. The following example shows all messages from the Avahi service process with the process ID 1480 together with all messages from the D-Bus service:
+
+----
+> sudo journalctl _SYSTEMD_UNIT=avahi-daemon.service _PID=1480 + _SYSTEMD_UNIT=dbus.service
+----
+
+[#sec-journalctl-investigate]
+== Investigating `+systemd+` errors
+
+This section introduces a simple example to illustrate how to find and fix the error reported by `+systemd+` during `+apache2+` start-up.
+
+. Try to start the apache2 service:
++
+----
+# systemctl start apache2
+Job for apache2.service failed. See 'systemctl status apache2' and 'journalctl -xn' for details.
+----
+. Let us see what the service's status says:
++
+----
+> sudo systemctl status apache2
+apache2.service - The Apache Webserver
+   Loaded: loaded (/usr/lib/systemd/system/apache2.service; disabled)
+   Active: failed (Result: exit-code) since Tue 2014-06-03 11:08:13 CEST; 7min ago
+  Process: 11026 ExecStop=/usr/sbin/start_apache2 -D SYSTEMD -DFOREGROUND \
+           -k graceful-stop (code=exited, status=1/FAILURE)
+----
++
+The ID of the process causing the failure is 11026.
+. Show the verbose version of messages related to process ID 11026:
++
+----
+> sudo journalctl -o verbose _PID=11026
+[...]
+MESSAGE=AH00526: Syntax error on line 6 of /etc/apache2/default-server.conf:
+[...]
+MESSAGE=Invalid command 'DocumenttRoot', perhaps misspelled or defined by a module
+[...]
+----
+. Fix the typo inside `+/etc/apache2/default-server.conf+`, start the apache2 service, and print its status:
++
+----
+> sudo systemctl start apache2 && systemctl status apache2
+apache2.service - The Apache Webserver
+   Loaded: loaded (/usr/lib/systemd/system/apache2.service; disabled)
+   Active: active (running) since Tue 2014-06-03 11:26:24 CEST; 4ms ago
+  Process: 11026 ExecStop=/usr/sbin/start_apache2 -D SYSTEMD -DFOREGROUND
+           -k graceful-stop (code=exited, status=1/FAILURE)
+ Main PID: 11263 (httpd2-prefork)
+   Status: "Processing requests..."
+   CGroup: /system.slice/apache2.service
+           ├─11263 /usr/sbin/httpd2-prefork -f /etc/apache2/httpd.conf -D [...]
+           ├─11280 /usr/sbin/httpd2-prefork -f /etc/apache2/httpd.conf -D [...]
+           ├─11281 /usr/sbin/httpd2-prefork -f /etc/apache2/httpd.conf -D [...]
+           ├─11282 /usr/sbin/httpd2-prefork -f /etc/apache2/httpd.conf -D [...]
+           ├─11283 /usr/sbin/httpd2-prefork -f /etc/apache2/httpd.conf -D [...]
+           └─11285 /usr/sbin/httpd2-prefork -f /etc/apache2/httpd.conf -D [...]
+----
+
+[#sec-journalctl-config]
+== Journald configuration
+
+The behavior of the systemd-journald service can be adjusted by modifying `+/etc/systemd/journald.conf+`. This section introduces only basic option settings. For a complete file description, see `+man 5 journald.conf+`. You need to restart the journal for the changes to take effect with
+
+----
+> sudo systemctl restart systemd-journald
+----
+
+[#sec-journalctl-config-systemmaxuse]
+=== Changing the journal size limit
+
+If the journal log data is saved to a persistent location (see <<sec-journalctl-persistent,Making the journal persistent>>), it uses up to 10% of the file system the `+/var/log/journal+` resides on. For example, if `+/var/log/journal+` is located on a 30 GB `+/var+` partition, the journal may use up to 3 GB of the disk space. To change this limit, change (and uncomment) the `+SystemMaxUse+` option:
+
+----
+SystemMaxUse=50M
+----
+
+[#sec-journalctl-config-ttypath]
+=== Forwarding the journal to `+/dev/ttyX+`
+
+You can forward the journal to a terminal device to inform you about system messages on a preferred terminal screen, for example, `+/dev/tty12+`. Change the following journald options to
+
+----
+ForwardToConsole=yes
+TTYPath=/dev/tty12
+----
+
+[#sec-journalctl-config-forwardtosyslog]
+=== Forwarding the journal to syslog facility
+
+Journald is backward compatible with traditional syslog implementations such as `+rsyslog+`. Make sure the following is valid:
+
+* rsyslog is installed.
++
+----
+> sudo rpm -q rsyslog
+rsyslog-7.4.8-2.16.x86_64
+----
+* rsyslog service is enabled.
++
+----
+> sudo systemctl is-enabled rsyslog
+enabled
+----
+* Forwarding to syslog is enabled in `+/etc/systemd/journald.conf+`.
++
+----
+ForwardToSyslog=yes
+----
+
+[#sec-journalctl-yast]
+== Using {yast} to filter the `+systemd+` journal
+
+For an easy way of filtering the systemd journal (without dealing with the journalctl syntax), you can use the {yast} journal module. After installing it with `+sudo zypper in yast2-journal+`, start it from {yast} by selecting menu:System[Systemd Journal]. Alternatively, start it from command line by entering `+sudo yast2 journal+`.
+
+[#fig-journalctl-yast]
+.{yast} systemd journal
+image::yast2_journal.png["",width=85%]
+
+The module displays the log entries in a table. The search box on top allows you to search for entries that contain certain characters, similar to using `+grep+`. To filter the entries by date and time, unit, file or priority, click *Change filters* and set the respective options.
+
+[#sec-journalctl-gnome-logs]
+== Viewing logs in {gnome}
+
+You can view the journal with _{gnome} Logs_. Start it from the application menu. To view system log messages, it needs to be run as root, for example, with `+xdg-su gnome-logs+`. This command can be executed when pressing kbd:[Alt+F2].

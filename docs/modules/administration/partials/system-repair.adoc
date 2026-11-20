@@ -1,0 +1,233 @@
+// Converted from xml/system_repair.xml
+
+[#sec-trouble-data-recover-rescue]
+=== Using the rescue system
+
+There are several reasons a system could fail to come up and run properly. A corrupted file system following a system crash, corrupted configuration files, or a corrupted boot loader configuration are the most common ones.
+
+To help you to resolve these situations, {productname} contains a rescue system that you can boot. The rescue system is a small Linux system that can be loaded into a RAM disk and mounted as root file system, allowing you to access your Linux partitions from the outside. Using the rescue system, you can recover or modify any important aspect of your system.
+
+* Manipulate any type of configuration file.
+* Check the file system for defects and start automatic repair processes.
+* Access the installed system in a “change root” environment.
+* Check, modify, and re-install the boot loader configuration.
+* Recover from a badly installed device driver or unusable kernel.
+* Resize partitions using the parted command. Find more information about this tool at the GNU Parted Web site link:https://www.gnu.org/software/parted/parted.html[].
+
+The rescue system can be loaded from various sources and locations. The simplest option is to boot the rescue system from the original installation medium.
+
+ifdef::os-sles[]
+ifdef::arch-zseries[]
+[NOTE]
+.{zseries}: starting the rescue system
+====
+On {zseries} the installation system can be used for rescue purposes. To start the rescue system follow the instructions in <<sec-zseries-rescue,{zseries}: using initrd as a rescue system>>.
+====
+endif::[]
+endif::[]
+
+. Insert the installation medium into your DVD drive.
+. Reboot the system.
+. At the boot screen, press kbd:[F4] and choose *DVD-ROM*. Then choose *Rescue System* from the main menu.
+. Enter `+root+` at the `+Rescue:+` prompt. A password is not required.
+
+[#proc-trouble-data-recover-rescue-network]
+If your hardware setup does not include a DVD drive, you can boot the rescue system from a network source. The following example applies to a remote boot scenario—if using another boot medium, such as a DVD, modify the `+info+` file accordingly and boot as you would for a normal installation.
+
+. Enter the configuration of your PXE boot setup and add the lines `install=_PROTOCOL_://_INSTSOURCE_` and `+rescue=1+`. If you need to start the repair system, use `+repair=1+` instead. As with a normal installation, _PROTOCOL_ stands for any of the supported network protocols (NFS, HTTP, FTP, etc.) and _INSTSOURCE_ for the path to your network installation source.
+. Boot the system using “Wake on LAN”
+ifdef::os-sles,os-sled[, as described in xref:deployment:deployment-pxe.adoc#sec-deployment-prep-boot-wol[Using wake-on-LAN for remote wakeups]]
+{empty}.
+. Enter `+root+` at the `+Rescue:+` prompt. A password is not required.
+
+When you have entered the rescue system, you can use the virtual consoles that can be reached with kbd:[Alt+F1] to kbd:[Alt+F6].
+
+A shell and other useful utilities, such as the mount program, are available in the `+/bin+` directory. The `+/sbin+` directory contains important file and network utilities for reviewing and repairing the file system. This directory also contains the most important binaries for system maintenance, such as `+fdisk+`, `+mkfs+`, `+mkswap+`, `+mount+`, and `+shutdown+`, `+ip+` and `+ss+` for maintaining the network. The directory `+/usr/bin+` contains the vi editor, find, less, and SSH.
+
+To see the system messages, either use the command `+dmesg+` or view the system log with `+journalctl+`.
+
+[#sec-trouble-data-recover-rescue-file]
+==== Checking and manipulating configuration files
+
+As an example for a configuration that might be fixed using the rescue system, imagine you have a broken configuration file that prevents the system from booting properly. You can fix this using the rescue system.
+
+To manipulate a configuration file, proceed as follows:
+
+. Start the rescue system using one of the methods described above.
+. To mount a root file system located under `+/dev/sda6+` to the rescue system, use the following command:
++
+----
+> sudo mount /dev/sda6 /mnt
+----
++
+All directories of the system are now located under `+/mnt+`
+. Change the directory to the mounted root file system:
++
+----
+> sudo cd /mnt
+----
+. Open the problematic configuration file in the vi editor. Adjust and save the configuration.
+. Unmount the root file system from the rescue system:
++
+----
+> sudo umount /mnt
+----
+. Reboot the machine.
+
+[#sec-trouble-data-recover-rescue-filesystem]
+==== Repairing and checking file systems
+
+Generally, file systems cannot be repaired on a running system. If you encounter serious problems, you may not even be able to mount your root file system and the system boot may end with a “kernel panic”. In this case, the only way is to repair the system from the outside. The system contains the `+fsck+` utility to check and repair multiple file system types, such as `+ext2+`, `+ext3+`, `+ext4+`, `+msdos+`, and `+vfat+`. Use the `+-t+` option to specify which file system to check.
+
+The following command checks all `+ext4+` file systems found in the `+/etc/fstab+` specification:
+
+----
+> sudo fsck -t ext4 -A
+----
+
+[TIP]
+====
+For Btrfs, you can use the `+btrfs check+` command found in the `+btrfsprogs+` package.
+
+Find topics about the Btrfs file system in the following places:
+
+* The Storage Administration Guide includes link:https://documentation.suse.com/sles/html/SLES-all/cha-filesystems.html#sec-filesystems-major-btrfs[] and link:https://documentation.suse.com/sles/html/SLES-all/cha-resize-fs.html#sec-resize-fs-btrfs[] sections.
+* The following article describes how to recover from Btrfs errors link:https://www.suse.com/support/kb/doc/?id=000018769[].
+* The following article includes links to multiple Btrfs-related topics link:https://www.suse.com/support/kb/doc/?id=000018779[].
+* The `+man 8 btrfs-check+` man page details all options of the `+btrfs check+` command.
+====
+
+[#sec-trouble-data-recover-rescue-access]
+==== Accessing the installed system
+
+If you need to access the installed system from the rescue system, you need to do this in a _change root_ environment. For example, to modify the boot loader configuration, or to execute a hardware configuration utility.
+
+To set up a change root environment based on the installed system, proceed as follows:
+
+. {empty}
++
+[TIP]
+.Import LVM volume groups
+====
+If you are using an LVM setup (refer to 
+ifdef::os-sles[xref:storage:index.adoc#part-lvm[Logical volumes (LVM)]]
+ifdef::os-sled,os-osuse[xref:deployment:deployment-expert-partitioner.adoc#sec-yast-system-lvm[LVM configuration]]
+ for more general details), import all existing volume groups to be able to find and mount the device(s):
+
+----
+rootvgimport -a
+----
+====
++
+Run `+lsblk+` to check which node corresponds to the root partition. It is `+/dev/sda2+` in our example:
++
+----
+> lsblk
+NAME        MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINT
+sda           8:0    0 149,1G  0 disk
+├─sda1        8:1    0     2G  0 part  [SWAP]
+├─sda2        8:2    0    20G  0 part  /
+└─sda3        8:3    0   127G  0 part
+  └─cr_home 254:0    0   127G  0 crypt /home
+----
+. Mount the root partition from the installed system:
++
+----
+> sudo mount /dev/sda2 /mnt
+----
+. Mount `+/proc+`, `+/dev+`, and `+/sys+` partitions:
++
+----
+> sudo mount -t proc none /mnt/proc
+> sudo mount --rbind /dev /mnt/dev
+> sudo mount --rbind /sys /mnt/sys
+----
+. Now you can “change root” into the new environment, keeping the `+bash+` shell:
++
+----
+> chroot /mnt /bin/bash
+----
+. Finally, mount the remaining partitions from the installed system:
++
+----
+> mount -a
+----
+. Now you have access to the installed system. Before rebooting the system, unmount the partitions with `+umount+` `+-a+` and leave the “change root” environment with `+exit+`.
+
+[WARNING]
+.Limitations
+====
+Although you have full access to the files and applications of the installed system, there are some limitations. The kernel that is running is the one that was booted with the rescue system, not with the change root environment. It only supports essential hardware and it is not possible to add kernel modules from the installed system unless the kernel versions are identical. Always check the version of the currently running (rescue) kernel with `+uname -r+` and then find out if a matching subdirectory exists in the `+/lib/modules+` directory in the change root environment. If yes, you can use the installed modules, otherwise you need to supply their correct versions on other media, such as a flash disk. Most often the rescue kernel version differs from the installed one — then you cannot simply access a sound card, for example. It is also not possible to start a graphical user interface.
+
+Also note that you leave the “change root” environment when you switch the console with kbd:[Alt+F1] to kbd:[Alt+F6].
+====
+
+[#sec-trouble-data-recover-rescue-grub]
+==== Modifying and re-installing the boot loader
+
+Sometimes a system cannot boot because the boot loader configuration is corrupted. The start-up routines cannot, for example, translate physical drives to the actual locations in the Linux file system without a working boot loader.
+
+To check the boot loader configuration and re-install the boot loader, proceed as follows:
+
+. Perform the necessary steps to access the installed system as described in <<sec-trouble-data-recover-rescue-access,Accessing the installed system>>.
+. Check that the GRUB 2 boot loader is installed on the system. If not, install the package `+grub2+` and run
++
+----
+> sudo grub2-install /dev/sda
+----
+. Check whether the following files are correctly configured according to the {grub} configuration principles outlined in xref:grub2.adoc[] and apply fixes if necessary.
++
+* `+/etc/default/grub+`
+* `+/boot/grub2/device.map+`
+* `+/boot/grub2/grub.cfg+` (this file is generated, do not edit)
+* `+/etc/sysconfig/bootloader+`
+. Re-install the boot loader using the following command sequence:
++
+----
+> sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+----
+. Unmount the partitions, log out of the “change root” environment, and reboot the system:
++
+----
+> umount -a
+exit
+reboot
+----
+
+[#sec-trouble-data-recover-rescue-dud]
+==== Fixing kernel installation
+
+A kernel update may introduce a new bug which can impact the operation of your system. For example a driver for a piece of hardware in your system may be faulty, which prevents you from accessing and using it. In this case, revert to the last working kernel (if available on the system) or install the original kernel from the installation media.
+
+[TIP]
+.How to keep last kernels after update
+====
+To prevent failures to boot after a faulty kernel update, use the kernel multiversion feature and tell `+libzypp+` which kernels you want to keep after the update.
+
+For example to always keep the last two kernels and the currently running one, add
+
+----
+multiversion.kernels = latest,latest-1,running
+----
+
+to the `+/etc/zypp/zypp.conf+` file. See xref:tuning-multikernel.adoc[] for more information.
+====
+
+A similar case is when you need to re-install or update a broken driver for a device not supported by {productname}. For example when a hardware vendor uses a specific device, such as a hardware RAID controller, which needs a binary driver to be recognized by the operating system. The vendor typically releases a Driver Update Disk (DUD) with the fixed or updated version of the required driver.
+
+In both cases you need to access the installed system in the rescue mode and fix the kernel related problem, otherwise the system may fail to boot correctly:
+
+. Boot from the {productname} installation media.
+. If you are recovering after a faulty kernel update, skip this step. If you need to use a driver update disk (DUD), press kbd:[F6] to load the driver update after the boot menu appears, and choose the path or URL to the driver update and confirm with *Yes*.
+. Choose *Rescue System* from the boot menu and press kbd:[Enter]. If you chose to use DUD, you will be asked to specify where the driver update is stored.
+. Enter `+root+` at the `+Rescue:+` prompt. A password is not required.
+. Manually mount the target system and “change root” into the new environment. For more information, see <<sec-trouble-data-recover-rescue-access,Accessing the installed system>>.
+. If using DUD, install/re-install/update the faulty device driver package. Always make sure the installed kernel version exactly matches the version of the driver you are installing.
++
+If fixing faulty kernel update installation, you can install the original kernel from the installation media with the following procedure.
++
+.. Identify your DVD device with `+hwinfo --cdrom+` and mount it with `+mount /dev/sr0 /mnt+`.
+.. Navigate to the directory where your kernel files are stored on the DVD, for example `+cd /mnt/suse/x86_64/+`.
+.. Install required `+kernel-*+`, `+kernel-*-base+`, and `+kernel-*-extra+` packages of your flavor with the `+rpm -i+` command.
+. Update configuration files and reinitialize the boot loader if needed. For more information, see <<sec-trouble-data-recover-rescue-grub,Modifying and re-installing the boot loader>>.
+. Remove any bootable media from the system drive and reboot.

@@ -1,0 +1,139 @@
+// Converted from xml/yast2_lang.xml
+[#cha-yast-lang]
+= Changing language and country settings with {yast}
+:description: Configure language, region and time settings system-wide, per user, or for individual applications with YaST’s language and country modules
+:revdate: 2026-01-16
+
+[abstract]
+--
+This chapter explains how to configure language and country settings. You can change the language globally for the whole system, individually for certain users or desktops, or temporarily for single applications. Additionally, you can configure secondary languages and adjust the date and country settings.
+--
+
+If you work in different countries or in a multilingual environment, you should configure your system accordingly. {productnamereg} can handle different `+locales+` in parallel. A locale is a set of parameters that defines the language and country settings reflected in the user interface.
+
+The main system language is selected during installation, and keyboard and time zone settings are adjusted accordingly. However, you can install additional languages and determine which of the installed languages should be the default.
+
+For those tasks, use the {yast} language module as described in <<sec-yast-langmod,Changing the system language>>. Install secondary languages to get optional localization if you need to start applications or desktops in languages other than the primary one.
+
+The {yast} time zone module allows you to adjust your country and time zone settings accordingly. It also lets you synchronize your system clock against a time server. For details, refer to <<sec-yast-country,Changing the country and time settings>>.
+
+[#sec-yast-langmod]
+== Changing the system language
+
+Depending on how you use your desktop and whether you want to switch the entire system to another language or only the desktop environment, you have several options:
+
+[[vle-lang-system]]Changing the system language globally::
+Proceed as described in <<sec-yast-lang-primsec,Modifying system languages with {yast}>> and <<sec-yast-lang-switch,Switching the default system language>> to install additional localized packages with {yast} and to set the default language. Changes are effective after the next login. To ensure that the entire system reflects the change, reboot the system or close and restart all running services, applications and programs.
+[[vle-lang-desktop]]Changing the language for the desktop only::
+Provided you have previously installed the desired language packages for your desktop environment with {yast} as described below, you can switch the language of your desktop using the desktop's control center. 
+ifdef::os-sled,os-osuse[Refer to xref:gnome-user:gnome-custom.adoc#sec-gnome-settings-lang[Configuring language settings] for details.]
+ After the X server has been restarted, your entire desktop reflects your new choice of language. Applications not belonging to your desktop framework are not affected by this change and may still appear in the language that was set in {yast}.
+[[vle-lang-application]]Temporarily switching languages for one application only::
+You can also run a single application in another language (that has already been installed with {yast}). To do so, start it from the command line by specifying the language code as described in <<sec-yast-lang-applications,Switching languages for standard X and {gnome} applications>>.
+
+[#sec-yast-lang-primsec]
+=== Modifying system languages with {yast}
+
+{yast} supports two different language categories:
+
+*Primary Language*::
+The primary language set in {yast} applies to the entire system, including {yast} and the desktop environment. This language is used whenever available unless you manually specify another language.
+*Secondary Languages*::
+Install secondary languages to make your system multilingual. Languages installed as secondary can be selected manually, when needed. For example, use a secondary language to start an application in a certain language to do word processing in this language.
+
+Before installing additional languages, determine which of them should be the default system language (primary language).
+
+To access the {yast} language module, start {yast} and click menu:System[Language]. Alternatively, start the *Languages* dialog directly by running `+sudo yast2 language &+` from a command line.
+
+image::yast2_language.png["",width=75%]
+
+[#pro-yast-lang-additional]
+.Installing additional languages
+When installing additional languages, {yast} allows you to set different locale settings for the user `+root+`, see <<st-yast-lang-additional-root,this step>>. The option *Locale Settings for User root* determines how the locale variables (`+LC_*+`) in the file `+/etc/sysconfig/language+` are set for `+root+`. You can set them to the same locale as for regular users. Alternatively, you can keep them unaffected by any language changes, or only set the variable `+RC_LC_CTYPE+` to the same values as for the regular users. The `+RC_LC_CTYPE+` variable sets the localization for language-specific function calls.
+
+. To add languages in the {yast} language module, select the *Secondary Languages* you want to install.
+. To make a language the default language, set it as *Primary Language*.
+. Additionally, adapt the keyboard to the new primary language and adjust the time zone, if appropriate.
++
+[TIP]
+.Advanced settings
+====
+For advanced keyboard or time zone settings, select menu:Hardware[System Keyboard Layout] or menu:System[Date and Time] in {yast}. For more information, refer to xref:yast2-keymouse.adoc[] and <<sec-yast-country,Changing the country and time settings>>.
+====
+. [[st-yast-lang-additional-root]]To change language settings specific to the user `+root+`, click *Details*.
++
+.. Set *Locale Settings for User root* to the desired value. For more information, click *Help*.
+.. Decide whether to use *Use UTF-8 Encoding* for `+root+` or not.
+. If your locale was not included in the list of primary languages available, try specifying it with *Detailed Locale Setting*. However, this may result in certain locales being incomplete.
+. Confirm the changes in the dialogs with *OK*. If you have selected secondary languages, {yast} installs the localized software packages for the additional languages.
+
+The system is now multilingual. However, to start an application in a language other than the primary one, you need to set the desired language explicitly as explained in <<sec-yast-lang-applications,Switching languages for standard X and {gnome} applications>>.
+
+[#sec-yast-lang-switch]
+=== Switching the default system language
+
+To globally change the default language of a system, use the following procedure:
+
+. Start the {yast} language module.
+. Select the desired new system language as *Primary Language*.
++
+[IMPORTANT]
+.Deleting former system languages
+====
+If you switch to a different primary language, the localized software packages for the former primary language gets removed from the system. To switch the default system language but keep the former primary language as an additional language, add it as *Secondary Language* by selecting the respective check box.
+====
+. Adjust the keyboard and time zone options as desired.
+. Confirm your changes with *OK*.
+. After {yast} has applied the changes, restart current X sessions (for example, by logging out and logging in again) to make {yast} and the desktop applications reflect your new language settings.
+
+[#sec-yast-lang-applications]
+=== Switching languages for standard X and {gnome} applications
+
+After you have installed the respective language with {yast}, you can run a single application in another language.
+
+Start the application from the command line by using the following command:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+LANG=__LANGUAGE__ __application__
+----
+
+For example, to start f-spot in German, run `+LANG=de_DE f-spot+`. For other languages, use the appropriate language code. Get a list of all language codes available with the `+locale+` `+-av+` command.
+
+[#sec-yast-country]
+== Changing the country and time settings
+
+Using the {yast} date and time module, adjust your system date, clock and time zone information to the area you are working in. To access the {yast} module, start {yast} and click menu:System[Date and Time]. Alternatively, start the *Clock and Time Zone* dialog directly by running `+sudo yast2 timezone &+` from a command line.
+
+image::yast2_timezone.png["",width=75%]
+
+First, select a general region, such as *Europe*. Choose an appropriate country that matches the one you are working in, for example, *Germany*.
+
+Depending on which operating systems run on your workstation, adjust the hardware clock settings accordingly:
+
+* If you run another operating system on your machine, such as Microsoft Windows{asterisk}, your system may not use UTC, but local time. In this case, deactivate *Hardware Clock Set To UTC*.
+* If you only run Linux on your machine, set the hardware clock to UTC and have the switch from standard time to daylight saving time performed automatically.
+
+[IMPORTANT]
+.Set the hardware clock to UTC
+====
+The switch from standard time to daylight saving time (and vice versa) can only be performed automatically when the hardware clock (CMOS clock) is set to UTC. This also applies if you use automatic time synchronization with NTP, because automatic synchronization is only performed if the time difference between the hardware and system clock is less than 15 minutes.
+
+Since a wrong system time can cause serious problems (missed backups, dropped mail messages, mount failures on remote file systems, etc.) it is strongly recommended to _always_ set the hardware clock to UTC.
+====
+
+You can change the date and time manually or opt for synchronizing your machine against an NTP server, either permanently or only for adjusting your hardware clock.
+
+.Manually adjusting time and date
+. In the {yast} timezone module, click *Other Settings* to set date and time.
+. Select *Manually* and enter date and time values.
+. Confirm your changes.
+
+.Setting date and time with NTP server
+. Click *Other Settings* to set date and time.
+. Select *Synchronize with NTP Server*.
+. Enter the address of an NTP server, if not already populated.
++
+image::yast2_timezone_ntp.png["",width=75%]
+. With the *Configure* button, you can open the advanced NTP configuration. For details, see xref:chrony.adoc#sec-ntp-yast[Configuring an NTP client with {yast}].
+. Confirm your changes.

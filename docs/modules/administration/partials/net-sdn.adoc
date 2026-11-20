@@ -1,0 +1,242 @@
+// Converted from xml/net_sdn.xml
+
+[#sec-network-openvswitch]
+== Software-defined networking with Open vSwitch
+
+Software-defined networking (SDN) means separating the system that controls where traffic is sent (the _control plane_) from the underlying system that forwards traffic to the selected destination (the _data plane_, also called the _forwarding plane_). This means that the functions previously fulfilled by a single, usually inflexible switch can now be separated between a switch (data plane) and its controller (control plane). In this model, the controller is programmable and can be very flexible and adapt quickly to changing network conditions.
+
+Open vSwitch is software that implements a distributed virtual multilayer switch that is compatible with the OpenFlow protocol. OpenFlow allows a controller application to modify the configuration of a switch. OpenFlow is layered onto the TCP protocol and is implemented in a range of hardware and software. A single controller can thus drive multiple, very different switches.
+
+[#sec-network-openvswitch-advantage]
+=== Advantages of Open vSwitch
+
+Software-defined networking with Open vSwitch brings several advantages with it, especially when you used together with virtual machines:
+
+// REMARK: Tried to create short version of this: https://github.com/openvswitch/ovs/blob/master/WHY-OVS.md - sknorr, 2015-09-30
+
+* Networking states can be identified easily.
+* Networks and their live state can be moved from one host to another.
+* Network dynamics are traceable and external software can be enabled to respond to them.
+* You can apply and manipulate tags in network packets to identify which machine they are coming from or going to and maintain other networking context. Tagging rules can be configured and migrated.
++
+// REMARK: Feedback from Éric Bischoff: "[...] isn't that _how OVS works_, rather than _what OVS can do_?" => Added second sentence. It does ultimately seem like a feature to me, though. Leaving it in for the moment. - sknorr, 2015-10-15
+* Open vSwitch implements the GRE protocol (_Generic Routing Encapsulation_). This allows you, for example, to connect private VM networks to each other.
+* Open vSwitch can be used on its own, but is designed to integrate with networking hardware and can control hardware switches.
+
+[#sec-network-openvswitch-install]
+=== Installing Open vSwitch
+
+. Install Open vSwitch and supplementary packages:
++
+----
+# zypper install openvswitch openvswitch-switch
+----
++
+If you plan to use Open vSwitch together with the {kvm} hypervisor, additionally install `+tunctl+` . If you plan to use Open vSwitch together with the {xen} hypervisor, additionally install `+openvswitch-kmp-xen+` .
+. Enable the Open vSwitch service:
++
+----
+# systemctl enable openvswitch
+----
+. Either restart the computer or use `+systemctl+` to start the Open vSwitch service immediately:
++
+----
+# systemctl start openvswitch
+----
+. To check whether Open vSwitch was activated correctly, use:
++
+----
+# systemctl status openvswitch
+----
+
+[#sec-network-openvswitch-userspace]
+=== Overview of Open vSwitch daemons and utilities
+
+Open vSwitch consists of several components. Among them are a kernel module and various user space components. The kernel module is used for accelerating the data path, but is not necessary for a minimal Open vSwitch installation.
+
+[#sec-network-openvswitch-daemon]
+==== Daemons
+
+The central executables of Open vSwitch are its two daemons. When you start the `+openvswitch+` service, you are indirectly starting them.
+
+The main Open vSwitch daemon (`+ovs-vswitchd+`) provides the implementation of a switch. The Open vSwitch database daemon (`+ovsdb-server+`) serves the database that stores the configuration and state of Open vSwitch.
+
+[#sec-network-openvswitch-utility]
+==== Utilities
+
+Open vSwitch also comes with several utilities that help you work with it. The following list is not exhaustive, but instead describes important commands only.
+
+[#vl-ovs-utility]
+`+ovsdb-tool+`::
+Create, upgrade, compact, and query Open vSwitch databases. Do transactions on Open vSwitch databases.
+`+ovs-appctl+`::
+Configure a running `+ovs-vswitchd+` or `+ovsdb-server+` daemon.
+`+ovs-dpctl+`, `+ovs-dpctl-top+`::
+Create, modify, visualize, and delete data paths. Using this tool can interfere with `+ovs-vswitchd+` also performing data path management. Therefore, it is often used for diagnostics only.
++
+`+ovs-dpctl-top+` creates a `+top+`-like visualization for data paths.
+`+ovs-ofctl+`::
+Manage any switches adhering to the OpenFlow protocol. `+ovs-ofctl+` is not limited to interacting with Open vSwitch.
+`+ovs-vsctl+`::
+Provides a high-level interface to the configuration database. It can be used to query and modify the database. In effect, it shows the status of `+ovs-vswitchd+` and can be used to configure it.
+
+[#sec-network-openvswitch-bridge]
+=== Creating a bridge with Open vSwitch
+
+The following example configuration uses the Wicked network service that is used by default on {productname}. To learn more about Wicked, see <<sec-network-manconf,Configuring a network connection manually>>.
+
+When you have installed and started Open vSwitch, proceed as follows:
+
+. To configure a bridge for use by your virtual machine, create a file with content like this:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+STARTMODE='auto' <1>
+BOOTPROTO='dhcp' <2>
+OVS{underscore}BRIDGE='yes' <3>
+OVS{underscore}BRIDGE{underscore}PORT{underscore}DEVICE{underscore}1='__eth0__' <4>
+----
++
+<1> Set up the bridge automatically when the network service is started.
+<2> The protocol to use for configuring the IP address.
+<3> Mark the configuration as an Open vSwitch bridge.
+<4> Choose which device/devices should be added to the bridge. To add more devices, append additional lines for each of them to the file:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+OVS{underscore}BRIDGE{underscore}PORT{underscore}DEVICE{underscore}__SUFFIX__='__DEVICE__'
+----
++
+The _SUFFIX_ can be any alphanumeric string. However, to avoid overwriting a previous definition, make sure the _SUFFIX_ of each device is unique.
++
+Save the file in the directory `+/etc/sysconfig/network+` under the name `+ifcfg-br0+`. Instead of _br0_, you can use any name you want. However, the file name needs to begin with `+ifcfg-+`.
++
+To learn about further options, refer to the man pages of `+ifcfg+` (`+man 5 ifcfg+`) and `+ifcfg-ovs-bridge+` (`+man 5 ifcfg-ovs-bridge+`).
+. Now start the bridge:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} wicked ifup __br0__
+----
++
+When Wicked is done, it should output the name of the bridge and next to it the state `+up+`.
+
+[#sec-network-openvswitch-kvm]
+=== Using Open vSwitch directly with {kvm}
+
+After having created the bridge as described in <<sec-network-openvswitch-bridge,Creating a bridge with Open vSwitch>>, you can use Open vSwitch to manage the network access of virtual machines created with {kvm}/{qemu}.
+
+. To be able to best use the capabilities of Wicked, make some further changes to the bridge configured before. Open the previously created `+/etc/sysconfig/network/ifcfg-br0+` and append a line for another port device:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+OVS{underscore}BRIDGE{underscore}PORT{underscore}DEVICE{underscore}2='__tap0__'
+----
++
+Additionally, set `+BOOTPROTO+` to `+none+`. The file should now look like this:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+STARTMODE='auto'
+BOOTPROTO='none'
+OVS{underscore}BRIDGE='yes'
+OVS{underscore}BRIDGE{underscore}PORT{underscore}DEVICE{underscore}1='__eth0__'
+OVS{underscore}BRIDGE{underscore}PORT{underscore}DEVICE{underscore}2='__tap0__'
+----
++
+The new port device _tap0_ will be configured in the next step.
+. Now add a configuration file for the _tap0_ device:
++
+----
+STARTMODE='auto'
+BOOTPROTO='none'
+TUNNEL='tap'
+----
++
+Save the file in the directory `+/etc/sysconfig/network+` under the name `+ifcfg-tap0+`.
++
+[TIP]
+.Allowing other users to access the tap device
+====
+To be able to use this tap device from a virtual machine started as a user who is not `+root+`, append:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+TUNNEL{underscore}SET{underscore}OWNER=__USER{underscore}NAME__
+----
+
+To allow access for an entire group, append:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+TUNNEL{underscore}SET{underscore}GROUP=__GROUP{underscore}NAME__
+----
+====
+. Finally, open the configuration for the device defined as the first `+OVS_BRIDGE_PORT_DEVICE+`. If you did not change the name, that should be `+eth0+`. Therefore, open `+/etc/sysconfig/network/ifcfg-eth0+` and make sure that the following options are set:
++
+----
+STARTMODE='auto'
+BOOTPROTO='none'
+----
++
+If the file does not exist yet, create it.
+. Restart the bridge interface using Wicked:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} wicked ifreload __br0__
+----
++
+This will also trigger a reload of the newly defined bridge port devices.
+. To start a virtual machine, use, for example:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} qemu-kvm {backslash}
+-drive file=__/PATH/TO/DISK-IMAGE__ {backslash} <1>
+-m 512 -net nic,vlan=0,macaddr=00:11:22:EE:EE:EE {backslash}
+-net tap,ifname=__tap0__,script=no,downscript=no <2>
+----
++
+<1> The path to the {qemu} disk image you want to start.
+<2> Use the tap device (`+tap0+`) created before.
++
+For further information on the usage of {kvm}/{qemu}, see xref:virtualization:index.adoc#part-virt-qemu[Managing virtual machines with {qemu}].
+
+[#sec-network-openvswitch-libvirt]
+=== Using Open vSwitch with `+libvirt+`
+
+After having created the bridge as described before in <<sec-network-openvswitch-bridge,Creating a bridge with Open vSwitch>>, you can add the bridge to an existing virtual machine managed with `+libvirt+`. Since `+libvirt+` has some support for Open vSwitch bridges already, you can use the bridge created in <<sec-network-openvswitch-bridge,Creating a bridge with Open vSwitch>> without further changes to the networking configuration.
+
+. Open the domain XML file for the intended virtual machine:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} virsh edit __VM{underscore}NAME__
+----
++
+Replace _VM_NAME_ with the name of the desired virtual machine. This will open your default text editor.
+. Find the networking section of the document by looking for a section starting with `+<interface type="...">+` and ending in `+</interface>+`.
++
+Replace the existing section with a networking section that looks somewhat like this:
++
+----
+<interface type='bridge'>
+  <source bridge='br0'/>
+  <virtualport type='openvswitch'/>
+</interface>
+----
++
+[IMPORTANT]
+.Compatibility of `+virsh iface-*+` and {vmm} with Open vSwitch
+====
+At the moment, the Open vSwitch compatibility of `+libvirt+` is not exposed through the `+virsh iface-*+` tools and {vmm}. If you use any of these tools, your configuration can break.
+====
+. You can now start or restart the virtual machine as usual.
+
+For further information on the usage of `+libvirt+`, see xref:virtualization:index.adoc#part-virt-libvirt[Managing virtual machines with `+libvirt+`].
+
+[#sec-network-openvswitch-more]
+=== More information
+
+For more information on SDN, refer to the documentation section of the Open vSwitch project Web site at link:https://docs.openvswitch.org/en/latest/#documentation[].

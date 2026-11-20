@@ -1,0 +1,17 @@
+// Converted from xml/rmt_tools.xml
+[#cha-rmt-tools]
+= {rmt} tools and configuration files
+:description: Configure your system using the rmt-cli command and its subcommands for tasks including synchronization, product management and repository mirroring
+:revdate: 2026-01-16
+
+This chapter describes the most important scripts, configuration files and certificates shipped with {rmt}.
+
+The `+rmt-cli+` command and its sub-commands are used to manage the mirroring of repositories, registration of clients, and reporting. `+systemd+` is used for starting, stopping, restarting the {rmt} service and for checking its status.
+
+The basic configuration for {rmt} is stored in the `+/etc/rmt.conf+`.
+
+include::partial$rmt-rmt-cli.adoc[]
+
+include::partial$rmt-systemd.adoc[]
+
+include::partial$rmt-config-files.adoc[]

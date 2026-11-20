@@ -1,0 +1,74 @@
+// Converted from xml/rmt_backup.xml
+[#cha-rmt-backup]
+= Backing up an {rmt} server
+:description: Learn how to create and restore a full backup of your SUSE RMT server using detailed procedures for database and repository management
+:revdate: 2026-04-27
+
+This chapter explains how to create a backup of your {rmt} server and how to restore from it.
+
+[#sec-rmt-backup-create]
+== Creating a backup
+
+This procedure details how to create a full backup of your {rmt} server. It is assumed that you have an external disk or network share mounted in `+/mnt/backup+` that serves as a target for the backup.
+
+. Change to the backup directory.
++
+----
+# cd /mnt/backup
+----
+. Create a file containing a dump of your SQL database. You need to provide the password you set for the `+rmt+` database user during the installation.
++
+----
+# mariadb-dump -u rmt -p rmt > rmt_backup.sql
+----
+. Optionally, create a copy of your mirrored data.
++
+----
+# mkdir repos
+# rmt-cli export repos ./repos/
+----
+
+[#sec-rmt-backup-restore]
+== Restoring a backup
+
+This procedure details how to restore your {rmt} server from a backup created in <<sec-rmt-backup-create,Creating a backup>>. It is assumed that the backup is mounted in `+/mnt/backup+`. It is also assumed that you are restoring the server on a newly installed {slsa}.
+
+. Install and configure the {rmt} server as described in xref:rmt-install.adoc[].
+. Go to the backup directory.
++
+----
+# cd /mnt/backup/
+----
+. Use `+mariadb+` to remove the newly created database and import the data.
++
+----
+# mariadb -u rmt -p
+Enter password:
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+[...]
+
+MariaDB [(none)]> DROP DATABASE rmt;
+Query OK, 14 rows affected (0.84 sec)
+
+MariaDB [(none)]> CREATE DATABASE rmt;
+Query OK, 1 row affected (0.00 sec)
+
+MariaDB [(none)]> use rmt;
+Database changed
+
+MariaDB [rmt]> source rmt_backup.sql;
+[...]
+
+MariaDB [rmt]> quit
+----
+. Optionally, import the exported repositories.
++
+----
+# rmt-cli import repos ./repos/
+----
+. Synchronize your data and update your repositories.
++
+----
+# rmt-cli sync
+# rmt-cli mirror
+----

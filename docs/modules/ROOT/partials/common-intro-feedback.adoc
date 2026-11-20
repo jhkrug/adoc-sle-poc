@@ -1,0 +1,45 @@
+// Converted from xml/common_intro_feedback.xml
+
+== Improving the documentation
+
+Your feedback and contributions to this documentation are welcome. The following channels for giving feedback are available:
+
+ifdef::cond-suse-product[]
+Service requests and support::
+For services and support options available for your product, see link:https://www.suse.com/support/[].
++
+To open a service request, you need a {suse} subscription registered at {scc}. Go to link:https://scc.suse.com/support/requests[], log in and click *Create New*.
+endif::[]
+Bug reports::
+Report issues with the documentation at 
+ifdef::cond-suse-product[link:https://bugzilla.suse.com/[]]
+ifdef::cond-community-project[link:https://bugzilla.opensuse.org/[]]
+{empty}.
++
+To simplify this process, click the *Report an issue* icon next to a headline in the HTML version of this document. This preselects the right product and category in Bugzilla and adds a link to the current section. You can start typing your bug report right away.
++
+A Bugzilla account is required.
+Contributions::
+To contribute to this documentation, click the *Edit source document* icon next to a headline in the HTML version of this document. This will take you to the source code on GitHub, where you can open a pull request.
++
+A GitHub account is required.
++
+[NOTE]
+.*Edit source document* only available for English
+====
+The *Edit source document* icons are only available for the English version of each document. For all other languages, use the *Report an issue* icons instead.
+====
++
+For more information about the documentation environment used for this documentation, see the repository's README.
+Mail::
+You can also report errors and send feedback concerning the documentation to mailto:doc-team@suse.com[]. Include the document title, the product version, and the publication date of the document. Additionally, include the relevant section number and title (or provide the URL) and provide a concise description of the problem.
+ifdef::cond-beta[]
+Beta program requests::
+{suse} Beta Software is bound by the {suse} Beta EULA. This EULA is shipped with the software and can also be read at link:https://documentation.suse.com/beta/eula[]. {suse} can only provide support via the Beta Program Channel.
++
+To open a bug report, follow the instructions on the appropriate product page under link:https://suse.com/betaprogram/beta/[]. For enhancement requests or any other inquiries, contact us via the product-specific public beta mailing lists. They are listed at link:https://suse.com/betaprogram/beta/[]. For private requests, contact us directly via link:mailto:beta-programs@lists.suse.com[].
+endif::[]
+ifdef::cond-community-project[]
+Help::
+If you need further help on {productname}, see link:https://en.opensuse.org/Portal:Support[].
+endif::[]

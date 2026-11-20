@@ -1,0 +1,63 @@
+// Converted from xml/net_bridge.xml
+
+[#sec-network-iface-bridge]
+== Configuring a network bridge device
+
+A network bridge is a virtual link layer (Layer 2) device that connects multiple network segments into a single logical network. The bridge behaves like a virtual network switch, inspecting traffic and forwarding data frames dynamically based on hardware MAC addresses. A common use case for network bridges is virtualization environments (such as KVM or Xen), where physical network interfaces are shared with multiple guest virtual machines.
+
+Network bridges can be configured either graphically using {yast} or manually by creating configuration files within the `+/etc/sysconfig/network/+` directory.
+
+The preferred method for creating a network bridge interface is using the YaST Network Devices module.
+
+[#proc-network-bridge-yast-steps]
+.Creating a bridge interface with {yast}
+. Run menu:{yast}[System > Network Settings].
+. Use *Add* and change the *Device Type* to *Bridge*. Proceed with *Next*.
+. Enter an interface name in the *Configuration Name* field (for example, `+br0+`) and click *Next*.
+. In the *Address* tab, specify how the network bridge interface obtains its IP configuration (either via `+DHCP+` or by assigning a *Statically Assigned IP Address*).
+. Switch to the *Bridged Devices* tab. Select the checkbox next to the physical network card or VLAN interface that you want to include as a port inside the bridge matrix.
+. Click *Next* to return to the Network Settings overview, then click *OK* to save the configuration and restart the network service.
+
+[#sec-network-bridge-manual-generic]
+=== Manually configure network bridge
+
+If you choose to bypass {yast}, you can configure a network bridge manually by modifying the control parameters inside the network directory scripts. In this scenario, we assume a logical bridge interface named `+br0+` is created to hook to a physical interface named `+eth0+`.
+
+[#proc-network-bridge-manual-generic-steps]
+.Configuring a bridge with wicked interface declarations
+. Create a new configuration profile for the virtual bridge target at `+/etc/sysconfig/network/ifcfg-br0+`:
++
+[source,ini,subs="specialchars,quotes,attributes,callouts"]
+----
+STARTMODE='auto'
+BOOTPROTO='static'
+IPADDR='__IP{underscore}ADDRESS{underscore}OF{underscore}THE{underscore}BRIDGE__'
+BRIDGE='yes'
+BRIDGE{underscore}PORTS='eth0'
+BRIDGE{underscore}STP='off'
+----
+. Modify the properties of the underlying physical network card profile (for example, `+/etc/sysconfig/network/ifcfg-eth0+`). Ensure that any existing IP address attributes are deleted, and disable protocol configuration options so that it acts purely as a physical port layer:
++
+[source,ini]
+----
+STARTMODE='auto'
+BOOTPROTO='none'
+----
+. If using a static IP topology, map the default gateway explicitly to the bridge network interface using a dedicated routing file profile at `+/etc/sysconfig/network/ifroute-br0+`:
++
+[source,text,subs="specialchars,quotes,attributes,callouts"]
+----
+default __GATEWAY{underscore}IP{underscore}ADDRESS__ - br0
+----
++
+[#war-network-bridge-generic-routes]
+[WARNING]
+.Conflicting router configurations
+====
+Verify that no obsolete routing statements remain active inside your physical interface script files (such as `+ifroute-eth0+`). Failing to remove default paths from physical slave adapters will create structural routing conflict flags inside the kernel.
+====
+. Reload the active networking configuration space to enforce the changes:
++
+----
+> sudo systemctl restart network
+----

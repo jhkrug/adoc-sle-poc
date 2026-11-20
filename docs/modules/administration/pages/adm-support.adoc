@@ -1,0 +1,911 @@
+// Converted from xml/adm_support.xml
+[#cha-adm-support]
+= Gathering system information for support
+:description: Learn about accessing detailed system information, creating problem reports, and analyzing SupportConfig output with SUSE tools
+:revdate: 2026-01-16
+
+[abstract]
+--
+For a quick overview of all relevant system information of a machine, {productname} offers the `+hostinfo+` package. It also helps system administrators to check for tainted kernels (that are not supported) or any third-party packages installed on a machine.
+
+In case of problems, a detailed system report may be created with either the `+supportconfig+` command line tool or the {yast} *Support* module. Both collect information about the system such as: current kernel version, hardware, installed packages, partition setup, and much more. The result is a TAR archive of files. After opening a Service Request (SR), you can upload the TAR archive to Global Technical Support. It helps to locate the issue you reported and to assist you in solving the problem.
+
+Additionally, you can analyze the `+supportconfig+` output for known issues to help resolve problems faster. For this purpose, {productname} provides both an appliance and a command line tool for `+Supportconfig Analysis+` (SCA).
+--
+
+[#sec-admsupport-hostinfo]
+== Displaying current system information
+
+For a quick and easy overview of all relevant system information when logging in to a server, use the package `+hostinfo+`. After it has been installed on a machine, the console displays the following information to any `+root+` user that logs in to this machine:
+
+[#ex-support-hostinfo]
+.Output of `+hostinfo+` when logging in as `+root+`
+====
+[subs="attributes+"]
+----
+Welcome to SUSE Linux Enterprise Server 15 SP2 Snapshot8 (x86_64) - Kernel \r (\l).
+
+
+Distribution:             {sles} {productnumber}
+Current As Of:            Mon 11 March 2024 10:11:51 AM CET
+Hostname:                 localhost
+Kernel Version:           {kernel-version}-default
+ Architecture:            x86_64
+ Installed:               Fri 08 March 2024 04:45:50 PM CET
+ Status:                  Not Tainted
+Last Installed Package:   Mon 11 March 2024 10:02:13 AM CET
+ Patches Needed:          0
+ Security:                0
+ 3rd Party Packages:      6
+Network Interfaces
+ eth0:                    {exampledomain2ip}/24 {exampledomain2ipv6}/64
+Memory
+ Total/Free/Avail:        7.4Gi/6.4Gi/6.8Gi (91% Avail)
+CPU Load Average:         7 (3%) with 2 CPUs
+----
+====
+
+In case the output shows a `+tainted+` kernel status, see <<sec-admsupport-kernel,Support of kernel modules>> for more details.
+
+[#sec-admsupport-supportconfig]
+== Collecting system information with supportconfig
+
+To create a TAR archive with detailed system information that you can hand over to Global Technical Support, use either:
+
+* the command `+supportconfig+` or,
+* the {yast} *Support* module.
+
+The command line tool is provided by the package `+supportutils+` which is installed by default. The {yast} *Support* module is also based on the command line tool.
+
+Certain packages integrate Supportconfig plug-ins. When Supportconfig is executed, all plug-ins are executed as well and create one or more result files for the archive. The benefit is that only topics with a specific plug-in are checked. Supportconfig plug-ins are stored in the directory `+/usr/lib/supportconfig/plugins/+`.
+
+[#sec-admsupport-supportconfig-sr]
+=== Creating a service request number
+
+Supportconfig archives can be generated at any time. However, for handing over the Supportconfig data to Global Technical Support, you need to generate a service request number first. You need it to upload the archive to support.
+
+To create a service request, go to link:https://scc.suse.com/support/requests[] and follow the instructions on the screen. Write down the service request number.
+
+[NOTE]
+.Privacy statement
+====
+{suse} treats system reports as confidential data. For details about our privacy commitment, see link:https://www.suse.com/company/policies/privacy/[].
+====
+
+[#sec-admsupport-supportconfig-upload]
+=== Upload targets
+
+After having created a service request number, you can upload your Supportconfig archives to Global Technical Support as described in <<pro-admsupport-submit-yast,Submitting information to support with {yast}>> or <<pro-admsupport-submit-cli,Submitting information to support from command line>>. Use one of the following upload targets:
+
+* North America: FTP link:ftp://support-ftp.us.suse.com/incoming/[]
+* EMEA, Europe, the Middle East and Africa: FTP link:ftp://support-ftp.emea.suse.com/incoming[]
+
+Alternatively, you can manually attach the TAR archive to your service request using the service request URL: link:https://scc.suse.com/support/requests[].
+
+[#sec-admsupport-yast]
+=== Creating a supportconfig archive with {yast}
+
+To use {yast} to gather your system information, proceed as follows:
+
+. Start {yast} and open the *Support* module.
++
+image::yast2_support_main.png["",width=60%]
+. Click *Create report tarball*.
+. In the next window, select one of the Supportconfig options from the radio button list. *Use Custom (Expert) Settings* is preselected by default. To test the report function first, use *Only gather a minimum amount of info*. For additional information on the other options, refer to the `+supportconfig+` man page.
++
+Click *Next*.
+. [[st-supportconfig-contact]]Enter your contact information. It is saved in the `+basic-environment.txt+` file and included in the created archive.
+. [[st-supportconfig-upload-target]]To submit the archive to Global Technical Support, provide the required *Upload Information*. {yast} automatically suggests an upload server. To modify it, refer to <<sec-admsupport-supportconfig-upload,Upload targets>> for details of which upload servers are available.
++
+To submit the archive later, leave the *Upload Information* empty.
+. Click *Next* to start the information collection process.
++
+--
+image::yast2_support_conf.png["",width=80%]
+--
++
+After the process is finished, click *Next*.
+. To review the collected data, select the desired file from *File Name* to view its contents in {yast}. To remove a file from the TAR archive before submitting it to support, use *Remove from Data*. Press *Next*.
+. Save the TAR archive. If you started the {yast} module as `+root+` user, {yast} prompts to save the archive to `+/var/log+` (otherwise, to your home directory). The file name format is `scc{underscore}__HOST__{underscore}__DATE__{underscore}__TIME__.tbz`.
+. To upload the archive to support directly, make sure *Upload log files tarball to URL* is activated. The *Upload Target* shown here is the one that {yast} suggests in <<st-supportconfig-upload-target,this step>>. To modify the upload target, check which upload servers are available in <<sec-admsupport-supportconfig-upload,Upload targets>>.
+. To skip the upload, deactivate *Upload log files tarball to URL*.
+. Confirm the changes to close the {yast} module.
+
+[#sec-admsupport-cli]
+=== Creating a supportconfig archive from command line
+
+The following procedure shows how to create a Supportconfig archive, but without submitting it to support directly. For uploading it, you need to run the command with certain options as described in <<pro-admsupport-submit-cli,Submitting information to support from command line>>.
+
+. Open a shell and become `+root+`.
+. Run `+supportconfig+`. It is enough to run this tool without any options. However, the most common options are displayed in the following list:
++
+`-E _MAIL_`, `-N _NAME_`, `-O _COMPANY_`, `-P _PHONE_`::
+Sets your contact data: e-mail address (`+-E+`), company name (`+-O+`), your name (`+-N+`), and your phone number (`+-P+`).
+`-i _KEYWORDS_`, `+-F+`::
+Limits the features to check. The placeholder _KEYWORDS_ is a comma separated list of case-sensitive keywords. Get a list of all keywords with `+supportconfig -F+`.
+`-r _SRNUMBER_`::
+Defines your service request number when uploading the generated TAR archive.
+. Wait for the tool to complete the operation.
+. The default archive location is `+/var/log+`, with the file name format being `scc{underscore}__HOST__{underscore}__DATE__{underscore}__TIME__.tbz`
+
+[#sec-admsupport-supportconfig-log]
+=== Understanding the output of `+supportconfig+`
+
+Whether you run `+supportconfig+` through {yast} or directly, the script gives you a summary of what it did.
+
+----
+                     Support Utilities - Supportconfig
+                          Script Version: 3.0-98 
+                          Script Date: 2017 06 01
+[...]
+Gathering system information
+  Data Directory:    /var/log/scc_d251_180201_1525 <1>
+
+  Basic Server Health Check...                 Done <2>
+  RPM Database...                              Done 
+  Basic Environment...                         Done 
+  System Modules...                            Done 
+[...]
+  File System List...                          Skipped <3>
+[...]
+  Command History...                           Excluded <4>
+[...]
+  Supportconfig Plugins:                       1 <5>
+    Plugin: pstree...                          Done
+[...]
+Creating Tar Ball
+
+==[ DONE ]===================================================================
+  Log file tar ball: /var/log/scc_d251_180201_1525.txz <6>
+  Log file size:     732K
+  Log file md5sum:   bf23e0e15e9382c49f92cbce46000d8b
+=============================================================================
+----
+
+<1> The temporary data directory to store the results. This directory is archived as tar file, see <<co-admsupport-script-archive,co-admsupport-script-archive>>.
+<2> The feature was enabled (either by default or selected manually) and executed successfully. The result is stored in a file (see <<tab-admsupport-features-and-filenames,Comparison of features and file names in the TAR archive>>).
+<3> The feature was skipped because files of one or more RPM packages were changed.
+<4> The feature was excluded because it was deselected via the `+-x+` option.
+<5> The script found one plug-in and executes the plug-in `+pstree+`. The plug-in was found in the directory `+/usr/lib/supportconfig/plugins/+`. See the man page for details.
+<6> The tar file name of the archive, by default compressed with `+xz+`.
+
+[#sec-admsupport-options]
+=== Common supportconfig options
+
+The `+supportconfig+` utility is usually called without any options. Display a list of all options with `+supportconfig+` `+-h+` or refer to the man page. The following list gives a brief overview of common use cases:
+
+Reducing the size of the information being gathered::
+Use the minimal option (`+-m+`):
++
+----
+> sudo supportconfig -m
+----
+Limiting the information to a specific topic::
+If you have already localized a problem that relates to a specific area or feature set only, you should limit the collected information to the specific area for the next `+supportconfig+` run. For example, if you detected problems with LVM and want to test a recent change that you did to the LVM configuration. In that case it makes sense to gather the minimum Supportconfig information around LVM only:
++
+----
+> sudo supportconfig -i LVM
+----
++
+Additional keywords can be separated through commas. For example, an additional disk test:
++
+----
+> sudo supportconfig -i LVM,DISK
+----
++
+For a complete list of feature keywords that you can use for limiting the collected information to a specific area, run:
++
+----
+> sudo supportconfig -F
+----
+Including additional contact information in the output:::
+{empty}
++
+----
+> sudo supportconfig -E tux@example.org -N "Tux Penguin" -O "Penguin Inc." ...
+----
++
+(all in one line)
+Collecting already rotated log files::
+{empty}
++
+----
+> sudo supportconfig -l
+----
++
+This is especially useful in high logging environments or after a kernel crash when syslog rotates the log files after a reboot.
+
+[#sec-admsupport-log]
+=== Overview of the archive content
+
+The TAR archive contains all the results from the features. The set of features can be limited through the `+-i+` option (see <<sec-admsupport-options,Common supportconfig options>>).
+
+To list the content of the archive, use the following `+tar+` command:
+
+[subs="attributes+"]
+----
+# tar xf /var/log/scc_{exampleclient}_180131_1545.tbz
+----
+
+The following file names are always available inside the TAR archive:
+
+.Minimum files in archive
+`+basic-environment.txt+`::
+Contains the date when this script was executed and system information like version of the distribution, hypervisor information, and more.
+`+basic-health-check.txt+`::
+Contains basic health checks like uptime, virtual memory statistics, free memory and hard disk, checks for zombie processes, and more.
+`+hardware.txt+`::
+Contains basic hardware checks like information about the CPU architecture, list of all connected hardware, interrupts, I/O ports, kernel boot messages, and more.
+`+messages.txt+`::
+Contains log messages from the system journal.
+`+rpm.txt+`::
+Contains a list of all installed RPM packages, the name, where they are coming from, and their versions.
+`+summary.xml+`::
+Contains information in XML format like distribution, the version, and product specific fragments.
+`+supportconfig.txt+`::
+Contains information about the `+supportconfig+` script itself.
+`+y2log.txt+`::
+Contains {yast} specific information like specific packages, configuration files, and log files.
+
+<<tab-admsupport-features-and-filenames,Comparison of features and file names in the TAR archive>> lists all available features and their file names. Further service packs can extend the list, as can plug-ins.
+
+[#tab-admsupport-features-and-filenames]
+.Comparison of features and file names in the TAR archive
+[cols="1,1",options="header"]
+|===
+|Feature
+|File name
+
+|`+APPARMOR+`
+|`+security-apparmor.txt+`
+|`+AUDIT+`
+|`+security-audit.txt+`
+|`+AUTOFS+`
+|`+fs-autofs.txt+`
+|`+BOOT+`
+|`+boot.txt+`
+|`+BTRFS+`
+|`+fs-btrfs.txt+`
+|`+DAEMONS+`
+|`+systemd.txt+`
+|`+CIMOM+`
+|`+cimom.txt+`
+|`+CRASH+`
+|`+crash.txt+`
+|`+CRON+`
+|`+cron.txt+`
+|`+DHCP+`
+|`+dhcp.txt+`
+|`+DISK+`
+|`+fs-diskio.txt+`
+|`+DNS+`
+|`+dns.txt+`
+|`+DOCKER+`
+|`+docker.txt+`
+|`+DRBD+`
+|`+drbd.txt+`
+|`+ENV+`
+|`+env.txt+`
+|`+ETC+`
+|`+etc.txt+`
+|`+HA+`
+|`+ha.txt+`
+|`+HAPROXY+`
+|`+haproxy.txt+`
+|`+HISTORY+`
+|`+shell_history.txt+`
+|`+IB+`
+|`+ib.txt+`
+|`+IMAN+`
+|`+novell-iman.txt+`
+|`+ISCSI+`
+|`+fs-iscsi.txt+`
+|`+LDAP+`
+|`+ldap.txt+`
+|`+LIVEPATCH+`
+|`+kernel-livepatch.txt+`
+|`+LVM+`
+|`+lvm.txt+`
+|`+MEM+`
+|`+memory.txt+`
+|`+MOD+`
+|`+modules.txt+`
+|`+MPIO+`
+|`+mpio.txt+`
+|`+NET+`
+|`+network-*.txt+`
+|`+NFS+`
+|`+nfs.txt+`
+|`+NTP+`
+|`+ntp.txt+`
+|`+NVME+`
+|`+nvme.txt+`
+|`+OCFS2+`
+|`+ocfs2.txt+`
+|`+OFILES+`
+|`+open-files.txt+`
+|`+PRINT+`
+|`+print.txt+`
+|`+PROC+`
+|`+proc.txt+`
+|`+SAR+`
+|`+sar.txt+`
+|`+SLERT+`
+|`+slert.txt+`
+|`+SLP+`
+|`+slp.txt+`
+|`+SMT+`
+|`+smt.txt+`
+|`+SMART+`
+|`+fs-smartmon.txt+`
+|`+SMB+`
+|`+samba.txt+`
+|`+SRAID+`
+|`+fs-softraid.txt+`
+|`+SSH+`
+|`+ssh.txt+`
+|`+SSSD+`
+|`+sssd.txt+`
+|`+SYSCONFIG+`
+|`+sysconfig.txt+`
+|`+SYSFS+`
+|`+sysfs.txt+`
+|`+TRANSACTIONAL+`
+|`+transactional-update.txt+`
+|`+TUNED+`
+|`+tuned.txt+`
+|`+UDEV+`
+|`+udev.txt+`
+|`+UFILES+`
+|`+fs-files-additional.txt+`
+|`+UP+`
+|`+updates.txt+`
+|`+WEB+`
+|`+web.txt+`
+|`+X+`
+|`+x.txt+`
+|===
+
+// REMARK: toms 2018-04-05: Make the table be aware of what packages brings what plugin?
+
+[#sec-admsupport-submit]
+== Submitting information to Global Technical Support
+
+Use the {yast} *Support* module or the `+supportconfig+` command line utility to submit system information to the Global Technical Support. When you experience a server issue and want the support's assistance, you will need to open a service request first. For details, see <<sec-admsupport-supportconfig-sr,Creating a service request number>>.
+
+The following examples use _12345678901_ as a placeholder for your service request number. Replace _12345678901_ with the service request number you created in <<sec-admsupport-supportconfig-sr,Creating a service request number>>.
+
+[#pro-admsupport-submit-yast]
+.Submitting information to support with {yast}
+The following procedure assumes that you have already created a Supportconfig archive, but have not uploaded it yet. Make sure to have included your contact information in the archive as described in <<sec-admsupport-yast,Creating a supportconfig archive with {yast}>>, <<st-supportconfig-contact,this step>>. For instructions on how to generate and submit a Supportconfig archive in one go, see <<sec-admsupport-yast,Creating a supportconfig archive with {yast}>>.
+
+. Start {yast} and open the *Support* module.
+. Click *Upload*.
+. In *Package with log files* specify the path to the existing Supportconfig archive or *Browse* for it.
+. [[st-supportcfg-submit-upltarget]]{yast} automatically proposes an upload server. To modify it, refer to <<sec-admsupport-supportconfig-upload,Upload targets>> for details of which upload servers are available.
++
+--
+image::yast2_support_conf_upload.png["",width=60%]
+--
++
+Proceed with *Next*.
+. Click *Finish*.
+
+[#pro-admsupport-submit-cli]
+.Submitting information to support from command line
+The following procedure assumes that you have already created a Supportconfig archive, but have not uploaded it yet. For instructions on how to generate and submit a Supportconfig archive in one go, see <<sec-admsupport-yast,Creating a supportconfig archive with {yast}>>.
+
+. Servers with Internet connectivity:
++
+.. To use the default upload target, run:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo supportconfig -ur __12345678901__
+----
+.. For the secure upload target, use the following:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo supportconfig -ar __12345678901__
+----
+. Servers _without_ Internet connectivity
++
+.. Run the following:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo supportconfig -r __12345678901__
+----
+.. Manually upload the `/var/log/scc{underscore}__SR12345678901__{asterisk}tbz` archive to one of our FTP servers. Which one to use depends on your location in the world. For an overview, see <<sec-admsupport-supportconfig-upload,Upload targets>>.
+. After the TAR archive arrives in the incoming directory of our FTP server, it becomes automatically attached to your service request.
+
+[#sec-admsupport-sca]
+== Analyzing system information
+
+System reports created with `+supportconfig+` can be analyzed for known issues to help resolve problems faster. For this purpose, {productname} provides both an appliance and a command line tool for `+Supportconfig Analysis+` (SCA). The SCA appliance is a server-side tool which is non-interactive. The SCA tool (`+scatool+` provided by the package `+sca-server-report+`) runs on the client-side and is executed from command line. Both tools analyze Supportconfig archives from affected servers. The initial server analysis takes place on the SCA appliance or the workstation on which `+scatool+` is running. No analysis cycles happen on the production server.
+
+Both the appliance and the command line tool additionally need product-specific patterns that enable them to analyze the Supportconfig output for the associated products. Each pattern is a script that parses and evaluates a Supportconfig archive for one known issue. The patterns are available as RPM packages.
+
+You can also develop your own patterns as briefly described in <<sec-admsupport-sca-patterns,Developing custom analysis patterns>>.
+
+[#sec-admsupport-sca-tool]
+=== SCA command line tool
+
+The SCA command line tool lets you analyze a local machine using both `+supportconfig+` and the analysis patterns for the specific product that is installed on the local machine. The tool creates an HTML report showing its analysis results. For an example, see <<fig-scatool-html,HTML report generated by SCA tool>>.
+
+[#fig-scatool-html]
+.HTML report generated by SCA tool
+image::sca_tool_report_html.png["",width=100%]
+
+The `+scatool+` command is provided by the `+sca-server-report+` package. It is not installed by default. Additionally, you need the `+sca-patterns-base+` package and any of the product-specific `+sca-patterns-*+` packages that matches the product installed on the machine where you want to run the `+scatool+` command.
+
+Execute the `+scatool+` command either as `+root+` user or with `+sudo+`. When calling the SCA tool, either analyze an existing `+supportconfig+` TAR archive or let it generate and analyze a new archive in one go. The tool also provides an interactive console with tab completion. It is possible to run `+supportconfig+` on an external machine and to execute the subsequent analysis on the local machine.
+
+Find a few example commands below:
+
+`+sudo scatool+`{empty}``+-s+``::
+Calls `+supportconfig+` and generates a new Supportconfig archive on the local machine. Analyzes the archive for known issues by applying the SCA analysis patterns that match the installed product. Displays the path to the HTML report that is generated from the results of the analysis. It is written to the same directory where the Supportconfig archive can be found.
+`+sudo scatool+`{empty}``+-s+`` `+-o+` _/opt/sca/reports/_::
+Same as `+sudo scatool+` `+-s+`, only that the HTML report is written to the path specified with `+-o+`.
+`+sudo scatool+`{empty}``+-a+`` _PATH_TO_TARBALL_OR_DIR_::
+Analyzes the specified Supportconfig archive file (or the specified directory to where the Supportconfig archive has been extracted). The generated HTML report is saved in the same location as the Supportconfig archive or directory.
+`+sudo scatool+`{empty}``+-a+`` _SLES_SERVER.COMPANY.COM_::
+Establishes an SSH connection to an external server _SLES_SERVER.COMPANY.COM_ and runs `+supportconfig+` on the server. The Supportconfig archive is then copied back to the local machine and is analyzed there. The generated HTML report is saved to the default `+/var/log+` directory. (Only the Supportconfig archive is created on _SLES_SERVER.COMPANY.COM_).
+`+sudo scatool+`{empty}``+-c+``::
+Starts the interactive console for `+scatool+`. Press kbd:[Tab] twice to see the available commands.
+
+For further options and information, run `+sudo scatool -h+` or see the `+scatool+` man page.
+
+[#sec-admsupport-sca-appliance]
+=== SCA appliance
+
+If you decide to use the SCA appliance for analyzing the Supportconfig archives, configure a dedicated server (or virtual machine) as the SCA appliance server. The SCA appliance server can then be used to analyze Supportconfig archives from all machines in your enterprise running {sls} or {sled}. You can simply upload Supportconfig archives to the appliance server for analysis. Interaction is not required. In a MariaDB database, the SCA appliance keeps track of all Supportconfig archives that have been analyzed . You can read the SCA reports directly from the appliance Web interface. Alternatively, you can have the appliance send the HTML report to any administrative user via e-mail. For details, see <<sec-admsupport-sca-appliance-config-mail,Sending SCA reports via e-mail>>.
+
+[#sec-admsupport-sca-appliance-installquick]
+==== Installation quick start
+
+To install and set up the SCA appliance in a fast way from the command line, follow the instructions here. The procedure is intended for experts and focuses on the bare installation and setup commands. For more information, refer to the more detailed description in <<sec-admsupport-sca-appliance-pre,Prerequisites>> to <<sec-admsupport-sca-appliance-install,Installation and basic setup>>.
+
+.Prerequisites
+* Web and LAMP Pattern
+* Web and Scripting Module (you must register the machine to be able to select this module).
+
+[NOTE]
+.`+root+` privileges required
+====
+All commands in the following procedure must be run as `+root+`.
+====
+
+.Installation using anonymous FTP for upload
+After the appliance is set up and running, no more manual interaction is required. This way of setting up the appliance is therefore ideal for using cron jobs to create and upload Supportconfig archives.
+
+. On the machine on which to install the appliance, log in to a console and execute the following commands (make sure to accept the recommended packages):
++
+----
+> sudo zypper install sca-appliance-* sca-patterns-* \
+vsftpd yast2 yast2-ftp-server
+> sudo systemctl enable apache2
+> sudo systemctl start apache2
+> sudo systemctl enable vsftpd
+> sudo systemctl start vsftpd
+> sudo yast ftp-server
+----
+. In {yast} FTP Server, select menu:Authentication[Enable Upload > Anonymous Can Upload > Finish > Yes] to *Create /srv/ftp/upload*.
+. Execute the following commands:
++
+----
+> sudo systemctl enable mysql
+> sudo systemctl start mysql
+> sudo mysql_secure_installation
+> sudo setup-sca -f
+----
++
+The mysql_secure_installation will create a MariaDB `+root+` password.
+
+.Installation using SCP/tmp for upload
+This way of setting up the appliance requires manual interaction when typing the SSH password.
+
+. On the machine on which to install the appliance, log in to a console.
+. Execute the following commands:
++
+----
+> sudo zypper install sca-appliance-* sca-patterns-*
+> sudo systemctl enable apache2
+> sudo systemctl start apache2
+> sudo sudo systemctl enable mysql
+> sudo systemctl start mysql
+> sudo mysql_secure_installation
+> sudo setup-sca
+----
+
+[#sec-admsupport-sca-appliance-pre]
+==== Prerequisites
+
+To run an SCA appliance server, you need the following prerequisites:
+
+* All `+sca-appliance-*+` packages.
+* The `+sca-patterns-base+` package. Additionally, any of the product-specific `+sca-patterns-*+` for the type of Supportconfig archives that you want to analyze with the appliance.
+* Apache
+* PHP
+* MariaDB
+* anonymous FTP server (optional)
+
+[#sec-admsupport-sca-appliance-install]
+==== Installation and basic setup
+
+As listed in <<sec-admsupport-sca-appliance-pre,Prerequisites>>, the SCA appliance has several dependencies on other packages. Therefore, you need to take preparatory steps before installing and setting up the SCA appliance server:
+
+. For Apache and MariaDB, install the `+Web+` and `+LAMP+` installation patterns.
+. Set up Apache, MariaDB, and optionally an anonymous FTP server. 
+ifdef::os-sles[ For more information, see xref:apache2.adoc[] and xref:yast2-ftp.adoc[]. ]
+. Configure Apache and MariaDB to start at boot time:
++
+----
+> sudo systemctl enable apache2 mysql
+----
+. Start both services:
++
+----
+> sudo systemctl start apache2 mysql
+----
+
+Now you can install the SCA appliance and set it up as described in <<pro-sca-appl-install,Installing and configuring the SCA appliance>>.
+
+[#pro-sca-appl-install]
+.Installing and configuring the SCA appliance
+After installing the packages, use the `+setup-sca+` script for the basic configuration of the MariaDB administration and report database that is used by the SCA appliance.
+
+It can be used to configure the following options you have for uploading the Supportconfig archives from your machines to the SCA appliance:
+
+* `+scp+`
+* anonymous FTP server
+
+. Install the appliance and the SCA base-pattern library:
++
+----
+> sudo zypper install sca-appliance-* sca-patterns-base
+----
+. Additionally, install the pattern packages for the types of Supportconfig archives you want to analyze. For example, if you have {sls} 12 and {sls} 15 servers in your environment, install both the `+sca-patterns-sle12+` and `+sca-patterns-sle15+` packages.
++
+To install all available patterns:
++
+----
+> sudo zypper install sca-patterns-*
+----
+. For basic setup of the SCA appliance, use the `+setup-sca+` script. How to call it depends on how you want to upload the Supportconfig archives to the SCA appliance server:
++
+--
+* If you have configured an anonymous FTP server that uses the `+/srv/ftp/upload+` directory, execute the setup script with the `+-f+` option. Follow the instructions on the screen:
++
+----
+> sudo setup-sca -f
+----
++
+[NOTE]
+.FTP server using another directory
+====
+If your FTP server uses another directory than `+/srv/ftp/upload+`, adjust the following configuration files first to make them point to the correct directory: `+/etc/sca/sdagent.conf+` and `+/etc/sca/sdbroker.conf+` .
+====
+* To upload Supportconfig files to the `+/tmp+` directory of the SCA appliance server via `+scp+`, call the setup script without any parameters. Follow the instructions on the screen:
++
+----
+> sudo setup-sca
+----
+--
++
+The setup script runs a few checks regarding its requirements and configures the needed components. It will prompt you for two passwords: the MySQL `+root+` password of the MariaDB that you have set up, and a Web user password with which to log in to the Web interface of the SCA appliance.
+. Enter the existing MariaDB `+root+` password. It will allow the SCA appliance to connect to the MariaDB.
+. Define a password for the Web user. It will be written to `+/srv/www/htdocs/sca/web-config.php+` and will be set as the password for the user `+scdiag+`. Both user name and password can be changed at any time later, see <<sec-admsupport-sca-appliance-config-passwd,Password for the Web interface>>.
+
+After successful installation and setup, the SCA appliance is ready for use, see <<sec-admsupport-sca-appliance-use,Using the SCA appliance>>. However, you should modify options such as changing the password for the Web interface, changing the source for the SCA pattern updates, enabling archiving mode or configuring e-mail notifications. For details on that, see <<sec-admsupport-sca-appliance-config,Customizing the SCA appliance>>.
+
+[WARNING]
+.Data protection
+====
+As the reports on the SCA appliance server contain security-relevant information, make sure to protect the data on the SCA appliance server against unauthorized access.
+====
+
+[#sec-admsupport-sca-appliance-use]
+==== Using the SCA appliance
+
+You can upload existing Supportconfig archives to the SCA appliance manually or create new Supportconfig archives and upload them to the SCA appliance in one step. Uploading can be done via FTP or SCP. For both, you need to know the URL where the SCA appliance can be reached. For upload via FTP, an FTP server needs to be configured for the SCA appliance, see <<pro-sca-appl-install,Installing and configuring the SCA appliance>>.
+
+[#sec-admsupport-sca-appliance-use-upload]
+===== Uploading supportconfig archives to the SCA appliance
+
+* For creating a Supportconfig archive and uploading it via (anonymous) FTP:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo supportconfig -U “ftp://__SCA-APPLIANCE.COMPANY.COM__/upload”
+----
+* For creating a Supportconfig archive and uploading it via SCP:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo supportconfig -U “scp://__SCA-APPLIANCE.COMPANY.COM__/tmp”
+----
++
+You will be prompted for the `+root+` user password of the server running the SCA appliance.
+* To manually upload one or multiple archives, copy the existing archive files (located at``+/var/log/scc_*.tbz+``) to the SCA appliance. As target, use either the appliance server's `+/tmp+` directory or the `+/srv/ftp/upload+` directory (if FTP is configured for the SCA appliance server).
+
+[#sec-admsupport-sca-appliance-use-view]
+===== Viewing SCA reports
+
+SCA reports can be viewed from any machine that has a browser installed and can access the report index page of the SCA appliance.
+
+. Start a Web browser and make sure that JavaScript and cookies are enabled.
+. As a URL, enter the report index page of the SCA appliance.
++
+----
+https://sca-appliance.company.com/sca
+----
++
+If in doubt, ask your system administrator.
+. You will be prompted for a user name and a password to log in.
++
+[#fig-sca-appl-html]
+.HTML report generated by SCA appliance
+image::sca_appl_report_html.png["",width=100%]
+. After logging in, click the date of the report you want to read.
+. Click the *Basic Health* category first to expand it.
+. In the *Message* column, click an individual entry. This opens the corresponding article in the {suse} Knowledge base. Read the proposed solution and follow the instructions.
+. If the *Solutions* column of the *Supportconfig Analysis Report* shows any additional entries, click them. Read the proposed solution and follow the instructions.
+. Check the {suse} Knowledge base (link:https://www.suse.com/support/kb/[]) for results that directly relate to the problem identified by SCA. Work at resolving them.
+. Check for results that can be addressed proactively to avoid future problems.
+
+[#sec-admsupport-sca-appliance-config]
+==== Customizing the SCA appliance
+
+The following sections show how to change the password for the Web interface, how to change the source for the SCA pattern updates, how to enable archiving mode, and how to configure e-mail notifications.
+
+[#sec-admsupport-sca-appliance-config-passwd]
+===== Password for the Web interface
+
+The SCA Appliance Web interface requires a user name and password for logging in. The default user name is `+scdiag+` and the default password is `+linux+` (if not specified otherwise, see <<pro-sca-appl-install,Installing and configuring the SCA appliance>>). Change the default password to a secure password at the earliest possibility. You can also modify the user name.
+
+[#pro-sca-passwd-change]
+.Changing user name or password for the Web interface
+. Log in as `+root+` user at the system console of the SCA appliance server.
+. Open `+/srv/www/htdocs/sca/web-config.php+` in an editor.
+. Change the values of `+$username+` and `+$password+` as desired.
+. Save the file and exit.
+
+[#sec-admsupport-sca-appliance-config-upd]
+===== Updates of SCA patterns
+
+By default, all `+sca-patterns-*+` packages are updated regularly by a `+root+` cron job that executes the `+sdagent-patterns+` script nightly, which in turn runs `+zypper update sca-patterns-*+`. A regular system update will update all SCA appliance and pattern packages. To update the SCA appliance and patterns manually, run:
+
+----
+> sudo zypper update sca-*
+----
+
+The updates are installed from the {sle} {productnumber} update repository by default. You can change the source for the updates to an {rmt} server, if desired. When `+sdagent-patterns+` runs `+zypper update sca-patterns-*+`, it gets the updates from the currently configured update channel. If that channel is located on an {rmt} server, the packages will be pulled from there.
+
+.Disabling automatic updates of SCA patterns
+. Log in as `+root+` user at the system console of the SCA appliance server.
+. Open `+/etc/sca/sdagent-patterns.conf+` in an editor.
+. Change the entry
++
+----
+UPDATE_FROM_PATTERN_REPO=1
+----
++
+to
++
+----
+UPDATE_FROM_PATTERN_REPO=0
+----
+. Save the file and exit. The machine does not require any restart to apply the change.
+
+[#sec-admsupport-sca-appliance-config-archive]
+===== Archiving mode
+
+All Supportconfig archives are deleted from the SCA appliance after they have been analyzed and their results have been stored in the MariaDB database. However, for troubleshooting purposes it can be useful to keep copies of Supportconfig archives from a machine. By default, archiving mode is disabled.
+
+.Enabling archiving mode in the SCA appliance
+. Log in as `+root+` user at the system console of the SCA appliance server.
+. Open `+/etc/sca/sdagent.conf+` in an editor.
+. Change the entry
++
+----
+ARCHIVE_MODE=0
+----
++
+to
++
+----
+ARCHIVE_MODE=1
+----
+. Save the file and exit. The machine does not require any restart to apply the change.
+
+After having enabled archive mode, the SCA appliance will save the Supportconfig files to the `+/var/log/archives/saved+` directory, instead of deleting them.
+
+[#sec-admsupport-sca-appliance-config-mail]
+===== Sending SCA reports via e-mail
+
+The SCA appliance can e-mail a report HTML file for each Supportconfig analyzed. This feature is disabled by default. When enabling it, you can define a list of e-mail addresses to which the reports should be sent. Define a level of status messages that trigger the sending of reports (`+STATUS_NOTIFY_LEVEL+`).
+
+[#vl-sca-mails-notify-level]
+.Possible values for `+STATUS_NOTIFY_LEVEL+`
+$STATUS_OFF::
+Deactivate sending of HTML reports.
+$STATUS_CRITICAL::
+Send only SCA reports that include a CRITICAL.
+$STATUS_WARNING::
+Send only SCA reports that include a WARNING or CRITICAL.
+$STATUS_RECOMMEND::
+Send only SCA reports that include a RECOMMEND, WARNING or CRITICAL.
+$STATUS_SUCCESS::
+Send SCA reports that include a SUCCESS, RECOMMEND, WARNING or CRITICAL.
+
+.Configuring e-mail notifications for SCA reports
+. Log in as `+root+` user at the system console of the SCA appliance server.
+. Open `+/etc/sca/sdagent.conf+` in an editor.
+. Search for the entry `+STATUS_NOTIFY_LEVEL+`. By default, it is set to `+$STATUS_OFF+` (e-mail notifications are disabled).
+. To enable e-mail notifications, change `+$STATUS_OFF+` to the level of status messages that you want to have e-mail reports for, for example:
++
+----
+STATUS_NOTIFY_LEVEL=$STATUS_SUCCESS
+----
++
+For details, see <<vl-sca-mails-notify-level,Possible values for `+STATUS_NOTIFY_LEVEL+`>>.
+. To define the list of recipients to which the reports should be sent:
++
+.. Search for the entry `+EMAIL_REPORT='root'+`.
+.. Replace `+root+` with a list of e-mail addresses to which SCA reports should be sent. The e-mail addresses must be separated by spaces. For example:
++
+[subs="attributes+"]
+----
+EMAIL_REPORT='{exampleuser_plain}@my.company.com {exampleuserii_plain}@your.company.com'
+----
+. Save the file and exit. The machine does not require any restart to apply the changes. All future SCA reports will be e-mailed to the specified addresses.
+
+[#sec-admsupport-sca-appliance-backup]
+==== Backing up and restoring the database
+
+To back up and restore the MariaDB database that stores the SCA reports, use the `+scadb+` command as described below. `+scadb+` is provided by the package `+sca-appliance-broker+`.
+
+.Backing up the database
+. Log in as `+root+` user at the system console of the server running the SCA appliance.
+. Put the appliance into maintenance mode by executing:
++
+----
+# scadb maint
+----
+. Start the backup with:
++
+----
+# scadb backup
+----
++
+The data is saved to a TAR archive: `+sca-backup-*sql.gz+`.
+. If you are using the pattern creation database to develop your own patterns (see <<sec-admsupport-sca-patterns,Developing custom analysis patterns>>), back up this data, too:
++
+----
+# sdpdb backup
+----
++
+The data is saved to a TAR archive: `+sdp-backup-*sql.gz+`.
+. Copy the following data to another machine or an external storage medium:
++
+* `+sca-backup-*sql.gz+`
+* `+sdp-backup-*sql.gz+`
+* `+/usr/lib/sca/patterns/local+` (only needed if you have created custom patterns)
+. Reactivate the SCA appliance with:
++
+----
+# scadb reset agents
+----
+
+.Restoring the database
+To restore the database from your backup, proceed as follows:
+
+. Log in as `+root+` user at the system console of the server running the SCA appliance.
+. Copy the newest `+sca-backup-*sql.gz+` and `+sdp-backup-*sql.gz+` TAR archives to the SCA appliance server.
+. To decompress the files, run:
++
+----
+# gzip -d *-backup-*sql.gz
+----
+. To import the data into the database, execute:
++
+----
+# scadb import sca-backup-*sql
+----
+. If you are using the pattern creation database to create your own patterns, also import the following data with:
++
+----
+# sdpdb import sdp-backup-*sql
+----
+. If you are using custom patterns, also restore `+/usr/lib/sca/patterns/local+` from your backup data.
+. Reactivate the SCA appliance with:
++
+----
+# scadb reset agents
+----
+. Update the pattern modules in the database with:
++
+----
+# sdagent-patterns -u
+----
+
+[#sec-admsupport-sca-patterns]
+=== Developing custom analysis patterns
+
+The SCA appliance comes with a complete pattern development environment (the SCA Pattern Database) that enables you to develop your own, custom patterns. Patterns can be written in any programming language. To make them available for the Supportconfig analysis process, they need to be saved to `+/usr/lib/sca/patterns/local+` and to be made executable. Both the SCA appliance and the SCA tool will then run the custom patterns against new Supportconfig archives as part of the analysis report. For detailed instructions on how to create (and test) your own patterns, see link:https://www.suse.com/c/sca-pattern-development/[].
+
+[#sec-admsupport-install]
+== Gathering information during the installation
+
+During the installation, `+supportconfig+` is not available. However, you can collect log files from {yast} by using `+save_y2logs+`. This command will create a `+.tar.xz+` archive in the directory `+/tmp+`.
+
+If issues appear early during installation, you may be able to gather information from the log file created by `+linuxrc+`. `+linuxrc+` is a small command that runs before {yast} starts. This log file is available at `+/var/log/linuxrc.log+`.
+
+[IMPORTANT]
+.Installation log files not available in the installed system
+====
+The log files available during the installation are not available in the installed system anymore. Properly save the installation log files while the installer is still running.
+====
+
+[#sec-admsupport-kernel]
+== Support of kernel modules
+
+An important requirement for every enterprise operating system is the level of support you receive for your environment. Kernel modules are the most relevant connector between hardware (“controllers”) and the operating system. Every kernel module in {sle} has a `+supported+` flag that can take three possible values:
+
+* “yes”, thus `+supported+`
+* “external”, thus `+supported+`
+* (empty, not set), thus `+unsupported+`
+
+The following rules apply:
+
+* All modules of a self-recompiled kernel are by default marked as unsupported.
+* Kernel modules supported by {suse} partners and delivered using `{suse} SolidDriver Program` are marked “external”.
+* If the `+supported+` flag is not set, loading this module will taint the kernel. Tainted kernels are not supported. Unsupported Kernel modules are included in an extra RPM package (`kernel-_FLAVOR_-extra`). That package is only available for {sled} and the {slewe}. Those kernels will not be loaded by default (_FLAVOR_=`+default+`|`+xen+`|\...). Besides, these unsupported modules are not available in the installer, and the `kernel-_FLAVOR_-extra` package is not part of the {sle} media.
+* Kernel modules not provided under a license compatible to the license of the Linux kernel also taint the kernel. For details, see the state of `+/proc/sys/kernel/tainted+`.
+
+[#sec-admsupport-kernel-background]
+=== Technical background
+
+* Linux kernel: The value of `+/proc/sys/kernel/unsupported+` defaults to `+2+` on {sle} {productnumber} (`+do not warn in syslog when loading unsupported modules+`). This default is used in the installer and in the installed system.
+* `+modprobe+`: The `+modprobe+` utility for checking module dependencies and loading modules appropriately checks for the value of the `+supported+` flag. If the value is “yes” or “external” the module will be loaded, otherwise it will not. For information on how to override this behavior, see <<sec-admsupport-kernel-unsupported,Working with unsupported modules>>.
++
+[NOTE]
+.Support
+====
+{suse} does not generally support the removal of storage modules via `+modprobe -r+`.
+====
+
+[#sec-admsupport-kernel-unsupported]
+=== Working with unsupported modules
+
+While general supportability is important, situations can occur where loading an unsupported module is required. For example, for testing or debugging purposes, or if your hardware vendor provides a hotfix.
+
+* To override the default, copy `+/lib/modprobe.d/10-unsupported-modules.conf+` to `+/etc/modprobe.d/10-unsupported-modules.conf+` and change the value of the variable `+allow_unsupported_modules+` from `+0+` to `+1+`. Do not edit `+/lib/modprobe.d/10-unsupported-modules.conf+` directly; any changes will be overwritten whenever the `+suse-module-tools+` package is updated.
++
+If an unsupported module is needed in the initrd, do not forget to run `+dracut+` `+-f+` to update the initrd.
++
+If you only want to try loading a module once, you can use the `+--allow-unsupported-modules+` option with `+modprobe+`. For more information, see the comments in `+/lib/modprobe.d/10-unsupported-modules.conf+` and the `+modprobe+` man page.
+* During installation, unsupported modules may be added through driver update disks, and they will be loaded. To enforce loading of unsupported modules during boot and afterward, use the kernel command line option `+oem-modules+`. While installing and initializing the `+suse-module-tools+` package, the kernel flag `+TAINT_NO_SUPPORT+` (`+/proc/sys/kernel/tainted+`) will be evaluated. If the kernel is already tainted, `+allow_unsupported_modules+` will be enabled. This will prevent unsupported modules from failing in the system being installed. If no unsupported modules are present during installation and the other special kernel command line option (`+oem-modules=1+`) is not used, the default still is to disallow unsupported modules.
+
+Remember that loading and running unsupported modules will make the kernel and the whole system unsupported by {suse}.
+
+[#sec-admsupport-moreinfo]
+== More information
+
+* `+man supportconfig+`—The `+supportconfig+` man page.
+* `+man supportconfig.conf+`—The man page of the Supportconfig configuration file.
+* `+man scatool+`—The `+scatool+` man page.
+* `+man scadb+`—The `+scadb+` man page.
+* `+man setup-sca+`—The `+setup-sca+` man page.
+* link:https://mariadb.com/kb/en/[]—The MariaDB documentation.
+ifdef::os-sles[]
+* link:https://httpd.apache.org/docs/[] and xref:apache2.adoc[]—Documentation about the Apache Web server.
+endif::[]
+ifdef::os-sles[]
+* xref:yast2-ftp.adoc[]—Documentation of how to set up an FTP server.
+endif::[]
+* link:https://www.suse.com/c/sca-pattern-development/[]—Instructions on how to create (and test) your own SCA patterns.
+* link:https://community.microfocus.com/img/gw/groupwise/w/tips/34308/create-your-own-supportconfig-plugin[]—Create Your Own Supportconfig Plugin.
+* link:https://www.suse.com/c/creating-a-central-supportconfig-repository/[]—Creating a Central Supportconfig Repository.

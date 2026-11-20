@@ -1,0 +1,250 @@
+// Converted from xml/apps_librevarious.xml
+[#cha-lo-various]
+= {libo} Impress, Base, Draw and Math
+:description: Create presentations, databases, graphics, and mathematical formulas using LibreOffice's powerful tools
+:revdate: 2026-01-16
+
+Besides {libo} Writer and {libo} Calc, {libo} also includes the following modules:
+
+* Impress
+* Base
+* Draw
+* Math
+
+With these, you can create presentations, design databases, draw up graphics and diagrams and create mathematical formulas.
+
+[#sec-lo-various-impress]
+== Using presentations with Impress
+
+Use {libo} Impress to create presentations for screen display or printing. If you have used other presentation software, Impress makes it easy to switch. It works very similarly to other presentation software.
+
+[#sec-lo-various-impress-create]
+=== Creating a presentation
+
+There are two ways to create a new presentation. When starting Impress, the *Select a Template* dialog opens. To use one of the templates, select it and click *Open*. To start from scratch with no templates, close the template selection with *Cancel*.
+
+[#sec-lo-various-impress-master]
+=== Using master pages
+
+Master pages give your presentation a consistent look by defining what fonts and other design elements are used. Impress uses two types of master pages:
+
+Master slide::
+Contains elements that appear on all slides. For example, you might want your company logo to appear in the same place on every slide. The slide master also determines the text formatting style for the heading and outline of every slide that uses that master page, as well as any information you want to appear in a header or footer.
+Master notes::
+Determines the formatting and appearance of the notes in your presentation.
+
+[#sec-lo-various-impress-master-create]
+==== Creating a master slide
+
+Impress comes with a collection of pre-formatted master pages. To customize presentations further, create your own slide masters.
+
+. Start Impress with an existing presentation or create a new one as described in <<sec-lo-various-impress-create,Creating a presentation>>.
+. Click menu:View[Master Slide].
++
+This opens the current master slide in *Master View*. The *Master View* toolbar appears.
+. Right-click the left-hand panel, then click *New Master*.
+. Edit the master slide until it has the final look.
++
+Master view allows editing outline styles by directly formatting the sample text on the slide.
+. To finish editing master slides, in the *Master View* toolbar, click *Close Master View*. Alternatively, choose menu:View[Normal].
+
+[TIP]
+.Collect master slides in a template
+====
+When you have created all of the master slides you want to use in your presentations, you can save them in an Impress template. Then, any time you want to create presentations that use those master slides, open a new presentation with your template.
+====
+
+[#sec-lo-various-impress-master-apply]
+==== Applying a master slide
+
+Master slides can be applied to selected slides or to all slides of a presentation.
+
+. Open your presentation.
++
+[TIP]
+.Applying master slides
+====
+To apply a master slide to multiple slides but not all slides: Select the slides that you want a slide master applied to.
+====
+. To select multiple slides, press kbd:[Ctrl] in the *Slides* pane while clicking the slides you want to use.
+. In the _Tasks_ pane, open the *Master Pages* pane and click the master page you want to apply. The master slide is applied to the corresponding page or pages.
++
+If you do not see the *Task Pane*, click menu:View[Task Pane].
+
+[#sec-lo-various-base]
+== Using databases with *Base*
+
+{libo} includes the database module Base for designing a database to store many kinds of information. From a simple address book or recipe file to a sophisticated document management system.
+
+Tables, forms, queries and reports can be created manually or by using convenient wizards. For example, the *Table Wizard* contains several common fields for business and personal use. Databases created in Base can be used as data sources, such as when creating form letters.
+
+It is beyond the scope of this document to detail database design with Base. Find more information in the sources listed in xref:apps-libreoffice.adoc#sec-lo-oview-help[More information].
+
+[#sec-lo-various-base-predefined]
+=== Creating a database using predefined options
+
+Base comes with several predefined database fields to help you create a database. A wizard guides you through the steps to create a new database. The steps in this section are specific to creating an address book using predefined fields, but it should be easy to follow them to use the predefined fields for any of the built-in database options.
+
+The process for creating a database can be broken into several subprocesses:
+
+. <<sec-lo-various-base-predefined-create,Creating the database>>
+. <<sec-lo-various-base-predefined-setup,Setting up the database table>>
+. <<sec-lo-various-base-predefined-createform,Creating a form>>
+. <<sec-lo-various-base-predefined-modifyform,Modifying the form>>
+
+[#sec-lo-various-base-predefined-create]
+==== Creating the database
+
+. Start {libo} Base.
++
+The *{libo} Database Wizard* starts.
++
+You can choose between creating a new database in *HSQLDB Embedded* format, use an existing database file, or connecting to an existing database.
+. Proceed with *Next*.
+. In case you have created a new database, click *Yes, register the database for me* to make your database information available to other {libo} modules and select the check boxes to *Open the database for editing* and *Create tables using the table wizard*. Then click *Finish*. Browse to the directory where you want to save the database, specify a name for the database, then click *Save*.
++
+[#fig-libre-database]
+.LibreOffice Database Wizard
+image::oo-wizard-base.png["LibreOffice Base Database Wizard showing options to create a new HSQLDB embedded database, open an existing file or connect to an external database server",width=85%]
+
+[#sec-lo-various-base-predefined-setup]
+==== Setting up the database table
+
+After you have created the database, if you have selected the *Create tables using the table wizard* check box, the table wizard opens. If you have not, go to the *Task* area and click *Use Wizard to Create Table*. Next, define the fields you want to use in your database table.
+
+In this example, you will set up an address database.
+
+. For this example, click *Personal*.
++
+The list *Sample tables* changes to show the predefined tables for personal use where the address table template is. The table templates listed under *Business* contain predefined business tables.
+. In the *Sample tables* list, click *Addresses*.
++
+The available fields for the predefined address book appear in the *Available fields* menu.
+. In the *Available fields* menu, click the fields you want to use in your address book.
++
+Select one item at a time by clicking. Alternatively, to select multiple items, hold kbd:[Shift] and click each of the items separately.
+. Click the icons *single right arrow* and *single left arrow* to move selected items to or off the *Selected fields* list.
++
+To move all available fields to the *Selected fields* menu, click the icon *double right arrow*.
+. Use the icons *up arrow* and *down arrow* to adjust the order of the selected entries.
++
+The fields appear in the table and forms in the order in which they are listed.
+. Click *Next* to proceed.
+. Make sure each of the fields is defined correctly.
++
+You can change the field name, type, maximum characters and whether it is a required field. For this example, leave the settings as they are, then click *Next*.
+. Make sure that *Create a primary key* and *Automatically add a primary key* are activated. Additionally, activate *Auto value*.
++
+Proceed with *Next*.
+. Give the table a name and activate *Create a form based on this table*.
++
+Proceed with *Finish*.
+
+[#sec-lo-various-base-predefined-createform]
+==== Creating a form
+
+Next, create the form to use when entering data into your address book.
+
+After the previous step, you should be in the *Form Wizard* already. Otherwise, open it by going to the main window. Under *Tables*, right-click the correct table. Click *Form Wizard*.
+
+. In the *Form Wizard*, click the double right-arrow icon to move all available fields to the *Fields in the form* list, then click *Next*.
+. To add a subform, activate *Add Subform*, then click *Next*.
++
+For this example, accept the default selections.
+. Select how you want to arrange your form, then click *Next*.
+. Select *The form is to display all data* and leave all of the check boxes deactivated, then click *Next*.
+. Apply a style and field border, then click *Next*.
++
+For this example, accept the default selections.
+. Name the form, activate *Modify the form*, then click *Finish*.
+
+[#sec-lo-various-base-predefined-modifyform]
+==== Modifying the form
+
+After the form has been defined, you can modify the appearance of the form to suit your preferences.
+
+After the previous step, you should be in the *Database Form* editor already. If not, select the right form by clicking *Forms* in the side bar of the main window. Then, in the *Forms* area, right-click the correct form. Select *Edit*.
+
+. Arrange the fields on the form by dragging them to their new locations.
++
+For example, move the field *First Name*, so it appears to the right of the field *Last Name*.
+. When you have finished modifying the form, save it and close it.
+
+[#sec-lo-base-predefined-info]
+==== Further steps
+
+After you have created your database tables and forms, you are ready to enter your data. You can also design queries and reports to help sort and display the data.
+
+Refer to {libo} online help and other sources listed in xref:apps-libreoffice.adoc#sec-lo-oview-help[More information] for additional information about Base.
+
+[#sec-lo-various-draw]
+== Creating graphics with *Draw*
+
+Use {libo} Draw to create graphics and diagrams. You can export your drawings to the most common vector graphics formats and import them into any application that lets you import graphics, including other {libo} modules. You can also create Adobe{asterisk} Flash{asterisk} (SWF) versions of your drawings.
+
+.Creating a graphic
+. Start {libo} Draw.
+. Use the toolbar *Drawing* at the right side of the window to create a graphic. To create a new shape or text object, use the shape buttons of the toolbar:
++
+* To create a single shape or text object, click a shape button once. Then click and drag over the document to create an object.
+* To create a multiple shape or text object, double-click a shape button. Then click and drag over the document to create objects. When you are done, click the mouse pointer icon in the toolbar.
+. Save the graphic.
+
+To embed an existing Draw graphic into a {libo} document, select menu:Insert[Object > OLE Object]. Select *Create from file* and click *Search* to navigate to the Draw file to insert.
+
+To be able to edit the graphic later on its own, activate *Link to file*.
+
+If you insert a file as an OLE object, you can edit the object later by double-clicking it.
+
+[#pro-lo-various-draw]
+.Opening *Draw* from other {libo} modules
+One particularly useful feature of Draw is the ability to open it from other {libo} modules, so you can create a drawing that is automatically imported into your document.
+
+. From a {libo} module (for example, from Writer), click menu:Insert[Object > OLE Object > {libo} Drawing] and confirm with *OK*.
++
+The user interface of Draw opens.
+. Create your drawing.
+. Click in your document, outside the Draw frame.
++
+The drawing is automatically inserted into your document.
+
+[#sec-lo-various-math]
+== Creating mathematical formulas with Math
+
+It is usually difficult to include complex mathematical formulas in your documents. To make this task easier, the {libo} Math equation editor lets you create formulas using operators, functions and formatting assistants. You can then save those formulas as an object that can be imported into other documents. Math functions can be inserted into other {libo} documents like any other graphic object.
+
+[NOTE]
+.Math for creating mathematical formulas
+====
+Math is not a calculator. The functions it creates are graphical objects. Even if they are imported into Calc, these functions cannot be evaluated.
+====
+
+To create a formula, proceed as follows:
+
+. Start {libo} Math.
+. Click menu:File[New > Formula]. The formula window opens.
+. Enter your formula in the lower part of the window. For example, the binomial theorem in {libo} Math syntax is:
++
+----
+(a + b)^2 = a^2 + 2 a b + b^2
+----
++
+The result is displayed in the upper part of the window.
+. Use the side bar panel *Formula Elements* or right-click the lower part of the window to insert other terms. If you need symbols, use menu:Tools[Symbols] where you can find, for example, Greek or other special characters.
+. Save the document.
+
+The result is shown in <<fig-lo-various-math,Mathematical formula in {libo} Math>>:
+
+[#fig-lo-various-math]
+.Mathematical formula in {libo} Math
+image::oo_formula.png["LibreOffice Math equation editor showing unary and binary operators selection panel and the binomial theorem formula",width=100%]
+
+It is possible to include your formula in Writer. To do so, proceed as follows:
+
+. Create a new Writer document or open an existing one.
+. Select menu:Insert[Object > OLE Object] in the main menu. The *Insert OLE Object* window appears.
+. Select *Create from file*.
+. Click *Search* to locate your formula. To choose the formula file, click *Open*.
++
+To be able to edit the formula later on its own, activate *Link to file*.
+. Confirm with *OK*. The formula is inserted at the current cursor position.

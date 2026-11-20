@@ -1,0 +1,60 @@
+// Converted from xml/64bit_issues.xml
+[#cha-64bit]
+= 32-bit and 64-bit applications in a 64-bit system environment
+:description: Configure your 64-bit environment to run existing 32-bit applications without requiring additional ports
+:revdate: 2026-01-16
+
+{productnamereg} is available for 
+ifdef::os-sles[several]
+ 64-bit platforms. The developers have not ported all 32-bit applications to 64-bit systems. This chapter offers a brief overview of 32-bit support implementation on 64-bit {productname} platforms.
+
+ifdef::os-sles[{productname} for the 64-bit platforms {ppc}, {zseries} and {amd64}/{intel64}]
+ifdef::os-sled,os-osuse[{productname} for the 64-bit platforms {amd64} and {intel64}]
+ is designed so that existing 32-bit applications run in the 64-bit environment “out-of-the-box.” 
+ifdef::os-sles[The corresponding 32-bit platforms are {ppc} for {power}, and x86 for {amd64}/{intel64}.]
+ This support means that you can continue to use your preferred 32-bit applications without waiting for a corresponding 64-bit port to become available.
+ifdef::os-sles[ The current {power} system runs most applications in 32-bit mode, but you can run 64-bit applications.]
+
+[NOTE]
+.No support for building 32-bit applications
+====
+{productname} does not support compilation of 32-bit applications. It only offers runtime support for 32-bit binaries.
+====
+
+[#sec-64bit-runt]
+== Runtime support
+
+[IMPORTANT]
+.Conflicts between application versions
+====
+If an application is available for both 32-bit and 64-bit environments, installing both versions may cause problems. In such cases, decide on one version to install to avoid potential runtime errors.
+
+An exception to this rule is PAM (pluggable authentication modules). {productname} uses PAM in the authentication process as a layer that mediates between user and application. Always install both PAM versions on 64-bit operating systems that also run 32-bit applications.
+====
+
+For correct execution, every application requires a range of libraries. Because the names are identical for the 32-bit and 64-bit versions of these libraries, they must be differentiated from each other in another way.
+
+To retain compatibility with 32-bit versions, 64-bit and 32-bit libraries are stored in the same location. The 32-bit version of `+libc.so.6+` is located under `+/lib/libc.so.6+` in both 32-bit and 64-bit environments.
+
+All 64-bit libraries and object files are located in directories called `+lib64+`. The 64-bit object files normally found under `+/lib+` and `+/usr/lib+` are now found under `+/lib64+` and `+/usr/lib64+`. This means that space is available for 32-bit libraries under `+/lib+` and `+/usr/lib+`, so the file name for both versions can remain unchanged.
+
+If the data content of 32-bit subdirectories under `+/lib+` does not depend on word size, they are not moved. This scheme conforms to LSB (Linux Standards Base) and FHS (Filesystem Hierarchy Standard).
+
+[#sec-64bit-kernel]
+== Kernel specifications
+
+The 64-bit kernels for {amd64}/{intel64}
+ifdef::os-sles[, {power} and {zseries}]
+ offer both a 64-bit and a 32-bit kernel ABI (application binary interface). The latter is identical to the ABI for the corresponding 32-bit kernel. This means that communication between both 32-bit and 64-bit applications with 64-bit kernels are identical.
+
+The 32-bit system call emulation for 64-bit kernels does not support all the APIs used by system programs. This depends on the platform. For this reason, few applications, like `+lspci+`, must be compiled
+ifdef::os-sles[ on non-{power} platforms as 64-bit programs to function properly. On {zseries}, not all ioctls are available in the 32-bit kernel ABI]
+{empty}.
+
+A 64-bit kernel can only load 64-bit kernel modules. You must compile 64-bit modules specifically for 64-bit kernels. It is not possible to use 32-bit kernel modules with 64-bit kernels.
+
+[TIP]
+.Kernel-loadable modules
+====
+Certain applications require separate kernel-loadable modules. If you intend to use a 32-bit application in a 64-bit system environment, contact the provider of the application and {suse}. Make sure that the 64-bit version of the kernel-loadable module and the 32-bit compiled version of the kernel API are available for this module.
+====

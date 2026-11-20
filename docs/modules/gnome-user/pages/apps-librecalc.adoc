@@ -1,0 +1,159 @@
+// Converted from xml/apps_librecalc.xml
+[#cha-lo-calc]
+= {libo} Calc
+:description: Master the comprehensive feature set of LibreOffice Calc for efficient data management and analysis
+:revdate: 2026-01-16
+
+[abstract]
+--
+Learn how to work with the {libo} spreadsheet module.
+--
+
+Calc is the {libo} spreadsheet module. Spreadsheets consist of several sheets, containing cells which can be filled with elements like text, numbers or formulas. A formula can manipulate data from other cells to generate a value for the cell in which it is inserted. Calc also allows you to define ranges, filter and sort data, and create charts from data to present it graphically. Using pivot tables, you can combine, analyze or compare larger amounts of data.
+
+This chapter can only introduce very basic Calc functionality. For more information and for complete instructions, see the {libo} application help and the sources listed in xref:apps-libreoffice.adoc#sec-lo-oview-help[More information].
+
+[NOTE]
+.VBA macros
+====
+Calc can process many VBA macros in Excel documents. However, support for VBA macros is not complete. When opening an Excel spreadsheet that makes heavy use of macros, you might discover that some do not work.
+====
+
+[#sec-lo-calc-createnew]
+== Creating a new document
+
+There are two ways to create a new Calc document:
+
+* {empty}
++
+.From scratch
+To create a new empty document, click menu:File[New > Spreadsheet].
+* {empty}
++
+.From a template
+To use a template, click menu:File[New > Templates] and set the *Filter* to *Spreadsheets*. Choose a template from the list and proceed with *Open*. Note that by default, {libo} does not ship with predefined templates.
+
+Access the individual sheets by clicking their respective tabs at the bottom of the window.
+
+Enter data in the cells as needed. To adjust the appearance, either use the *Formatting* toolbar or side bar panel, or use the *Format* menu—or define styles as described in <<sec-lo-calc-styles,Using formatting and styles in Calc>>. Use the *File* menu or the relevant buttons in the toolbar to print and save your document.
+
+[#sec-lo-calc-styles]
+== Using formatting and styles in Calc
+
+Calc comes with a few built-in cell and page styles to improve the appearance of your spreadsheets and reports. Although these built-in styles are adequate for many uses, it is useful to create styles for your own frequently used formatting preferences.
+
+[#pro-lo-calc-createstyle]
+.Creating a style
+. In the sidebar, click *Styles* or press kbd:[F11].
+. At the top of the panel *Styles*, click either the *Cell Styles* icon or the *Page Styles* icon.
+. Right-click anywhere in the list of styles in the panel *Styles*. Then click *New*.
+. Specify a name for the style and set the formatting options.
+. When you are done configuring the style, click *OK*.
+
+.Modifying a style
+. In the sidebar, click *Styles*.
+. At the top of the panel *Styles*, click either the *Cell Styles* icon or the *Page Styles* icon.
+. Right-click the name of the style you want to change, then click *Modify*.
+. Change the formatting options.
+. When you are done configuring the style, click *OK*.
+
+To apply a style to specific cells, select the cells you want to format. Then double-click the style you want to apply in the *Styles* window.
+
+[#sec-lo-calc-sheets]
+== Working with sheets
+
+Sheets are a good method to organize your calculations. For example, if you have a business, accounting might be much clearer if you create a sheet for each month.
+
+To insert a new sheet after the last sheet, click the button *{plus}* next to the sheet tabs at the bottom of the window.
+
+To insert one or more new sheets into your spreadsheet from a file or at a specific position at once, do the following:
+
+[#pro-lo-insert-sheet]
+.Inserting new sheets
+. Right-click a sheet tab and select *Insert Sheet*. A dialog opens.
+. Decide whether the new sheet should be positioned before or after the selected sheet.
+. To create a new sheet, make sure the *New Sheet* radio button is activated. Enter the number of sheets and the sheet name. Skip the rest of this step.
++
+Alternatively, to import a sheet from another file, do the following:
++
+.. Select *From file* and click *Browse*.
+.. Select the file name and confirm with *OK*. All the sheet names are now displayed in the list.
+.. Select the sheet names you want to import by holding the kbd:[Shift] key and clicking them.
+. To add the sheet or sheets, confirm with *OK*.
+
+To rename a sheet, right-click the tab of the sheet and select *Rename Sheet*. Alternatively, you can also double-click the sheet tab.
+
+To delete one or multiple sheets, do the following: Select the sheet you want to delete. To select more than one sheet, hold down kbd:[Shift] while making the selection. Then right-click the tab of the sheet, choose *Delete Sheet* and confirm with *Yes*.
+
+[#sec-lo-calc-condformat]
+== Conditional formatting
+
+Conditional formatting is a useful feature to highlight certain values in your spreadsheet. For example, define a condition and if the condition is `+true+`, a style is applied to each cell that fulfills this condition.
+
+[NOTE]
+.Enable AutoCalculate
+====
+Before you apply conditional formatting, choose menu:Data[Calculate > AutoCalculate]. You should see a check mark in front of *AutoCalculate*.
+====
+
+[#pro-lo-calc-condformat]
+.Using conditional formatting
+. Define a style first. This style is applied to each cell when your condition is `+true+`. Use menu:Styles[Manage Styles] or press kbd:[F11]. For more information, see <<pro-lo-calc-createstyle,Creating a style>>. Confirm with *OK*.
+. Select the cell range where you want to apply your condition.
+. Select menu:Format[Conditional > Condition] from the menu. A dialog opens.
+. You now see a template for a new condition. Conditions can operate in multiple modes:
++
+*Cell value*::
+The condition tests if a cell matches a certain value. Next to the first drop-down box, select an operator such as *is equal to*, *is less than*, or *is greater than*.
+*Formula is*::
+The condition tests if a certain formula returns `+true+`.
+*Date is*::
+The condition tests if a certain date value is reached.
+*All Cells*::
+This mode allows creating data visualizations that depend on the value of a cell, similarly to *Cell value*. However, with *All Cells*, you can use one condition to apply an entire range of styles.
++
+The types of styles that can be used are color scales (cell background color), data bars (bars with changing width in the cell) and icon sets (an icon in the cell).
++
+For example, a color scale allows assigning `+0+` a black background and `+100+` a green background. All values in between are calculated automatically. For example, `+50+` receives a dark green background.
+. For this example, keep the default: *Cell value*.
+. Select an operator and the value of the cell you want to test for.
+. Choose the style you want to apply when this condition is `+true+` or click *New Style* to define a new appearance.
+. If you need additional conditions, click *Add*. Then repeat the previous steps.
+. Confirm with *OK*. Now the style of your cells has changed.
+
+[#sec-lo-calc-grouping]
+== Grouping and ungrouping cells
+
+Grouping a cell range allows hiding parts of a spreadsheet. This makes spreadsheets more readable, as you can hide all the parts you are not currently interested in. It is possible to group rows or columns and nest groups in other groups.
+
+To group a range, proceed as follows:
+
+.Grouping a selected cell range
+. Select a cell range in your spreadsheet.
+. Select menu:Data[Group and Outline > Group]. A dialog appears.
+. Decide if you want to group your selected range by rows or by columns. Confirm with *OK*.
+
+After grouping selected cells, a line indicating the grouped cell range appears in the upper-left margin. Fold or unfold the cell range with the *{plus}* and *–* icons. The numbers at the top left of the margins display the depth of your groups and can be clicked too.
+
+To ungroup a cell range, click into a cell which belongs to a group and select menu:Data[Group and Outline > Ungroup]. The line in the margin disappears. The innermost group is always deleted first.
+
+[#sec-lo-calc-freezing]
+== Freezing rows or columns as headers
+
+If you have a spreadsheet with lots of data, scrolling usually makes the header disappear. {libo} can lock rows or columns or both, so they remain fixed as you scroll around.
+
+To freeze a single row or a single column, proceed as follows:
+
+.Freezing a single row or column
+. To create a frozen area before a row, click the header of the row (`+1+`, `+2+`, `+3+`, \...).
++
+Alternatively, to create a frozen area above a column, click the header of the column (`+A+`, `+B+`, `+C+`, \...).
+. Select menu:View[Freeze Rows and Columns]. A dark line appears, indicating the frozen area.
+
+It is also possible to freeze both rows and columns:
+
+.Freezing row and column
+. Click into the cell to the right of the column and below the row you want to freeze. For example, if your header occupies the space from A1 to B3, click cell C4.
+. Select menu:View[Freeze Rows and Columns]. A dark line appears, indicating which area is frozen.
+
+To unfreeze, select *View* and uncheck *Freeze Rows and Columns*. The check mark before the menu item disappears.

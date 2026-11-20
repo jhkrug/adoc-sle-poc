@@ -1,0 +1,147 @@
+[13:06:00.977] ERROR (asciidoctor): target of xref not found: security:security-firewall.adoc#sec-security-firewall-firewalld-cmd
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/apache2.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:01.025] ERROR (asciidoctor): target of xref not found: security:index.adoc#part-apparmor
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/apache2.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:01.039] ERROR (asciidoctor): target of xref not found: security:security-firewall.adoc#sec-security-firewall-firewalld-cmd
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/apache2.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:01.100] ERROR (asciidoctor): target of xref not found: storage:storage-iscsi.adoc#sec-iscsi-initiator-yast
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/bootconcept.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:01.439] ERROR (asciidoctor): target of xref not found: deployment:deployment-troubleshooting.adoc#fig-trouble-install-keyboard-us
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/grub2.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:01.987] ERROR (asciidoctor): target of xref not found: storage:storage-fcoe.adoc#sec-fcoe-yast
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/net-basic.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:01.988] ERROR (asciidoctor): target of xref not found: security:security-firewall.adoc#sec-security-firewall-firewalld
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/net-basic.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:02.025] ERROR (asciidoctor): target of xref not found: security:security-nis.adoc
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/net-basic.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:02.064] ERROR (asciidoctor): target of xref not found: virtualization:index.adoc#part-virt-qemu
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/net-basic.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:02.067] ERROR (asciidoctor): target of xref not found: virtualization:index.adoc#part-virt-libvirt
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/net-basic.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:02.098] ERROR (asciidoctor): target of xref not found: security:security-ldap.adoc
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/net-dhcp.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:02.267] ERROR (asciidoctor): target of xref not found: deployment:deployment-installserver.adoc
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/net-slp.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:02.369] ERROR (asciidoctor): target of xref not found: security:security-firewall.adoc#sec-security-firewall-firewalld
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/nm.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:02.392] ERROR (asciidoctor): target of xref not found: tuning:tuning-power.adoc
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/powermanagement.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:02.438] ERROR (asciidoctor): target of xref not found: security:security-firewall.adoc#sec-security-firewall-firewalld
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/printing.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:02.515] WARN (asciidoctor): callout list item index: expected 3, got 4
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/snapper.adoc:555
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:02.516] WARN (asciidoctor): callout list item index: expected 4, got 5
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/snapper.adoc:556
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:02.517] WARN (asciidoctor): callout list item index: expected 5, got 6
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/snapper.adoc:557
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:02.570] ERROR (asciidoctor): target of xref not found: deployment:deployment-expert-partitioner.adoc#sec-yast-system-lvm
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/snapper.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:02.667] ERROR (asciidoctor): target of xref not found: tuning:tuning-logfiles.adoc#sec-tuning-syslog-logrotate
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/suse-linux.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:02.838] ERROR (asciidoctor): target of xref not found: upgrade:sle-update-upgrading.adoc
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/sw-managing-commandline.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:03.165] ERROR (asciidoctor): target of xref not found: tuning:tuning-cgroups.adoc
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/systemd.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:03.371] ERROR (asciidoctor): target of xref not found: security:index.adoc#part-apparmor
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/troubleshooting.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:03.371] ERROR (asciidoctor): target of xref not found: security:index.adoc#part-audit
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/troubleshooting.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:03.377] ERROR (asciidoctor): target of xref not found: tuning:utilities.adoc
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/troubleshooting.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:03.381] ERROR (asciidoctor): target of xref not found: security:security-pam.adoc
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/troubleshooting.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:03.392] ERROR (asciidoctor): target of xref not found: deployment:deployment-pxe.adoc#sec-deployment-prep-boot-wol
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/troubleshooting.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:03.396] ERROR (asciidoctor): target of xref not found: storage:index.adoc#part-lvm
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/troubleshooting.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:03.401] ERROR (asciidoctor): target of xref not found: deployment:deployment-prep-zseries.adoc#sec-zseries-prep
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/troubleshooting.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:03.601] ERROR (asciidoctor): target of xref not found: security:security-firewall.adoc
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/vnc.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:03.726] ERROR (asciidoctor): target of xref not found: deployment:deployment-prep-zseries.adoc
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/x11.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:03.933] ERROR (asciidoctor): target of xref not found: security:index.adoc#part-audit
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/yast2-ncurses.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:03.942] ERROR (asciidoctor): target of xref not found: tuning:tuning-kexec.adoc#cha-tuning-kdump-basic
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/yast2-ncurses.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:04.050] ERROR (asciidoctor): target of xref not found: deployment:deployment-yast-installer.adoc#sec-yast-install-scc-registration
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/yast2-sw.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:04.050] ERROR (asciidoctor): target of xref not found: upgrade:sle-update-offline.adoc#sec-update-registersystem
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/yast2-sw.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:04.090] ERROR (asciidoctor): target of xref not found: security:user-management.adoc#sec-sec-prot-restrict-root
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/yast2-userman.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:04.090] ERROR (asciidoctor): target of xref not found: security:user-management.adoc#sec-sec-prot-restrict-root-ssh
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/yast2-userman.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:04.093] ERROR (asciidoctor): target of xref not found: storage:storage-filesystems.adoc#sec-filesystems-major-btrfs-quota
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/yast2-userman.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:04.099] ERROR (asciidoctor): target of xref not found: security:security-acls.adoc
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/yast2-userman.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:04.102] ERROR (asciidoctor): target of xref not found: security:security-nis.adoc
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/yast2-userman.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:04.103] ERROR (asciidoctor): target of xref not found: security:security-auth.adoc#sec-security-auth-sssd
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/yast2-userman.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:04.103] ERROR (asciidoctor): target of xref not found: storage:net-samba.adoc
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/yast2-userman.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:04.104] ERROR (asciidoctor): target of xref not found: security:security-nis.adoc#sec-nis-client
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/yast2-userman.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:04.105] ERROR (asciidoctor): target of xref not found: security:security-auth.adoc#sec-security-auth-yast-client
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/yast2-userman.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:04.105] ERROR (asciidoctor): target of xref not found: storage:net-samba.adoc#sec-samba-client-inst-yast
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/yast2-userman.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:04.106] ERROR (asciidoctor): target of xref not found: security:security-auth.adoc#sec-security-auth-sssd
+    file: /tmp/adoc-sle-poc-stage/modules/administration/pages/yast2-userman.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:04.588] ERROR (asciidoctor): target of xref not found: security:security-cryptofs.adoc
+    file: /tmp/adoc-sle-poc-stage/modules/gnome-user/pages/apps-libreoffice.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:04.874] ERROR (asciidoctor): target of xref not found: deployment:index.adoc
+    file: /tmp/adoc-sle-poc-stage/modules/gnome-user/pages/gnome-custom.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)
+[13:06:05.191] ERROR (asciidoctor): target of xref not found: upgrade:sle-update-upgrading.adoc
+    file: /tmp/adoc-sle-poc-stage/modules/rmt/pages/rmt-client.adoc
+    source: /tmp/adoc-sle-poc-stage (branch: main <worktree>)

@@ -1,0 +1,115 @@
+// Converted from xml/apache2_yast_i.xml
+
+[#sec-apache2-configuration-yast]
+=== Configuring Apache with {yast}
+
+To configure your Web server with {yast}, start {yast} and select menu:Network Services[HTTP Server]. When starting the module for the first time, the *HTTP Server Wizard* starts, prompting you to make a few basic decisions concerning administration of the server. After having finished the wizard, the *HTTP Server Configuration* dialog starts each time you call the *HTTP Server* module. For more information, see <<sec-apache2-configuration-yast-server-configuration,HTTP server configuration>>.
+
+[#sec-apache2-configuration-yast-wizard]
+==== HTTP server wizard
+
+The HTTP Server Wizard consists of five steps. In the last step of the dialog, you may enter the expert configuration mode to make even more specific settings.
+
+[#sec-apache2-configuration-yast-wizard-network-device]
+===== Network device selection
+
+Here, specify the network interfaces and ports Apache uses to listen for incoming requests. You can select any combination of existing network interfaces and their respective IP addresses. Ports from all three ranges (well-known ports, registered ports, and dynamic or private ports) that are not reserved by other services can be used. The default setting is to listen on all network interfaces (IP addresses) on port `+80+`.
+
+Check *Open Port In Firewall* to open the ports in the firewall that the Web server listens on. This is necessary to make the Web server available on the network, which can be a LAN, WAN, or the public Internet. Keeping the port closed is only useful in test situations where no external access to the Web server is necessary. If you have multiple network interfaces, click *Firewall Details* to specify on which interface(s) the port(s) should be opened.
+
+Click *Next* to continue with the configuration.
+
+[#sec-apache2-configuration-yast-wizard-modules]
+===== Modules
+
+The *Modules* configuration option allows for the activation or deactivation of the script languages that the Web server should support. For the activation or deactivation of other modules, refer to <<sec-apache2-configuration-yast-server-configuration-modules,Server modules>>. Click *Next* to advance to the next dialog.
+
+[#sec-apache2-configuration-yast-wizard-default-host]
+===== Default host
+
+This option pertains to the default Web server. As explained in <<sec-apache2-configuration-manually-vhost,Virtual host configuration>>, Apache can serve multiple virtual hosts from a single physical machine. The first declared virtual host in the configuration file is commonly called the _default host_. Each virtual host inherits the default host's configuration.
+
+To edit the host settings (also called _directives_), select the appropriate entry in the table then click *Edit*. To add new directives, click *Add*. To delete a directive, select it and click *Delete*.
+
+[#fig-apache2-configuration-yast-host]
+.HTTP server wizard: default host
+image::yast2_apache_wizard3.png[""]
+
+Here is list of the default settings of the server:
+
+`+Document Root+`::
+Path to the directory from which Apache serves files for this host. `+/srv/www/htdocs+` is the default location.
+`+Alias+`::
+Using `+Alias+` directives, URLs can be mapped to physical file system locations. This means that a certain path even outside the `+Document Root+` in the file system can be accessed via a URL aliasing that path.
++
+The default {productname} `+Alias+` `+/icons+` points to `+/usr/share/apache2/icons+` for the Apache icons displayed in the directory index view.
+`+ScriptAlias+`::
+Similar to the `+Alias+` directive, the `+ScriptAlias+` directive maps a URL to a file system location. The difference is that `+ScriptAlias+` designates the target directory as a CGI location, meaning that CGI scripts should be executed in that location.
+`+Directory+`::
+With `+Directory+` settings, you can enclose a group of configuration options that will only apply to the specified directory.
++
+Access and display options for the directories `+/srv/www/htdocs+`, `+/usr/share/apache2/icons+` and `+/srv/www/cgi-bin+` are configured here. It should not be necessary to change the defaults.
+`+Include+`::
+With include, additional configuration files can be specified. Two `+Include+` directives are already preconfigured: `+/etc/apache2/conf.d/+` is the directory containing the configuration files that come with external modules. With this directive, all files in this directory ending in `+.conf+` are included. With the second directive, `+/etc/apache2/conf.d/apache2-manual.conf+`, the `+apache2-manual+` configuration file is included.
+`+Server Name+`::
+This specifies the default URL used by clients to contact the Web server. Use a fully qualified domain name (FQDN) to reach the Web server at `http://_FQDN_/` or its IP address. You cannot choose an arbitrary name here—the server must be “known” under this name.
+`+Server Administrator E-Mail+`::
+E-mail address of the server administrator. This address is, for example, shown on error pages Apache creates.
+
+After finishing with the *Default Host* step, click *Next* to continue with the configuration.
+
+[#sec-apache2-configuration-yast-wizard-virtual-hosts]
+===== Virtual hosts
+
+In this step, the wizard displays a list of already configured virtual hosts (see <<sec-apache2-configuration-manually-vhost,Virtual host configuration>>). If you have not made manual changes prior to starting the {yast} HTTP wizard, no virtual host is present.
+
+To add a host, click *Add* to open a dialog in which to enter basic information about the host, such as *Server Name*, *Server Contents Root* (`+DocumentRoot+`), and the *Administrator E-Mail*. *Server Resolution* is used to determine how a host is identified (name based or IP based). Specify the name or IP address with *Change Virtual Host ID*
+
+Clicking *Next* advances to the second part of the virtual host configuration dialog.
+
+In part two of the virtual host configuration you can specify whether to enable CGI scripts and which directory to use for these scripts. It is also possible to enable SSL. If you do so, you must specify the path to the certificate as well. See <<sec-apache2-ssl-configuration,Configuring Apache with SSL>> for details on SSL and certificates. With the *Directory Index* option, you can specify which file to display when the client requests a directory (by default, `+index.html+`). Add one or more file names (space-separated) to change this. With *Enable Public HTML*, the content of the users public directories (`{tilde}__USER__/public_html/`) is made available on the server under `http://www.{exampledomain}/{tilde}__USER__`.
+
+[IMPORTANT]
+.Creating virtual hosts
+====
+It is not possible to add virtual hosts at will. If using name-based virtual hosts, each host name must be resolved on the network. If using IP-based virtual hosts, you can assign only one host to each IP address available.
+====
+
+[#sec-apache2-configuration-yast-wizard-summary]
+===== Summary
+
+This is the final step of the wizard. Here, determine how and when the Apache server is started: when booting or manually. Also see a short summary of the configuration made so far. If you are satisfied with your settings, click *Finish* to complete configuration. To change something, click *Back* until you have reached the desired dialog. Clicking *HTTP Server Expert Configuration* opens the dialog described in <<sec-apache2-configuration-yast-server-configuration,HTTP server configuration>>.
+
+[#fig-apache2-configuration-yast-summary]
+.HTTP server wizard: summary
+image::yast2_apache_wizard5.png[""]
+
+[#sec-apache2-configuration-yast-server-configuration]
+==== HTTP server configuration
+
+The *HTTP Server Configuration* dialog also lets you make even more adjustments to the configuration than the wizard (which only runs if you configure your Web server for the first time). It consists of four tabs described in the following. No configuration option you change here is effective immediately—you always must confirm your changes with *Finish* to make them effective. Clicking *Abort* leaves the configuration module and discards your changes.
+
+[#sec-apache2-configuration-yast-server-configuration-listen]
+===== Listen ports and addresses
+
+In *HTTP Service*, select whether Apache should be running (*Enabled*) or stopped (*Disabled*). In *Listen on Ports*, *Add*, *Edit*, or *Delete* addresses and ports on which the server should be available. The default is to listen on all interfaces on port `+80+`. You should always check *Open Port In Firewall*, because otherwise the Web server is not reachable from outside. Keeping the port closed is only useful in test situations where no external access to the Web server is necessary. If you have multiple network interfaces, click *Firewall Details* to specify on which interface(s) the port(s) should be opened.
+
+With *Log Files*, watch either the access log file or the error log file. This is useful if you want to test your configuration. The log file opens in a separate window from which you can also restart or reload the Web server. For details, see <<sec-apache2-start-stop,Starting and stopping Apache>>. These commands are effective immediately and their log messages are also displayed immediately.
+
+[#fig-apache2-configuration-yast-server-configuration-listen]
+.HTTP server configuration: listen ports and addresses
+image::yast2_apache_config_listen.png[""]
+
+[#sec-apache2-configuration-yast-server-configuration-modules]
+===== Server modules
+
+You can change the status (enabled or disabled) of Apache2 modules by clicking *Toggle Status*. Click *Add Module* to add a new module that is already installed but not yet listed. Learn more about modules in <<sec-apache2-modules,Installing, activating and configuring modules>>.
+
+[#fig-apache2-configuration-yast-server-configuration-modules]
+.HTTP server configuration: server modules
+image::yast2_apache_config_modules.png[""]
+
+[#sec-apache2-configuration-yast-server-configuration-host]
+===== Main host or hosts
+
+These dialogs are identical to the ones already described. Refer to <<sec-apache2-configuration-yast-wizard-default-host,Default host>> and <<sec-apache2-configuration-yast-wizard-virtual-hosts,Virtual hosts>>.

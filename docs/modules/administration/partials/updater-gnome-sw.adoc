@@ -1,0 +1,21 @@
+// Converted from xml/updater_gnome_sw.xml
+
+[#sec-updater-gnomesw]
+== Updating packages with *{gnome} Software*
+
+In addition to the {gnome} *Package Updater*, {gnome} provides *{gnome} Software* which has the following functionality:
+
+* Install, update, and remove software delivered as an RPM via PackageKit
+* Install, update, and remove software delivered as a Flatpak
+* Install, update, and remove {gnome} shell extensions (link:https://extensions.gnome.org[])
+* Update firmware for hardware devices using _Linux Vendor Firmware Service_ (LVFS, link:https://fwupd.org[])
+
+*{gnome} Software* also provides screenshots, ratings, and reviews for software.
+
+.*{gnome} Software*—*Updates* view
+image::gnome-software-updates.png["",width=75%]
+
+*{gnome} Software* has the following differences to other tools provided on {productname}:
+
+* Unlike {yast} or Zypper, for installing software packaged as an RPM, *{gnome} Software* is restricted to software that provides AppStream metadata. This includes most desktop applications.
+* While the {gnome} *Package Updater* updates packages within the running system (forcing you to restart the respective applications), *{gnome} Software* downloads the updates and applies them after reboot.

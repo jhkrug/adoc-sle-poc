@@ -1,0 +1,444 @@
+// Converted from xml/hardware_nvdimm.xml
+[#cha-nvdimm]
+= Persistent memory
+:description: Learn to configure and optimize YaST tools to manage Persistent Memory with NVDIMMs
+:revdate: 2026-01-16
+
+[abstract]
+--
+This chapter contains additional information about using {productname} with non-volatile main memory, also known as _Persistent Memory_, comprising one or more NVDIMMs.
+--
+
+[#sec-nvdimm-intro]
+== Introduction
+
+Persistent memory is a new type of computer storage, combining speeds approaching those of dynamic RAM (DRAM) along with RAM's byte-by-byte addressability, plus the permanence of solid-state drives (SSDs).
+
+{suse} currently supports the use of persistent memory with {productname} on machines with the {x86-64} and {power} architectures.
+
+Like conventional RAM, persistent memory is installed directly into mainboard memory slots. As such, it is supplied in the same physical form factor as RAM—as DIMMs. These are known as NVDIMMs: non-volatile dual inline memory modules.
+
+Unlike RAM, though, persistent memory is also similar to flash-based SSDs in several ways. Both are based on forms of solid-state memory circuitry, but despite this, both provide non-volatile storage: Their contents are retained when the system is powered off or restarted. For both forms of medium, writing data is slower than reading it, and both support a limited number of rewrite cycles. Finally, also like SSDs, sector-level access to persistent memory is possible if that is more suitable for a particular application.
+
+Different models use different forms of electronic storage medium, such as Intel 3D XPoint, or a combination of NAND-flash and DRAM. New forms of non-volatile RAM are also in development. This means that different vendors and models of NVDIMM offer different performance and durability characteristics.
+
+Because the storage technologies involved are in an early stage of development, different vendors' hardware may impose different limitations. Thus, the following statements are generalizations.
+
+Persistent memory is up to ten times slower than DRAM, but around a thousand times faster than flash storage. It can be rewritten on a byte-by-byte basis rather than flash memory's whole-sector erase-and-rewrite process. Finally, while rewrite cycles are limited, most forms of persistent memory can handle millions of rewrites, compared to the thousands of cycles of flash storage.
+
+This has two important consequences:
+
+* It is not possible with current technology to run a system with only persistent memory and thus achieve non-volatile main memory. You must use a mixture of both conventional RAM and NVDIMMs. The operating system and applications will execute in conventional RAM, with the NVDIMMs providing fast supplementary storage.
+* The performance characteristics of different vendors' persistent memory mean that it may be necessary for programmers to be aware of the hardware specifications of the NVDIMMs in a particular server, including how many NVDIMMs there are and in which memory slots they are fitted. This will impact hypervisor use, migration of software between different host machines, and so on.
+
+This new storage subsystem is defined in version 6 of the ACPI standard. However, `+libnvdimm+` supports pre-standard NVDIMMs and they can be used in the same way.
+
+[TIP]
+.Intel Optane DC Persistent Memory
+====
+Intel Optane DIMMs memory can be used in specific modes:
+
+* In _App Direct Mode_, the Intel Optane memory is used as fast persistent storage, an alternative to SSDs and NVMe devices. Data in this mode is kept when the system is powered off.
++
+ifdef::os-sles,os-sled,os-slemicro[]
+App Direct Mode has been supported since {slsa} 12 SP4.
+endif::[]
+* In _Memory Mode_, the Intel Optane memory serves as a cost-effective, high-capacity alternative to DRAM. In this mode, separate DRAM DIMMs act as a cache for the most frequently accessed data while the Optane DIMMs memory provides large memory capacity. However, compared with DRAM-only systems, this mode is slower under random access workloads. If you run applications without Optane-specific enhancements that take advantage of this mode, memory performance may decrease. Data in this mode is lost when the system is powered off.
++
+ifdef::os-sles,os-sled,os-slemicro[]
+Memory Mode has been supported since {slsa} 15 SP1.
+endif::[]
+* In _Mixed Mode_, the Intel Optane memory is partitioned, so it can serve in both modes simultaneously.
++
+ifdef::os-sles,os-sled,os-slemicro[]
+Mixed Mode has been supported since {slsa} 15 SP1.
+endif::[]
+====
+
+[#sec-nvdimm-terms]
+== Terms
+
+Region::
+A _region_ is a block of persistent memory that can be divided up into one or more __namespace__s. You cannot access the persistent memory of a region without first allocating it to a namespace.
+Namespace::
+A single contiguously addressed range of non-volatile storage, comparable to NVM Express SSD namespaces, or to SCSI Logical Units (LUNs). Namespaces appear in the server's `+/dev+` directory as separate block devices. Depending on the method of access required, namespaces can either amalgamate storage from multiple NVDIMMs into larger volumes, or allow it to be partitioned into smaller volumes.
+Mode::
+Each namespace also has a _mode_ that defines which NVDIMM features are enabled for that namespace. Sibling namespaces of the same parent region always have the same type, but might be configured to have different modes. Namespace modes include:
++
+devdax:::
+Device-DAX mode. Creates a single-character device file ( `/dev/dax__X__._Y_` ). Does _not_ require file system creation.
+fsdax:::
+File system-DAX mode. Default if no other mode is specified. Creates a block device (`/dev/pmem__X__ [._Y_]`) which supports DAX for `+ext4+` or `+XFS+`.
+sector:::
+For legacy file systems which do not checksum metadata. Suitable for small boot volumes. Compatible with other operating systems.
+raw:::
+A memory disk without a label or metadata. Does not support DAX. Compatible with other operating systems.
++
+[NOTE]
+====
+`+raw+` mode is not supported by {suse}. It is not possible to mount file systems on `+raw+` namespaces.
+====
+Type::
+Each namespace and region has a _type_ that defines how the persistent memory associated with that namespace or region can be accessed. A namespace always has the same type as its parent region. There are two different types: Persistent Memory, which can be configured in two different ways, and the deprecated Block Mode.
++
+--
+Persistent memory (PMEM):::
+PMEM storage offers byte-level access, similar to RAM. Using PMEM, a single namespace can include multiple interleaved NVDIMMs, allowing them all to be used as a single device.
++
+There are two ways to configure a PMEM namespace.
++
+PMEM with DAX::::
+A PMEM namespace configured for Direct Access (DAX) means that accessing the memory bypasses the kernel's page cache and goes direct to the medium. Software can directly read or write every byte of the namespace separately.
+PMEM with block translation table (BTT)::::
+A PMEM namespace configured to operate in BTT mode is accessed on a sector-by-sector basis, like a conventional disk drive, rather than the more RAM-like byte-addressable model. A translation table mechanism batches accesses into sector-sized units.
++
+The advantage of BTT is data protection. The storage subsystem ensures that each sector is completely written to the underlying medium. If a sector cannot be completely written (that is, if the write operation fails for some reason), then the whole sector will be rolled back to its previous state. Thus a given sector cannot be partially written.
++
+Additionally, access to BTT namespaces is cached by the kernel.
++
+The drawback is that DAX is not possible for BTT namespaces.
+Block mode (BLK):::
+Block mode storage addresses each NVDIMM as a separate device. Its use is deprecated and no longer supported.
+--
++
+Apart from `+devdax+` namespaces, all other types must be formatted with a file system, just as with a conventional drive. {productname} supports the `+ext2+`, `+ext4+` and `+XFS+` file systems for this.
+Direct access (DAX)::
+DAX allows persistent memory to be directly mapped into a process's address space, for example, using the `+mmap+` system call.
+DIMM physical address (DPA)::
+A memory address as an offset into a single DIMM's memory; that is, starting from zero as the lowest addressable byte on that DIMM.
+Label::
+Metadata stored on the NVDIMM, such as namespace definitions. This can be accessed using DSMs.
+Device-specific method (DSM)::
+ACPI method to access the firmware on an NVDIMM.
+
+[#sec-nvdimm-uses]
+== Use cases
+
+[#sec-nvdimm-uses-pmem]
+=== PMEM with DAX
+
+This form of memory access is _not_ transactional. In the event of a power outage or other system failure, data may not be written into storage. PMEM storage is only suitable if the application can handle the situation of partially written data.
+
+==== Applications that benefit from large amounts of byte-addressable storage
+
+If the server will host an application that can directly use large amounts of fast storage on a byte-by-byte basis, the programmer can use the `+mmap+` system call to place blocks of persistent memory directly into the application's address space, without using any additional system RAM.
+
+==== Avoiding use of the kernel page cache
+
+Avoid using the kernel page cache to conserve the use of RAM for the page cache, and instead give it to your applications. For instance, non-volatile memory could be dedicated to holding virtual machine (VM) images. As these would not be cached, this would reduce the cache usage on the host, allowing more VMs per host.
+
+=== PMEM with BTT
+
+This is useful when you want to use the persistent memory on a set of NVDIMMs as a disk-like pool of fast storage. For example, placing the file system journal on PMEM with BTT increases the reliability of file system recovery after a power failure or other sudden interruption (see <<sec-nvdimm-setup-btt,Creating a PMEM namespace with BTT>>).
+
+To applications, such devices appear as fast SSDs and can be used like any other storage device. For example, LVM can be layered on top of the persistent memory and will work as normal.
+
+The advantage of BTT is that sector write atomicity is guaranteed, so even sophisticated applications that depend on data integrity will keep working. Media error reporting works through standard error-reporting channels.
+
+[#sec-nvdimm-tools]
+== Tools for managing persistent memory
+
+To manage persistent memory, it is necessary to install the `+ndctl+` package. This also installs the `+libndctl+` package, which provides a set of user space libraries to configure NVDIMMs.
+
+These tools work via the `+libnvdimm+` library, which supports three types of NVDIMM:
+
+* PMEM
+* BLK
+* Simultaneous PMEM and BLK
+
+The `+ndctl+` utility has a helpful set of `+man+` pages, accessible with the command:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> ndctl help __subcommand__
+----
+
+To see a list of available subcommands, use:
+
+----
+> ndctl --list-cmds
+----
+
+The available subcommands include:
+
+version::
+Displays the current version of the NVDIMM support tools.
+enable-namespace::
+Makes the specified namespace available for use.
+disable-namespace::
+Prevents the specified namespace from being used.
+create-namespace::
+Creates a new namespace from the specified storage devices.
+destroy-namespace::
+Removes the specified namespace.
+enable-region::
+Makes the specified region available for use.
+disable-region::
+Prevents the specified region from being used.
+zero-labels::
+Erases the metadata from a device.
+read-labels::
+Retrieves the metadata of the specified device.
+list::
+Displays available devices.
+help::
+Displays information about using the tool.
+
+[#sec-nvdimm-setup]
+== Setting up persistent memory
+
+[#sec-nvdimm-setup-view]
+=== Viewing available NVDIMM storage
+
+The `+ndctl+` `+list+` command can be used to list all available NVDIMMs in a system.
+
+In the following example, the system has three NVDIMMs, which are in a single, triple-channel interleaved set.
+
+----
+# ndctl list --dimms
+
+[
+ {
+  "dev":"nmem2",
+  "id":"8089-00-0000-12325476"
+ },
+ {
+  "dev":"nmem1",
+  "id":"8089-00-0000-11325476"
+ },
+ {
+  "dev":"nmem0",
+  "id":"8089-00-0000-10325476"
+ }
+]
+----
+
+With a different parameter, `+ndctl+` `+list+` will also list the available regions.
+
+[NOTE]
+====
+Regions may not appear in numerical order.
+====
+
+Note that although there are only three NVDIMMs, they appear as four regions.
+
+----
+# ndctl list --regions
+
+[
+ {
+  "dev":"region1",
+  "size":68182605824,
+  "available_size":68182605824,
+  "type":"blk"
+ },
+ {
+  "dev":"region3",
+  "size":202937204736,
+  "available_size":202937204736,
+  "type":"pmem",
+  "iset_id":5903239628671731251
+  },
+  {
+   "dev":"region0",
+   "size":68182605824,
+   "available_size":68182605824,
+   "type":"blk"
+  },
+  {
+   "dev":"region2",
+   "size":68182605824,
+   "available_size":68182605824,
+   "type":"blk"
+  }
+]
+----
+
+The space is available in two different forms: either as three separate 64 regions of type BLK, or as one combined 189 GB region of type PMEM which presents all the space on the three interleaved NVDIMMs as a single volume.
+
+Note that the displayed value for `+available_size+` is the same as that for `+size+`. This means that none of the space has been allocated yet.
+
+[#sec-nvdimm-setup-dax]
+=== Configuring the storage as a single PMEM namespace with DAX
+
+For the first example, we will configure our three NVDIMMs into a single PMEM namespace with Direct Access (DAX).
+
+The first step is to create a new namespace.
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} ndctl create-namespace --type=__pmem__ --mode=__fsdax__ --map=__memory__
+{
+ "dev":"namespace3.0",
+ "mode":"memory",
+ "size":199764213760,
+ "uuid":"dc8ebb84-c564-4248-9e8d-e18543c39b69",
+ "blockdev":"pmem3"
+}
+----
+
+This creates a block device `+/dev/pmem3+`, which supports DAX. The `+3+` in the device name is inherited from the parent region number, in this case `+region3+`.
+
+The `+--map=memory+` option sets aside part of the PMEM storage space on the NVDIMMs so that it can be used to allocate internal kernel data structures called `+struct pages+`. This allows the new PMEM namespace to be used with features such as `+O_DIRECT I/O+` and `+RDMA+`.
+
+The reservation of some persistent memory for kernel data structures is why the resulting PMEM namespace has a smaller capacity than the parent PMEM region.
+
+Next, we verify that the new block device is available to the operating system:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} fdisk -l /dev/__pmem3__
+Disk /dev/pmem3: 186 GiB, 199764213760 bytes, 390164480 sectors
+Units: sectors of 1 {asterisk} 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 4096 bytes
+I/O size (minimum/optimal): 4096 bytes / 4096 bytes
+----
+
+Before it can be used, like any other drive, it must be formatted. In this example, we format it with XFS:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} mkfs.xfs /dev/__pmem3__
+meta-data=/dev/pmem3      isize=256    agcount=4, agsize=12192640 blks
+         =                sectsz=4096  attr=2, projid32bit=1
+         =                crc=0        finobt=0, sparse=0
+data     =                bsize=4096   blocks=48770560, imaxpct=25
+         =                sunit=0      swidth=0 blks
+naming   =version 2       bsize=4096   ascii-ci=0 ftype=1
+log      =internal log    bsize=4096   blocks=23813, version=2
+         =                sectsz=4096  sunit=1 blks, lazy-count=1
+realtime =none            extsz=4096   blocks=0, rtextents=0
+----
+
+Next, we can mount the new drive onto a directory:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} mount -o dax /dev/__pmem3__ /mnt/__pmem3__
+----
+
+Then we can verify that we now have a DAX-capable device:
+
+----
+# mount | grep dax
+/dev/pmem3 on /mnt/pmem3 type xfs (rw,relatime,attr2,dax,inode64,noquota)
+----
+
+The result is that we now have a PMEM namespace formatted with the XFS file system and mounted with DAX.
+
+Any `+mmap()+` calls to files in that file system will return virtual addresses that directly map to the persistent memory on our NVDIMMs, bypassing the page cache.
+
+Any `+fsync+` or `+msync+` calls on files in that file system will still ensure that modified data has been fully written to the NVDIMMs. These calls flush the processor cache lines associated with any pages that have been modified in user space via `+mmap+` mappings.
+
+[#sec-nvdimm-setup-deldax]
+==== Removing a namespace
+
+Before creating any other type of volume that uses the same storage, we must unmount and then remove this PMEM volume.
+
+First, unmount it:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} umount /mnt/__pmem3__
+----
+
+Then disable the namespace:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} ndctl disable-namespace __namespace3.0__
+disabled 1 namespace
+----
+
+Then delete it:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} ndctl destroy-namespace __namespace3.0__
+destroyed 1 namespace
+----
+
+[#sec-nvdimm-setup-btt]
+=== Creating a PMEM namespace with BTT
+
+BTT provides sector write atomicity, which makes it a good choice when you need data protection, , for Ext4 and XFS journals. If there is a power failure, the journals are protected and should be recoverable. The following examples show how to create a PMEM namespace with BTT in sector mode, and how to place the file system journal in this namespace.
+
+----
+# ndctl create-namespace --type=pmem --mode=sector
+{
+ "dev":"namespace3.0",
+ "mode":"sector",
+ "uuid":"51ab652d-7f20-44ea-b51d-5670454f8b9b",
+ "sector_size":4096,
+ "blockdev":"pmem3s"
+}
+----
+
+Next, verify that the new device is present:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} fdisk -l /dev/__pmem3s__
+Disk /dev/pmem3s: 188.8 GiB, 202738135040 bytes, 49496615 sectors
+Units: sectors of 1 {asterisk} 4096 = 4096 bytes
+Sector size (logical/physical): 4096 bytes / 4096 bytes
+I/O size (minimum/optimal): 4096 bytes / 4096 bytes
+----
+
+Like the DAX-capable PMEM namespace we previously configured, this BTT-capable PMEM namespace consumes all the available storage on the NVDIMMs.
+
+[NOTE]
+====
+The trailing `+s+` in the device name (`/dev/_pmem3s_`) stands for `+sector+` and can be used to easily distinguish namespaces that are configured to use the BTT.
+====
+
+The volume can be formatted and mounted as in the previous example.
+
+The PMEM namespace shown here cannot use DAX. Instead it uses the BTT to provide _sector write atomicity_. On each sector write through the PMEM block driver, the BTT will allocate a new sector to receive the new data. The BTT atomically updates its internal mapping structures after the new data is fully written so the newly written data will be available to applications. If the power fails at any point during this process, the write will be lost and the application will have access to its old data, still intact. This prevents the condition known as “torn sectors”.
+
+This BTT-enabled PMEM namespace can be formatted and used with a file system same as any other standard block device. It cannot be used with DAX. However, `+mmap+` mappings for files on this block device will use the page cache.
+
+[#sec-nvdimm-fs-journal]
+=== Placing the file system journal on PMEM/BTT
+
+When you place the file system journal on a separate device, it must use the same file system block size as the file system. Most likely this is 4096, and you can find the block size with this command:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} blockdev --getbsz /dev/__sda3__
+----
+
+The following example creates a new Ext4 journal on a separate NVDIMM device, creates the file system on a SATA device, then attaches the new file system to the journal:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} mke2fs -b 4096 -O journal{underscore}dev /dev/__pmem3s__
+{hash} mkfs.ext4 -J device=/dev/__pmem3s__ /dev/__sda3__
+----
+
+The following example creates a new XFS file system on a SATA drive, and creates the journal on a separate NVDIMM device:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} mkfs.xfs -l logdev=/dev/__pmem3s__  /dev/__sda3__
+----
+
+See `+man 8 mkfs.ext4+` and `+man 8 mkfs.ext4+` for detailed information about options.
+
+[#sec-nvdimm-moreinfo]
+== More information
+
+More about this topic can be found in the following list:
+
+* link:https://nvdimm.wiki.kernel.org/[Persistent Memory Wiki]
++
+Contains instructions for configuring NVDIMM systems, information about testing, and links to specifications related to NVDIMM enabling. This site is developing as NVDIMM support in Linux is developing.
+* link:https://pmem.io/[Persistent Memory Programming]
++
+Information about configuring, using and programming systems with non-volatile memory under Linux and other operating systems. Covers the NVM Library (NVML), which aims to provide useful APIs for programming with persistent memory in user space.
+* link:https://www.kernel.org/doc/Documentation/nvdimm/nvdimm.txt[LIBNVDIMM: Non-Volatile Devices]
++
+Aimed at kernel developers, this is part of the Documentation directory in the current Linux kernel tree. It talks about the different kernel modules involved in NVDIMM enablement, lays out technical details of the kernel implementation, and talks about the ``+sysfs+``interface to the kernel that is used by the `+ndctl+` tool.
+* link:https://github.com/pmem/ndctl[GitHub: pmem/ndctl]
++
+Utility library for managing the `+libnvdimm+` subsystem in the Linux kernel. Also contains user space libraries, as well as unit tests and documentation.

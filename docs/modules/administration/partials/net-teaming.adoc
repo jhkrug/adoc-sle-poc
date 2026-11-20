@@ -1,0 +1,295 @@
+// Converted from xml/net_teaming.xml
+
+[#sec-network-iface-teaming]
+== Setting up team devices for {netteam}
+
+// REMARK: toms 2016-06-16: FATE#320468
+
+The term “link aggregation” is the general term which describes combining (or aggregating) a network connection to provide a logical layer. Sometimes you find the terms “channel teaming”, “Ethernet bonding”, “port trunking”, etc. which are synonyms and refer to the same concept.
+
+This concept is widely known as “bonding” and was originally integrated into the Linux kernel (see <<sec-network-iface-bonding,Setting up bonding devices>> for the original implementation). The term _{netteam}_ is used to refer to the new implementation of this concept.
+
+The main difference between bonding and {netteam} is that teaming supplies a set of small kernel modules responsible for providing an interface for teamd instances. Everything else is handled in user space. This is different from the original bonding implementation which contains all of its functionality exclusively in the kernel. For a comparison refer to <<tab-team-comparison,Feature comparison between bonding and team>>.
+
+[#tab-team-comparison]
+.Feature comparison between bonding and team
+[cols="1,1,1",options="header"]
+|===
+|Feature
+|Bonding
+|Team
+
+|broadcast, round-robin TX policy
+|yes
+|yes
+|active-backup TX policy
+|yes
+|yes
+|LACP (802.3ad) support
+|yes
+|yes
+|hash-based TX policy
+|yes
+|yes
+|user can set hash function
+|no
+|yes
+|TX load-balancing support (TLB)
+|yes
+|yes
+|TX load-balancing support for LACP
+|no
+|yes
+|Ethtool link monitoring
+|yes
+|yes
+|ARP link monitoring
+|yes
+|yes
+|NS/NA (IPV6) link monitoring
+|no
+|yes
+|RCU locking on TX/RX paths
+|no
+|yes
+|port prio and stickiness
+|no
+|yes
+|separate per-port link monitoring setup
+|no
+|yes
+|multiple link monitoring setup
+|limited
+|yes
+|VLAN support
+|yes
+|yes
+|multiple device stacking
+|yes
+|yes
+3+|Source: link:https://libteam.org/files/teamdev.pp.pdf[]
+|===
+
+Both implementations, bonding and {netteam}, can be used in parallel. {netteam} is an alternative to the existing bonding implementation. It does not replace bonding.
+
+{netteam} can be used for different use cases. The two most important use cases are explained later and involve:
+
+* Load balancing between different network devices.
+* Failover from one network device to another in case one of the devices should fail.
+
+Currently, there is no {yast} module to support creating a teaming device. You need to configure {netteam} manually. The general procedure is shown below which can be applied for all your {netteam} configurations:
+
+[#pro-team-general]
+.General procedure
+. Install the package `+libteam-tools+`:
++
+----
+> sudo zypper in libteam-tools
+----
+. Create a configuration file under `+/etc/sysconfig/network/+`. Usually it will be `+ifcfg-team0+`. If you need more than one {netteam} device, give them ascending numbers.
++
+This configuration file contains several variables which are explained in the man pages (see `+man ifcfg+` and `+man ifcfg-team+`). An example configuration can be found in your system in the file `+/etc/sysconfig/network/ifcfg.template+`.
+. Remove the configuration files of the interfaces which will be used for the teaming device (usually `+ifcfg-eth0+` and `+ifcfg-eth1+`).
++
+It is recommended to make a backup and remove both files. Wicked will re-create the configuration files with the necessary parameters for teaming.
+. Optionally, check if everything is included in Wicked's configuration file:
++
+----
+> sudo wicked show-config
+----
+. Start the {netteam} device `+team0+`:
++
+----
+> sudo wicked ifup team0
+----
++
+In case you need additional debug information, use the option `+--debug all+` after the `+all+` subcommand.
+. Check the status of the {netteam} device. This can be done by the following commands:
++
+--
+* Get the state of the teamd instance from Wicked:
++
+----
+> sudo wicked ifstatus --verbose team0
+----
+* Get the state of the entire instance:
++
+----
+> sudo teamdctl team0 state
+----
+* Get the systemd state of the teamd instance:
++
+----
+> sudo systemctl status teamd@team0
+----
+--
++
+Each of them shows a slightly different view depending on your needs.
+. In case you need to change something in the `+ifcfg-team0+` file afterward, reload its configuration with:
++
+----
+> sudo wicked ifreload team0
+----
+
+Do _not_ use `+systemctl+` for starting or stopping the teaming device! Instead, use the `+wicked+` command as shown above.
+
+To completely remove the team device, use this procedure:
+
+.Removing a team device
+. Stop the {netteam} device `+team0+`:
++
+----
+> sudo wicked ifdown team0
+----
+. Rename the file `+/etc/sysconfig/network/ifcfg-team0+` to `+/etc/sysconfig/network/.ifcfg-team0+`. Inserting a dot in front of the file name makes it “invisible” for wicked. If you really do not need the configuration anymore, you can also remove the file.
+. Reload the configuration:
++
+----
+> sudo wicked ifreload all
+----
+
+[#sec-network-iface-teaming-lb]
+=== Use case: load balancing with {netteam}
+
+Load balancing is used to improve bandwidth. Use the following configuration file to create a {netteam} device with load balancing capabilities. Proceed with <<pro-team-general,General procedure>> to set up the device. Check the output with `+teamdctl+`.
+
+[#ex-team-lb]
+.Configuration for load balancing with {netteam}
+====
+[subs="attributes+"]
+----
+STARTMODE=auto <1>
+BOOTPROTO=static <2>
+IPADDRESS="{exampledomain1ip}.1/24" 
+IPADDR6="fd00:deca:fbad:50::1/64" 
+
+TEAM_RUNNER="loadbalance" <3>
+TEAM_LB_TX_HASH="ipv4,ipv6,eth,vlan"
+TEAM_LB_TX_BALANCER_NAME="basic"
+TEAM_LB_TX_BALANCER_INTERVAL="100"
+
+TEAM_PORT_DEVICE_0="eth0" <4>
+TEAM_PORT_DEVICE_1="eth1" 
+
+TEAM_LW_NAME="ethtool" <5>
+TEAM_LW_ETHTOOL_DELAY_UP="10" <6>
+TEAM_LW_ETHTOOL_DELAY_DOWN="10" 
+----
+
+<1> Controls the start of the teaming device. The value of `+auto+` means, the interface will be set up when the network service is available and will be started automatically on every reboot.
++
+In case you need to control the device yourself (and prevent it from starting automatically), set `+STARTMODE+` to `+manual+`.
+<2> Sets a static IP address (here `{exampledomain1ip}.1` for IPv4 and `+fd00:deca:fbad:50::1+` for IPv6).
++
+If the {netteam} device should use a dynamic IP address, set `+BOOTPROTO="dhcp"+` and remove (or comment) the line with `+IPADDRESS+` and `+IPADDR6+`.
+<3> Sets `+TEAM_RUNNER+` to `+loadbalance+` to activate the load balancing mode.
+<4> Specifies one or more devices which should be aggregated to create the {netteam} device.
+<5> Defines a link watcher to monitor the state of subordinate devices. The default value `+ethtool+` checks only if the device is up and accessible. This makes this check fast enough. However, it does not check if the device can really send or receive packets.
++
+If you need a higher confidence in the connection, use the `+arp_ping+` option. This sends pings to an arbitrary host (configured in the `+TEAM_LW_ARP_PING_TARGET_HOST+` variable). The {netteam} device is considered to be up only if the replies are received.
+<6> Defines the delay in milliseconds between the link coming up (or down) and the runner being notified.
+====
+
+[#sec-network-iface-teaming-failover]
+=== Use case: failover with {netteam}
+
+Failover is used to ensure high availability of a critical {netteam} device by involving a parallel backup network device. The backup network device is running all the time and takes over if and when the main device fails.
+
+Use the following configuration file to create a {netteam} device with failover capabilities. Proceed with <<pro-team-general,General procedure>> to set up the device. Check the output with `+teamdctl+`.
+
+[#ex-team-failover]
+.Configuration for DHCP {netteam} device
+====
+[subs="attributes+"]
+----
+STARTMODE=auto <1>
+BOOTPROTO=static <2>
+IPADDR="{exampledomain1ip}.2/24" 
+IPADDR6="fd00:deca:fbad:50::2/64" 
+
+TEAM_RUNNER=activebackup <3>
+TEAM_PORT_DEVICE_0="eth0" <4>
+TEAM_PORT_DEVICE_1="eth1" 
+
+TEAM_LW_NAME=ethtool <5>
+TEAM_LW_ETHTOOL_DELAY_UP="10" <6>
+TEAM_LW_ETHTOOL_DELAY_DOWN="10" 
+----
+
+<1> Controls the start of the teaming device. The value of `+auto+` means the interface will be set up when the network service is available and will be started automatically on every reboot.
++
+In case you need to control the device yourself (and prevent it from starting automatically), set `+STARTMODE+` to `+manual+`.
+<2> Sets a static IP address (here `{exampledomain1ip}.2` for IPv4 and `+fd00:deca:fbad:50::2+` for IPv6).
++
+If the {netteam} device should use a dynamic IP address, set `+BOOTPROTO="dhcp"+` and remove (or comment) the line with `+IPADDRESS+` and `+IPADDR6+`.
+<3> Sets `+TEAM_RUNNER+` to `+activebackup+` to activate the failover mode.
+<4> Specifies one or more devices which should be aggregated to create the {netteam} device.
+<5> Defines a link watcher to monitor the state of subordinate devices. The default value `+ethtool+` checks only if the device is up and accessible. This makes this check fast enough. However, it does not check if the device can really send or receive packets.
++
+If you need a higher confidence in the connection, use the `+arp_ping+` option. This sends pings to an arbitrary host (configured in the `+TEAM_LW_ARP_PING_TARGET_HOST+` variable). Only if the replies are received, the {netteam} device is considered to be up.
+<6> Defines the delay in milliseconds between the link coming up (or down) and the runner being notified.
+====
+
+[#sec-network-iface-teaming-vlan]
+=== Use case: VLAN over team device
+
+VLAN is an abbreviation of _Virtual Local Area Network_. It allows the running of multiple _logical_ (virtual) Ethernets over one single physical Ethernet. It logically splits the network into different broadcast domains so that packets are only switched between ports that are designated for the same VLAN.
+
+The following use case creates two static VLANs on top of a team device:
+
+* `+vlan0+`, bound to the IP address `{subneti}0.1`
+* `+vlan1+`, bound to the IP address `{subnetii}0.1`
+
+Proceed as follows:
+
+. Enable the VLAN tags on your switch. To use load balancing for your team device, your switch needs to be capable of _Link Aggregation Control Protocol_ (LACP) (802.3ad). Consult your hardware manual about the details.
+. Decide if you want to use load balancing or failover for your team device. Set up your team device as described in <<sec-network-iface-teaming-lb,Use case: load balancing with {netteam}>> or <<sec-network-iface-teaming-failover,Use case: failover with {netteam}>>.
+. In `+/etc/sysconfig/network+` create a file `+ifcfg-vlan0+` with the following content:
++
+[subs="attributes+"]
+----
+STARTMODE="auto"
+BOOTPROTO="static" <1>
+IPADDR='{subneti}0.1/24' <2>
+ETHERDEVICE="team0" <3>
+VLAN_ID="0" <4>
+VLAN='yes'
+----
++
+<1> Defines a fixed IP address, specified in `+IPADDR+`.
+<2> Defines the IP address, here with its netmask.
+<3> Contains the real interface to use for the VLAN interface, here our team device (`+team0+`).
+<4> Specifies a unique ID for the VLAN. Preferably, the file name and the `+VLAN_ID+` corresponds to the name `ifcfg-vlan__VLAN_ID__`. In our case `+VLAN_ID+` is `+0+` which leads to the file name `+ifcfg-vlan0+`.
+. Copy the file `+/etc/sysconfig/network/ifcfg-vlan0+` to `+/etc/sysconfig/network/ifcfg-vlan1+` and change the following values:
++
+* `+IPADDR+` from `{subneti}0.1/24` to `{subnetii}0.1/24`.
+* `+VLAN_ID+` from `+0+` to `+1+`.
+. Start the two VLANs:
++
+----
+# wicked ifup vlan0 vlan1
+----
+. Check the output of `+ifconfig+`:
++
+[subs="attributes+"]
+----
+# ifconfig -a
+[...]
+vlan0     Link encap:Ethernet  HWaddr 08:00:27:DC:43:98
+          inet addr:{subneti}0.1 Bcast:{subneti}0.255 Mask:255.255.255.0
+          inet6 addr: fe80::a00:27ff:fedc:4398/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:12 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:0 (0.0 b)  TX bytes:816 (816.0 b)
+
+vlan1     Link encap:Ethernet  HWaddr 08:00:27:DC:43:98
+          inet addr:{subnetii}0.1 Bcast:{subnetii}0.255 Mask:255.255.255.0
+          inet6 addr: fe80::a00:27ff:fedc:4398/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:12 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:0 (0.0 b)  TX bytes:816 (816.0 b)
+----

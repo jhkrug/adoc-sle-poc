@@ -1,0 +1,89 @@
+// Converted from xml/common_intro_convention.xml
+
+== Documentation conventions
+
+The following notices and typographic conventions are used in this document:
+
+* `+/etc/passwd+`: Directory names and file names
+* _PLACEHOLDER_: Replace _PLACEHOLDER_ with the actual value
+* `+PATH+`: An environment variable
+* `+ls+`, `+--help+`: Commands, options and parameters
+* `+user+`: The name of a user or group
+* `+package_name+`: The name of a software package
+* kbd:[Alt], kbd:[Alt+F1]: A key to press or a key combination. Keys are shown in uppercase, as on a keyboard.
+* {empty}
++
+*File*, menu:File[Save As]: Menu items, buttons
+ifdef::os-sles,os-slemicro[]
+* {empty}
++
+--
+ifdef::arch-x86_64[]
+This paragraph is only relevant for the {x86-64} architectures. The arrows mark the beginning and the end of the text block.
+endif::[]
+--
++
+ifdef::arch-zseries,arch-power[]
+This paragraph is only relevant for the architectures `{zseries}` and `{power}`. The arrows mark the beginning and the end of the text block.
+endif::[]
+endif::[]
+* _Chapter 1, “Example chapter”_: A cross-reference to another chapter in this guide.
+* Commands that must be run with `+root+` privileges. You can also prefix these commands with the `+sudo+` command to run them as a non-privileged user:
++
+----
+# command
+> sudo command
+----
+* Commands that can be run by non-privileged users:
++
+----
+> command
+----
+* Commands can be split into two or multiple lines by a backslash character (`+\+`) at the end of a line. The backslash informs the shell that the command invocation will continue after the end of the line:
++
+----
+> echo a b \
+c d
+----
+* A code block that shows both the command (preceded by a prompt) and the respective output returned by the shell:
++
+----
+> command
+output
+----
+* Notices
++
+[WARNING]
+.Warning notice
+====
+Vital information you must know before proceeding. Warns you about security issues, potential loss of data, damage to hardware, or physical hazards.
+====
++
+[IMPORTANT]
+.Important notice
+====
+Important information you should know before proceeding.
+====
++
+[NOTE]
+.Note notice
+====
+Additional information, for example about differences in software versions.
+====
++
+[TIP]
+.Tip notice
+====
+Helpful information, like a guideline or a piece of practical advice.
+====
+* Compact Notices
++
+[NOTE]
+====
+Additional information, for example, about differences in software versions.
+====
++
+[TIP]
+====
+Helpful information, like a guideline or a piece of practical advice.
+====

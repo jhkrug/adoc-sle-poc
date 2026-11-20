@@ -1,0 +1,50 @@
+// Converted from xml/backup.xml
+[#cha-userbackup]
+= Backing up user data
+:description: Configure GNOME Backups on SUSE Linux to protect your files and directories with automated schedules, manual backups and easy restore options
+:revdate: 2026-01-16
+
+[abstract]
+--
+Learn how to back up your user data such as files and directories with GNOME Backups.
+--
+
+[NOTE]
+.You may need `+deja-dup+` to install Backups
+====
+The GNOME application is called Backups, but the underlying package is named `+deja-dup+`. Before proceeding, make sure that the package `+deja-dup+` is installed.
+====
+
+To start the *Backups* application, open the *Activities* overview by pressing kbd:[Meta] and search for `+back+`.
+
+[#fig-gnome-backup]
+.GNOME Backups application
+image::gnome_backup.png["GNOME Backups interface showing how to choose folders to include or exclude from a backup, with options for Home, Trash and Downloads",width=75%]
+
+[#sec-gnome-backup-config]
+== Configuring backups
+
+Before you can start to back up data, configure which files to back up, which ones to ignore and where to store the backup.
+
+. Configure which folders to back up by clicking *Folders to save*. By default, your home directory is preconfigured. Use the plus and minus signs to add or delete folders.
+. Optionally, configure folders that should be ignored when backing up data by clicking *Folders to ignore*. By default, the trash bin and the `+Download+` directory are preconfigured. Use the plus and minus signs to add or delete folders.
+. To define a location where to store the backup, click *Storage location*. You can choose a *Local Folder*, a *Network Server*, or cloud storage. If you opt for the latter, make sure you have provided your login credentials for the respective online service via *Open Online Account Settings*.
++
+Regardless of the Storage location, provide a directory name under which the backup(s) will be stored. It is recommended to choose a name that can easily be associated with backups for the respective machine and data.
+
+[#sec-gnome-backup-start]
+== Creating backups
+
+Once you have configured which folders to back up and where to store them, you have two choices for backing up. First, by manually starting the backup. Switch to the *Overview* screen and click *Back Up Now*. Choose whether you want to protect the backup with a password or not. Proceed with *Forward*.
+
+The second option is to schedule automatic backups: Create a backup schedule by clicking *Scheduling*. Enter the backup frequency and decide how long to keep backups. Enable scheduled backups by turning the *Automatic Backup* switch *On*.
+
+[#cha-userbackup-restore]
+== Restoring data
+
+To restore a previous state of your data, switch to the *Overview* screen and click *Restore*.
+
+. Choose a backup location, a directory name and proceed with *Forward*.
+. Select the backup date which you want to restore and proceed with *Forward*.
+. Choose whether to restore the files from the backup to their original location or to a different directory. Proceed with *Forward*.
+. Review your settings. If necessary, go *Back* to change them. To start restoring data from the backup, click *Restore*.

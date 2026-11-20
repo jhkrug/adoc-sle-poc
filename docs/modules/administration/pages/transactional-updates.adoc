@@ -1,0 +1,182 @@
+// Converted from xml/transactional_updates.xml
+[#cha-transactional-updates]
+= Transactional updates
+:description: Learn how administrators configure and manage transactional updates in SUSE Linux systems when the root file system is read-only
+:revdate: 2026-01-16
+
+[abstract]
+--
+Transactional updates are available in {productname} as a technology preview for updating {slsa} when the root file system is read-only. Transactional updates are atomic—all updates are applied only if all succeed—and support rollbacks. It does not affect a running system as no changes are activated until after the system is rebooted. As reboots are disruptive, the administrator must decide if a reboot is more expensive than disturbing running services. If reboots are too expensive then do not use transactional updates.
+
+Transactional updates are run daily by the `+transactional-update+` script. The script checks for available updates. If there are any updates, it creates a new snapshot of the root file system in the background, and then fetches updates from the release channels. After the new snapshot is updated, it is marked as active and will be the new default root file system after the next reboot of the system. When `+transactional-update+` is set to run automatically (which is the default behavior) it also reboots the system. Both the time that the update runs and the reboot maintenance window are configurable.
+
+Only packages that are part of the snapshot of the root file system can be updated. If packages contain files that are not part of the snapshot, the update could fail or break the system.
+
+RPMs that require a license to be accepted cannot be updated.
+--
+
+[#sec-tu-limitations]
+== Limitations
+
+Currently, there are certain limitations in the functionality of transactional updates. The following packages do not work with the `+transactional-update+` command:
+
+* The `+nginx+` default `+index.html+` page may not be available
+* `+tomcat-webapps+` and `+tomcat-admin-webapps+`
+* `+phpMyAdmin+`
+* `+sca-appliance-*+`
+* `+mpi-selector+`
+* `+emacs+` works except for Emacs games
+* `+bind+` and `+bind-chrootenv+`
+* `+docbook*+`
+* `+sblim-sfcb*+`
+* `+texlive*+`
+* `+iso_ent+`
+* `+openjade+`
+* `+opensp+`
+* `+pcp+`
+* `+plymouth+`
+* `+postgresql-server-10+`
+* `+pulseaudio-gdm-hooks+`
+* `+smartmontools+`
+
+The updater component of the system installer does not work with a read-only file system as it has no support for transactional updates.
+
+Further considerations:
+
+* It is a good idea to minimize the time between updating the system and rebooting the machine.
+* Only one update can be applied at a time. Be sure to reboot after an update, and before the next update is applied.
+* `+update-alternatives+` should not be run after a transactional update until the machine has been rebooted.
+* Do not create new system users or system groups after a transactional update until after reboot. It is acceptable to create normal users and groups (UID > 1000, GID > 1000).
+* {yast} is not yet aware of transactional updates. If a YaST module needs to install additional packages, this does not work. Normal system operations that modify configuration files in `+/etc+` work.
+* For `+php7-fastcgi+`, you must manually create a symbolic link, `+/srv/www/cgi-bin/php+`, that points to `+/usr/bin/php-cgi+`.
+* ``+ntp+``is part of the Legacy Module for migration from older {slsa} versions. It is not supported on a new {productname} installation, and has been replaced by `+chrony+`. If you continue to use `+ntp+`, a fresh installation is required to work correctly with transactional updates.
+* `+sblim-sfcb+`: the whole sblim ecosystem is incompatible with transactional update.
+* `+btrfs-defrag+` from the `+btrfsmaintenance+` package does not work with a read-only root file system.
+* For `+btrfs-balance+`, the variable `+BTRFS_BALANCE_MOUNTPOINTS+` in `+/etc/sysconfig/btrfsmaintenance+` must be changed from `+/+` to `+/.snapshots+`.
+* For `+btrfs-scrub+`, the variable `+BTRFS_SCRUB_MOUNTPOINTS+` in `+/etc/sysconfig/btrfsmaintenance+` must be changed from `+/+` to `+/.snapshots+`.
+
+[#sec-install-tu]
+== Enabling `+transactional-update+`
+
+You must enable the Transactional Server Module during system installation, and then select the Transactional Server System Role. Installing any package from the Transactional Server Module later in a running system is NOT supported and may break the system.
+
+Changing the subvolume layout of the root partition, or putting subdirectories or subvolumes of the root partition on their own partitions (except `+/home+`, `+/var+`, `+/srv+`, and `+/opt+`) is not supported, and may break the system.
+
+[#sec-tu-disable]
+== Managing automatic updates
+
+Automatic updates are controlled by a `+systemd.timer+` that runs once per day. This applies all updates, and informs `+rebootmgrd+` that the machine should be rebooted. You may adjust the time when the update runs, see systemd.timer(5). To adjust the maintenance window, which is when `+rebootmgrd+` reboots the system, see rebootmgrd(8).
+
+You can disable automatic transactional updates with this command:
+
+----
+# systemctl --now disable transactional-update.timer
+----
+
+== The `+transactional-update+` command
+
+The `+transactional-update+` command enables atomic installation or removal of updates. Updates are applied only if they all can be successfully installed. `+transactional-update+` creates a snapshot of your system before the update is applied, and you can restore this snapshot. All changes become active only after reboot.
+
+`+--continue+`::
+The `+--continue+` option is for making multiple changes to an existing snapshot without rebooting.
++
+The default `+transactional-update+` behavior is to create a new snapshot from the current root file system. If you forget something, such as installing a new package, you have to reboot to apply your previous changes, run `+transactional-update+` again to install the forgotten package, and reboot again. You cannot run the `+transactional-update+` command multiple times without rebooting to add more changes to the snapshot, because that creates separate independent snapshots that do not include changes from the previous snapshots.
++
+Use the `+--continue+` option to make as many changes as you want without rebooting. A separate snapshot is made each time, and each snapshot contains all the changes you made in the previous snapshots, plus your new changes. Repeat this process as many times as you want, and when the final snapshot includes everything you want reboot the system, and your final snapshot becomes the new root file system.
++
+Another useful feature of the `+--continue+` option is you may select any existing snapshot as the base for your new snapshot. The following example demonstrates running `+transactional-update+` to install a new package in a snapshot based on snapshot 13, and then running it again to install another package:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} transactional-update pkg install __package{underscore}1__
+----
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} transactional-update --continue 13 pkg install __package{underscore}2__
+----
++
+The `+--continue [num]+` option calls `+snapper create --from+`, see xref:snapper.adoc#sec-snapper-manage-create[Creating snapshots].
+`+cleanup+`::
+If the current root file system is identical to the active root file system (after a reboot, before `+transactional-update+` creates a new snapshot with updates), all old snapshots without a cleanup algorithm get a cleanup algorithm set. This ensures that old snapshots are deleted by Snapper. (See the section about cleanup algorithms in snapper(8).) This also removes all unreferenced (and thus unused) `+/etc+` overlay directories in `+/var/lib/overlay+`:
++
+----
+# transactional-update cleanup
+----
+`+pkg in/install+`::
+Installs individual packages from the available channels using the `+zypper install+` command. This command can also be used to install Program Temporary Fix (PTF) RPM files.
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} transactional-update pkg install __package{underscore}name__
+----
++
+or
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} transactional-update pkg install __rpm1 rpm2__
+----
+`+pkg rm/remove+`::
+Removes individual packages from the active snapshot using the `+zypper remove+` command. This command can also be used to remove PTF RPM files.
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} transactional-update pkg remove __package{underscore}name__
+----
+`+pkg up/update+`::
+Updates individual packages from the active snapshot using the `+zypper update+` command. Only packages that are part of the snapshot of the base file system can be updated.
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} transactional-update pkg update __package{underscore}name__
+----
+`+up/update+`::
+If there are new updates available, a new snapshot is created and `+zypper up/update+` updates the snapshot.
++
+----
+# transactional-update up
+----
+`+dup+`::
+If there are new updates available, a new snapshot is created and `+zypper dup –no-allow-vendor-change+` updates the snapshot. The snapshot is activated afterwards and becomes the new root file system after reboot.
++
+----
+# transactional-update dup
+----
+`+patch+`::
+If there are new updates available, a new snapshot is created and `+zypper patch+` updates the snapshot.
++
+----
+# transactional-update patch
+----
+`+rollback+`::
+This sets the default subvolume. On systems with a read-write file system `+snapper rollback+` is called. On a read-only file system and without any argument, the current system is set to a new default root file system. If you specify a number, that snapshot is used as the default root file system. On a read-only file system, it does not create any additional snapshots.
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} transactional-update rollback __snapshot{underscore}number__
+----
+`+grub.cfg+`::
+This creates a new GRUB2 configuration. Sometimes it is necessary to adjust the boot configuration, for example, adding additional kernel parameters. Edit _/etc/default/grub_, run `+transactional-update grub.cfg+`, and then reboot to activate the change. You must immediately reboot, or the new GRUB2 configuration gets overwritten with the default by the next `+transactional-update+` run.
++
+----
+# transactional-update grub.cfg
+----
+`+reboot+`::
+This parameter triggers a reboot after the action is completed.
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} transactional-update __dup__ reboot
+----
+`+--help+`::
+This prints a help screen with options and subcommands.
++
+----
+# transactional-update --help
+----
+
+[#sec-tu-troubleshooting]
+== Troubleshooting
+
+If the upgrade fails, run `+supportconfig+` to collect log data. Provide the resulting files, including `+/var/log/transactional-update.log+` to {suse} Support.

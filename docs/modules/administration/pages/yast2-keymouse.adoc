@@ -1,0 +1,14 @@
+// Converted from xml/yast2_keymouse.xml
+[#sec-yast-hw-keym]
+= Setting up your system keyboard layout
+:description: Configure your systems default keyboard layout with YaST for seamless interaction with both console and desktop environments
+:revdate: 2026-01-16
+
+The {yast} *System Keyboard Layout* module lets you define the default keyboard layout for the system (also used for the console). Users can modify the keyboard layout in their individual X sessions, using the desktop's tools.
+
+. Start the {yast} *System Keyboard Configuration* dialog by clicking menu:Hardware[System Keyboard Layout] in {yast}. Alternatively, start the module from the command line with `+sudo yast2 keyboard+`.
+. Select the desired *Keyboard Layout* from the list.
+. Try the selected keyboard layout in the *Test* text box.
+. If the result is as expected, confirm your changes and close the dialog.
+. The result is stored in the files `+/etc/vconsole.conf+` (for text consoles) and `+/etc/X11/xorg.conf.d/00-keyboard.conf+` (for X11).
+. Advanced keyboard settings can be configured in menu:System[Sysconfig Editor > Hardware > Keyboard]. Here you can specify the keyboard rate and delay settings, and enable or disable NumLock, CapsLock, and ScrollLock. These settings are stored in `+/etc/sysconfig/keyboard+`.

@@ -1,0 +1,253 @@
+= doc-sle to AsciiDoc/Antora: Phase 1 spike
+:revdate: 2026-11-20
+
+This spike converts one book of `doc-sle` (the RMT Guide, `book_rmt.xml`,
+21 XML files) for one product profile (SLES 15 SP7). Antora builds the
+result. A script compares the result with the DocBook source.
+
+== How to run
+
+[source,bash]
+----
+./build.sh
+----
+
+`build.sh` does these steps:
+
+. `tools/db2adoc.py` converts the book into `docs/` (one Antora component).
+. The script copies `docs/` to `/tmp/adoc-sle-poc-stage` and makes a scratch
+  Git commit there, because Antora reads content from Git.
+. Antora 3.1.14 from `product-docs-playbook/node_modules` builds the site
+  into `build/site` with the `dsc-style-bundle` UI.
+. `tools/compare.py` compares words and structure with the DocBook source.
+
+Reports are in `reports/`.
+
+== Result
+
+[cols="2,1,1"]
+|===
+|Check |DocBook |Antora
+
+|Words (SLES profile) |13,333 |13,335
+|Word similarity (difflib) 2+|99.8 %
+|Screens |77 |77
+|Sections and bridgeheads |79 |79
+|Ordered list items and steps |99 |99
+|Bullet list items |56 |56
+|Variable list terms |92 |92
+|Admonitions |28 |28
+|Figures |7 |7
+|Table rows |38 |38
+|Antora errors 2+|1 (expected: an xref to the Upgrade Guide, which is not in the spike)
+|Manual fixes after conversion 2+|0
+|===
+
+=== Second book: GNOME User Guide
+
+The GNOME User Guide (`book_gnome-user.xml`, 28 files, 15,000 lines) is the
+second module (`gnome-user`). A `ROOT` start page lists both guides.
+
+[cols="2,1,1"]
+|===
+|Check |DocBook |Antora
+
+|Words (SLES profile) |42,550 |42,546
+|Word similarity (difflib) 2+|99.6 %
+|Words lost, any order (bag of words) 2+|31, all explained (see below)
+|Structure (8 element types) 2+|All counts equal
+|Manual fixes after conversion 2+|0
+|===
+
+The 31 words are:
+* the 5 part titles, which are now only nav group headings
+* short `textobject` texts that the baseline counts in addition to the `role="description"` text
+* text of cross-book xrefs
+
+New constructs in this book: `<part>` (becomes a nav group, no page),
+`simplelist` (becomes a `[none]` list), and entities declared in the internal
+DOCTYPE subset of a file (5 files in the set, for example `apps_totem.xml`).
+
+GUG found 6 more converter bugs:
+* local DOCTYPE entities were not loaded
+* entity markers stayed in image alt text
+* `kbd:` with a `+` key
+* `+` characters that paired into a passthrough across two `kbd:` macros
+* `menu:` items that contain `>`
+* the image description was not used when there were two textobjects
+
+GUG has little SLES/SLED profiling (1 element for each product only), so it
+does not test the two-product model.
+
+=== Third book: Administration Guide
+
+The Administration Guide (`book_administration.xml`, 67 files, 40,000 lines)
+is the third module (`administration`).
+
+[cols="2,1,1"]
+|===
+|Check |DocBook |Antora
+
+|Words (SLES profile) |160,614 |160,780
+|Word similarity (difflib) 2+|99.9 %
+|Words lost, any order (bag of words) 2+|69 (part titles, xref punctuation, term separators)
+|Structure (8 element types, for example 968 screens, 871 sections) 2+|All counts equal
+|Antora warnings 2+|3, from one source defect (callout without explanation)
+|Unresolved xrefs 2+|46, all to books not in the spike (22 to Security)
+|Manual fixes after conversion 2+|0
+|===
+
+New constructs: `qandaset` (becomes `[qanda]`), partials with root `sect2`
+or `variablelist`, `.dia` images (converted to SVG at build time, as DAPS does),
+block entities that contain a `<note>` or `<para>`.
+
+==== Design findings from the Administration Guide
+
+* *Profiled pages.* The book includes 8 chapters with `os=` (for example
+  `yast2_scanner.xml` is `os="sled;osuse"`). Antora publishes every page, and
+  it has no conditional pages. The nav is profiled with `ifdef`, and the
+  `unpublish-unlisted-pages` extension from `product-docs-common` (used by the
+  Rancher playbook) removes pages that are not in the nav.
+  Risk: the extension runs after xref resolution, so a link to a removed page
+  breaks without a warning. A real migration needs a check for this.
+* *Profiled XIncludes inside chapters* (`<xi:include os="sled;osuse"
+  href="networkmanager.xml"/>`) become `ifdef` around `include::`. DAPS profiles
+  each file before it resolves XIncludes. The baseline in `compare.py` now does
+  the same, because lxml's `xinclude()` drops the `os` attribute.
+* *Entity names are case-sensitive, attribute names are not.*
+  `update-alternatives.xml` declares `&as;` and `&AS;`. Both became `{as}`.
+  The converter now gives the second one a `-cap` suffix.
+* *A product-wide ID index must apply the profile.* A file that is in several
+  books (SLES and SLE Micro) maps to the book in the SLES `MAIN` tree.
+* *AsciiDoc inline syntax has many traps.* The Administration Guide found
+  them because it has 980 `<literal>` and 978 `<command>` elements:
+** a constrained span cannot open after `; : " ' `` ` `` }` or a word character
+** two spans side by side need `{empty}` and an unconstrained second span
+** `+` next to a backtick opens a passthrough
+** `\` escapes the next markup
+** `[x]` before a span is an attribute list
+** `` `' `` and `` '` `` are smart-quote syntax
++
+The converter handles each case. A lint rule for writers is necessary after
+the migration, because writers will hit the same traps.
+
+GUG and the Administration Guide together found about 25 converter bugs after the
+RMT spike. All are fixed. The word and structure checks found all of them.
+
+The remaining word differences in the RMT Guide are all explained. None of them is
+content loss:
+
+* DocBook generates quotation marks for `<quote>` at render time, so the
+  source baseline has no quote characters.
+* `<keycap function="alt"/>` is empty in the source. Antora shows `Alt`.
+  DocBook also shows a key name.
+* The abstract and the legal notice are in a different order on the index page.
+* The one cross-book xref, see above.
+
+== How the conversion maps DocBook to Antora
+
+Book:: One Antora module (`rmt`). The book `<info>` becomes `index.adoc`.
+Chapter, preface, appendix files:: One page each. The book's include order
+becomes `nav.adoc`.
+`sect1` files:: Partials. Shared `common_*` files go to `ROOT:partial$` so
+that all books can include them.
+Profiling (`os`, `arch`, `condition`):: `ifdef::os-sles,os-sled[]` blocks.
+For inline phrases, a single-line `ifdef::cond[text]` on its own line.
+`antora.yml` sets the profile attributes (`os-sles`, `arch-x86_64`, and so on).
+Entities:: The converter sorts each entity into one type:
++
+* char: literal character (`&nbsp;`, `&mdash;`).
+* attr: plain text, becomes an Antora attribute (`{rmt}`, `{scc}`). 35 used.
+* variant: text that changes with the product (`{productname}`), becomes an
+  attribute with a per-product value in `antora.yml`. 2 used.
+* inline: fixed markup (`&prompt.sudo;`, `&rootuser;`), expanded in place.
+  Asciidoctor applies `quotes` before `attributes`, so markup in an attribute
+  value does not render. 8 used.
+* block: block content in an entity (in `phrases-decl.ent`). Not used by RMT.
+  Must become partials.
+xref:: The script indexes all 5,882 `xml:id` values in the set and maps each
+ID to module and page. Same page: `<<id,Title>>`. Other page:
+`xref:page.adoc#id[Title]`. Other book: `xref:module:page.adoc#id[Title]`.
+The converter writes the link text, because Antora 3.1 does not take section
+titles from other pages.
+Screens:: Listing blocks. `subs="attributes+"` only when the screen uses an
+attribute. When it has `<replaceable>`, `subs="specialchars,quotes,attributes,callouts"`,
+and `*`, `_`, `#` and so on are escaped as attribute references.
+Callouts move to the end of the line.
+
+== Findings
+
+. *The converter is the small part.* 1,300 lines of Python handle all the
+  elements in this book. The difficult parts are policy decisions (see
+  the next section), not markup.
+. *Inline profiling is the weakest mapping.* AsciiDoc has no inline
+  conditional. The single-line `ifdef` must be on its own line. That has
+  two effects:
+** A space can appear where DocBook had none (`…suse.com .`).
+** The next line can start with `.` or `*` and become a list item. The
+   converter adds `{empty}` to prevent this. The RMT book needed this twice.
+   Writers must know this rule after the migration.
+. *Titles cannot have inline profiling.* RMT has none. The converter flattens
+  such titles and logs a warning.
+. *Lists that contain a nested list and then more blocks* need an open block
+  (`--`). The converter added two. Open blocks cannot nest, so deeper cases
+  need manual work. RMT has none.
+. *Word comparison is a good regression test.* It found five converter bugs
+  in the first run, and the structure counts found none after the fixes.
+  Keep both checks for the full conversion (Phase 3).
+
+=== Source defects found during the spike
+
+These are in `doc-sle` now, independent of the conversion:
+
+* `generic-entities.ent:599-600`: `&geoguide;` and `&geoquick;` refer to
+  `&geo;`, which no file defines.
+* `rmt_mirroring.xml:292`: `…repos list</command>command.` has no space.
+* `rmt_install.xml`: the meta description is about "Kubernetes cluster using
+  Helm", but the chapter is about installation and configuration in general.
+
+* `x11.xml:395`: `os="sle;sled"`. `sle` is not a profile value, so SLES
+  drops this paragraph. Probably `sles;sled` was intended.
+* `journalctl.xml:98`: empty `<term/>`. The option name (probably `-e`) is
+  missing.
+* `yast2_ncurses.xml:2013` (and one more): `&sudo;yast`. The `&sudo;` entity
+  has no trailing space, so the output is `sudoyast`.
+* `snapper.xml:1147`: six callouts, but the callout list has no entry for
+  `snapper-boot-kernel`.
+
+=== Known converter limits
+
+* A `<term>` or `<title>` with inline profiling is flattened (all variants
+  kept, logged). This is correct for SLES in this spike. It can be wrong for
+  another product.
+* Partials are written to the module of the book being converted. A file
+  that several books include (for example `snapshot_excludes_i.xml`) needs one
+  owner module and cross-module includes.
+* Xrefs to steps and list items get the text "this step". DocBook generates
+  "Step 3".
+
+== Not tested in this spike
+
+* A second product profile (SLED, SLE Micro, Leap). RMT is SLES only. The
+  `ifdef` attributes are in place, but no second build ran.
+* The shared-component model (`sle-shared` + thin product components).
+  The spike uses one `sles` component, with shared partials in `ROOT`.
+* Block entities (`phrases-decl.ent`) and the other 24 books.
+* Translations (`l10n/`), PDF output, redirects from the old URLs.
+* XML comments. The converter drops them. Many contain old content or notes
+  for writers. A decision is necessary.
+* A visual review of the HTML against the DAPS HTML. DAPS is not installed
+  on this machine. The baseline is the profiled DocBook source.
+
+== Files
+
+`tools/dbcommon.py`:: Entity loading and classification, profiling.
+`tools/db2adoc.py`:: The converter.
+`tools/compare.py`:: Word and structure comparison.
+`antora-playbook.yml`, `build.sh`:: Build.
+`docs/`:: Generated Antora component. Do not edit; run `build.sh` again.
+`reports/`:: `antora.log`, and for each module: `convert-report-<module>.json`,
+`compare-summary-<module>.json`, `compare-diffs-<module>.json` (ordered diff),
+`compare-bag-<module>.json` (words lost or added in any order).
+
+To add a book, add `<book file>:<module>` to `BOOKS` in `build.sh`.

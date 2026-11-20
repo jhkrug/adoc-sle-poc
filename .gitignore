@@ -1,0 +1,4 @@
+# Antora output: run ./build.sh to create it
+build/
+__pycache__/
+*.pyc

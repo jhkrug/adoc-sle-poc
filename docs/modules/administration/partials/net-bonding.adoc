@@ -1,0 +1,140 @@
+// Converted from xml/net_bonding.xml
+
+[#sec-network-iface-bonding]
+== Setting up bonding devices
+
+For some systems, there is a desire to implement network connections that comply to more than the standard data security or availability requirements of a typical Ethernet device. In these cases, several Ethernet devices can be aggregated to a single bonding device.
+
+The configuration of the bonding device is done by means of bonding module options. The behavior is mainly affected by the mode of the bonding device. By default, this is `+active-backup+` which means that a different bond port will become active if the active port fails. The following bonding modes are available:
+
+*0* (balance-rr)::
+Packets are transmitted in round-robin fashion from the first to the last available interface. Provides fault tolerance and load balancing.
+*1* (active-backup)::
+Only one network interface is active. If it fails, a different interface becomes active. This setting is the default for {productname}. Provides fault tolerance.
+*2* (balance-xor)::
+Traffic is split between all available interfaces based on the number of devices included in the bonding. It requires support from the switch. Provides fault tolerance and load balancing.
+*3* (broadcast)::
+All traffic is broadcast on all interfaces. Requires support from the switch. Provides fault tolerance.
+*4* (802.3ad)::
+Aggregates interfaces into groups that share the same speed and duplex settings. Requires `+ethtool+` support in the interface drivers, and a switch that supports and is configured for IEEE 802.3ad Dynamic link aggregation. Provides fault tolerance and load balancing.
+*5* (balance-tlb)::
+Adaptive transmit load balancing. Requires `+ethtool+` support in the interface drivers but not switch support. Provides fault tolerance and load balancing.
+*6* (balance-alb)::
+Adaptive load balancing. Requires `+ethtool+` support in the interface drivers but not switch support. Provides fault tolerance and load balancing.
+
+For a more detailed description of the modes, see link:https://www.kernel.org/doc/Documentation/networking/bonding.txt[].
+
+[TIP]
+.Bonding and {xen}
+====
+Using bonding devices is only of interest for machines where you have multiple real network cards available. In most configurations, this means that you should use the bonding configuration only in {dom0}. Only if you have multiple network cards assigned to a {vmguest} system it may also be useful to set up the bond in a {vmguest}.
+====
+
+ifdef::arch-power[]
+[NOTE]
+.IBM {power}: Bonding modes 5 and 6 (balance-tlb / balance-alb) unsupported by ibmveth
+====
+There is a conflict with the tlb/alb bonding configuration and Power firmware. In short, the bonding driver in tlb/alb mode sends Ethernet Loopback packets with both the source and destination MAC addresses listed as the Virtual Ethernet MAC address. These packets are not supported by Power firmware. Therefore bonding modes 5 and 6 are unsupported by ibmveth.
+====
+endif::[]
+
+To configure a bonding device, use the following procedure:
+
+. Run menu:{yast}[System > Network Settings].
+. Use *Add* and change the *Device Type* to *Bond*. Proceed with *Next*.
++
+image::bond_configuration.png["",width=65%]
+. Select how to assign the IP address to the bonding device. Three methods are at your disposal:
++
+--
+* No IP Address
+* Dynamic Address (with DHCP or Zeroconf)
+* Statically assigned IP Address
+--
++
+Use the method that is appropriate for your environment.
+. In the *Bond Ports* tab, select the Ethernet devices that should be included into the bond by activating the related check box.
+. Edit the *Bond Driver Options* and choose a bonding mode.
+. Make sure that the parameter `+miimon=100+` is added to the *Bond Driver Options*. Without this parameter, the data integrity is not checked regularly.
+. Click *Next* and leave {yast} with *OK* to create the device.
+
+[#sec-network-iface-bonding-hotplug]
+=== Hotplugging of bond ports
+
+In specific network environments (such as High Availability), there are cases when you need to replace a bond port interface with another one. The reason may be a constantly failing network device. The solution is to set up hotplugging of bond ports.
+
+The bond is configured as usual (according to `+man 5 ifcfg-bonding+`), for example:
+
+----
+ifcfg-bond0
+          STARTMODE='auto' # or 'onboot'
+          BOOTPROTO='static'
+          IPADDR='192.168.0.1/24'
+          BONDING_MASTER='yes'
+          BONDING_SLAVE_0='eth0'
+          BONDING_SLAVE_1='eth1'
+          BONDING_MODULE_OPTS='mode=active-backup miimon=100'
+----
+
+The bond ports are specified with `+STARTMODE=hotplug+` and `+BOOTPROTO=none+`:
+
+----
+ifcfg-eth0
+          STARTMODE='hotplug'
+          BOOTPROTO='none'
+
+ifcfg-eth1
+          STARTMODE='hotplug'
+          BOOTPROTO='none'
+----
+
+`+BOOTPROTO=none+` uses the `+ethtool+` options (when provided), but does not set the link up on `+ifup eth0+`. The reason is that the bond port interface is controlled by the bond device.
+
+`+STARTMODE=hotplug+` causes the bond port interface to join the bond automatically when it is available.
+
+The `+udev+` rules in `+/etc/udev/rules.d/70-persistent-net.rules+` need to be changed to match the device by bus ID (udev `+KERNELS+` keyword equal to "SysFS BusID" as visible in `+hwinfo --netcard+`) instead of by MAC address. This allows replacement of defective hardware (a network card in the same slot but with a different MAC) and prevents confusion when the bond changes the MAC address of all its bond ports.
+
+For example:
+
+----
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*",
+KERNELS=="0000:00:19.0", ATTR{dev_id}=="0x0", ATTR{type}=="1",
+KERNEL=="eth*", NAME="eth0"
+----
+
+At boot time, the systemd `+network.service+` does not wait for the hotplug bond ports, but for the bond to become ready, which requires at least one available bond port. When one of the bond port interfaces gets removed (unbind from NIC driver, `+rmmod+` of the NIC driver or true PCI hotplug remove) from the system, the kernel removes it from the bond automatically. When a new card is added to the system (replacement of the hardware in the slot), `+udev+` renames it using the bus-based persistent name rule to the name of the bond port, and calls `+ifup+` for it. The `+ifup+` call automatically joins it into the bond.
+
+[#sec-predictable-naming-scheme]
+=== Predictable naming scheme
+
+There is a limitation with the persistent network name generator and bonding. When an interface is enslaved to a bond, the MAC address is temporarily overridden and set to match the MAC address of the bond interface. This creates inconsistencies in the `+70-persistent-net.rules+` file when the rules for enslaved interfaces are based on MAC addresses.
+
+If an `+uevent+` occurs for an enslaved NIC with an updated MAC address,`+udev+` may try to rename it using the name of the first enslaved interface, resulting in a temporary name such as `+rename4+`. Modifying the persistent network name generator to avoid MAC-based rules is not feasible due to the high risk of regressions and the necessity of MAC filtering in certain cases. The persistent network name generator is obsolete and replaced by the predictable naming scheme, which offers more configurability and avoids reliance on MAC addresses. We recommend enabling the predictable naming scheme by appending `+net.ifnames=1'+` to the `+Boot Options+` prompt during a new system installation.
+
+.Enabling the naming scheme on an already installed system
+. If the `+biosdevname+` package is installed, uninstall it.
++
+----
+> sudo zypper rm biosdevname
+----
+. Back up existing naming rules from `+/etc/udev/rules.d+` if they exist. For example:
++
+----
+> sudo cp /etc/udev/rules.d/70-persistent-net.rules /backup
+----
++
+[NOTE]
+====
+Remove the file `+/etc/udev/rules.d/70-persistent-net.rules+`, if it exists, to enable predictable network interface names.
+====
+. Regenerate the initrd.
++
+----
+> sudo dracut -f
+----
+. Start the {yast} Boot Loader module and append `+net.ifnames=1+` to the kernel command line. Confirm with *OK* and reboot the system.
+. If the system is using Wicked as a network manager, align the configuration of network interfaces. Use the `+yast lan+` module or rename `+/etc/sysconfig/network/ifcfg-*+` files accordingly. Then restart Wicked.
++
+----
+> sudo systemctl restart wicked.service
+----

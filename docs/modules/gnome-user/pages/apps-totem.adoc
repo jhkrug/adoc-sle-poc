@@ -1,0 +1,148 @@
+// Converted from xml/apps_totem.xml
+[#cha-gnome-totem]
+= *{gnome} Videos*
+:description: Configure your video settings and playback options to achieve an optimal viewing experience on your system
+:revdate: 2026-01-16
+
+[abstract]
+--
+Learn how to play a video file or DVD and how to set video preferences.
+--
+
+{gnome} Videos is the default movie player. {gnome} Videos provides the following multimedia features:
+
+* Support for a variety of video and audio files
+* A variety of zoom levels and aspect ratios, and a full screen view
+* Seek and volume controls
+* Playlists
+* Complete keyboard navigation
+
+To start {gnome} Videos, open the *Activities* overview by pressing kbd:[Meta] and search for `+video+`.
+
+[#sec-gnome-totem-using]
+== Using *{gnome} Videos*
+
+When you start {gnome} Videos, the following window is displayed.
+
+[#fig-gnome-totem-using-startup]
+.*{gnome} Videos* start-up window
+image::totem_a.png["GNOME Videos application in dark theme with a clean, minimalist interface, containing Videos and Channels navigation tabs",width=75%]
+
+[#sec-gnome-totem-using-open-file]
+=== Opening a video or audio file
+
+. Press the *{plus}* button in the upper left corner of the window and select *Add Local Video*.
+. Select the video you want to open, then click *Add*.
++
+The video will be added to the list in the main window and you can select it from there.
+
+You can also drag a file from another application (such as a file manager) to the {gnome} Videos window. {gnome} Videos opens the file and plays the movie or song. {gnome} Videos displays the title of the movie or song beneath the display area and in the titlebar of the window.
+
+[NOTE]
+.Unrecognized file format
+====
+If you try to open a file format that {gnome} Videos does not recognize, the application displays an error message and recommends a suitable codec.
+====
+
+You can double-click a video or audio file in {nautilus} to open it in the {gnome} Videos window by default.
+
+[#sec-gnome-totem-using-open-uri]
+=== Opening a video or audio file by URI location
+
+. Press the *{plus}* button in the upper left corner of the window and select *Add Web video*.
+. Type or paste the address of the video you want to open.
+. Press *Add*.
++
+The video will be added to the list in the main window and you can select it from there.
+
+[#sec-gnome-totem-using-play-medium]
+=== Playing a DVD, VCD, or CD
+
+To play a DVD, VCD, or CD, insert the disc in the drive of your computer, then move the mouse pointer over the notification and press *Open with Videos*.
+
+To eject a DVD, VCD, or CD, click menu:Movie[Eject].
+
+To pause a movie or song that is playing, click the image:totem_pause_button-fallback.png["GNOME Videos Pause"] button, or click menu:Movie[Play/Pause]. When you pause a movie or song, the statusbar displays *Paused* and the time elapsed on the current movie or song.
+
+To resume playing a movie or song, click the image:totem_play_button-fallback.png["GNOME Videos Play"] button, or click menu:Movie[Play/Pause].
+
+To play or pause a movie, you can also press kbd:[P].
+
+To view properties of a movie or song, click menu:View[Sidebar] to make the sidebar appear. The dialog contains the title, artist, year, and duration of movie or song, video dimensions, codec, frame rate, and the audio bit rate.
+
+[#sec-gnome-totem-using-zoom]
+=== Changing the zoom factor
+
+To change the zoom factor of the display area, use any of the following methods:
+
+To zoom to full-screen mode::
+Click the arrow button in the upper right corner of the player. Alternatively, press kbd:[F].
++
+To exit full-screen mode, press kbd:[F] again or kbd:[Esc].
+To zoom in or out::
+Press the menu button in the upper right corner of the window and select *Zoom In* or press kbd:[R]. To zoom out, disable *Zoom In* or press kbd:[T].
+
+To switch between different aspect ratios, press the menu button in the upper right corner of the window and select *Aspect Ratio*.
+
+The default aspect ratio is *Auto*.
+
+[#sec-gnome-totem-using-subtitles]
+=== Choosing subtitles
+
+To choose the language of the subtitles, press the menu button in the upper right corner of the window and select *Subtitles*. Then select the subtitles language (DVD) or the subtitle file (AVI etc.) you want to display.
+
+To disable the display of subtitles, select *None*.
+
+By default, {gnome} Videos chooses the same language for the subtitles that you use on your computer.
+
+{gnome} Videos automatically loads and displays subtitles if the file that contains them has the same name as the video file. It supports the following subtitle file extensions: `+srt+`, `+asc+`, `+txt+`, `+sub+`, `+smi+`, or `+ssa+`.
+
+[#sec-gnome-totem-prefs]
+== Modifying *{gnome} Videos* preferences
+
+{gnome} Videos offers some additional options to configure the application to your needs.
+
+To modify {gnome} Videos preferences, press the menu button in the upper right corner of the window and select *Preferences*.
+
+[#sec-gnome-totem-prefs-general]
+=== *General* preferences
+
+[#fig-gnome-totem-prefs-general]
+.*{gnome} Videos* general preferences
+image::totem_general.png["GNOME Videos Preferences panel showing subtitle and chapter configuration options in dark mode",width=55%]
+
+General Preferences include the following:
+
+External subtitles::
+Tick the option *Load subtitle files when movie is loaded* if you want subtitles to be loaded automatically.
++
+Adjust font type and size by clicking its name. Choose the font type from the drop-down box. Click on the slider and change the font size. When ready, click *Select*.
++
+Choose the encoding from the drop-down box.
+Plugins::
+Plugins offer extra features and extend functionality. You can view the list of plugins by clicking *Plugins*.
+
+[#sec-gnome-totem-prefs-display]
+=== *Display* preferences
+
+The Display Preferences let you choose if you want to enable deinterlacing and allow you to adjust Brightness, Contrast, Saturation, or Hue.
+
+[#fig-gnome-totem-prefs-display]
+.*{gnome} Videos* display preferences
+image::totem_display.png["GNOME Videos display preferences panel showing color balance controls for video playback, including adjustable sliders for brightness, contrast, saturation and hue",width=55%]
+
+Display Preferences include the following:
+
+*Videos*::
+Allows you to specify whether you want to *Disable deinterlacing of interlaced videos*.
+*Color balance*::
+This option allows you to adjust *Brightness*, *Contrast*, *Saturation*, or *Hue* of your videos.
+
+[#sec-gnome-totem-prefs-audio]
+=== *Audio* preferences
+
+The Audio Preferences dialog lets you select the audio output type.
+
+[#fig-gnome-totem-prefs-audio]
+.*{gnome} Videos* audio preferences
+image::totem_audio.png["GNOME Videos audio preferences showing audio output configuration options",width=55%]

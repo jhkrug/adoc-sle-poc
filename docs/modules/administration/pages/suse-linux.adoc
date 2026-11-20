@@ -1,0 +1,18 @@
+// Converted from xml/suse_linux.xml
+[#cha-suse]
+= Special system features
+:description: Learn about configuration changes for key software components such as bash, cron, and logrotate to ensure optimal system performance
+:revdate: 2026-01-16
+
+[abstract]
+--
+This chapter starts with information about specific software packages, the virtual consoles and the keyboard layout. We talk about software components like `+bash+`, `+cron+` and `+logrotate+`, because they were changed or enhanced during the last release cycles. Even if they are small or considered of minor importance, users should change their default behavior, because these components are often closely coupled with the system. The chapter concludes with a section about language and country-specific settings (I18N and L10N).
+--
+
+include::partial$suse-sw-packages.adoc[]
+
+include::partial$suse-vc.adoc[]
+
+include::partial$suse-kb.adoc[]
+
+include::partial$suse-l10n.adoc[]

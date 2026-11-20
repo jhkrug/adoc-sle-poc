@@ -1,0 +1,67 @@
+// Converted from xml/net_router.xml
+
+[#sec-network-router]
+== Basic router setup
+
+A router is a networking device that delivers and receives data (network packets) to or from more than one network back and forth. You often use a router to connect your local network to the remote network (Internet) or to connect local network segments. With {productname} you can build a router with features such as NAT (Network Address Translation) or advanced firewalling.
+
+The following are basic steps to turn {productname} into a router.
+
+. Enable forwarding, for example in `+/etc/sysctl.d/50-router.conf+`
++
+----
+net.ipv4.conf.all.forwarding = 1
+net.ipv6.conf.all.forwarding = 1
+----
++
+Then provide a static IPv4 and IPv6 IP setup for the interfaces. Enabling forwarding disables several mechanisms, for example IPv6 does not accept an IPv6 RA (router advertisement) anymore, which also prevents the creation of a default route.
+. In many situations (for example, when you can reach the same network via more than one interface, or when VPN usually is used and already on “normal multi-home hosts”), you must disable the IPv4 reverse path filter (this feature does not currently exist for IPv6):
++
+----
+net.ipv4.conf.all.rp_filter = 0
+----
++
+You can also filter with firewall settings instead.
+. To accept an IPv6 RA (from the router on an external, uplink, or ISP interface) and create a default (or also a more specific) IPv6 route again, set:
++
+----
+net.ipv6.conf.${ifname}.accept_ra = 2
+net.ipv6.conf.${ifname}.autoconf = 0
+----
++
+(Note: “`+eth0.42+`” needs to be written as `+eth0/42+` in a dot-separated sysfs path.)
+
+More router behavior and forwarding dependencies are described in link:https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt[https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt].
+
+To provide IPv6 on your internal (DMZ) interfaces, and announce yourself as an IPv6 router and “autoconf networks” to the clients, install and configure `+radvd+` in `+/etc/radvd.conf+`, for example:
+
+----
+interface eth0
+{
+    IgnoreIfMissing on;         # do not fail if interface missed
+
+    AdvSendAdvert on;           # enable sending RAs
+    AdvManagedFlag on;          # IPv6 addresses managed via DHCPv6
+    AdvOtherConfigFlag on;      # DNS, NTP... only via DHCPv6
+
+    AdvDefaultLifetime 3600;    # client default route lifetime of 1 hour
+
+    prefix 2001:db8:0:1::/64    # (/64 is default and required for autoconf)
+    {
+        AdvAutonomous off;         # Disable address autoconf (DHCPv6 only)
+
+        AdvValidLifetime 3600;     # prefix (autoconf addr) is valid 1 h
+        AdvPreferredLifetime 1800; # prefix (autoconf addr) is preferred 1/2 h
+    }
+}
+----
+
+Configure the firewall to masquerade traffic with NAT from the LAN into the WAN and to block inbound traffic on the WAN interface:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo firewall-cmd --permanent --zone=external --change-interface=__WAN{underscore}INTERFACE__
+> sudo firewall-cmd --permanent --zone=external --add-masquerade
+> sudo firewall-cmd --permanent --zone=internal --change-interface=__LAN{underscore}INTERFACE__
+> sudo firewall-cmd --reload
+----

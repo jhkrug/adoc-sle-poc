@@ -1,0 +1,14 @@
+// Converted from xml/sw_managing_commandline.xml
+[#cha-sw-cl]
+= Managing software with command line tools
+:description: Manage software using Zypper and RPM, two command-line tools providing essential functionality for repository management
+:revdate: 2026-01-16
+
+[abstract]
+--
+This chapter describes Zypper and RPM, two command line tools for managing software. For a definition of the terminology used in this context (for example, `+repository+`, `+patch+`, or `+update+`) refer to xref:yast2-sw.adoc#sec-onlineupdate-terms[Definition of terms].
+--
+
+include::partial$zypper.adoc[]
+
+include::partial$rpm.adoc[]

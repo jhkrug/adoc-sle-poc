@@ -1,0 +1,88 @@
+// Converted from xml/yast2_gui.xml
+[#cha-yast-gui]
+= Using {yast}
+:description: Configure your system with YaST, a tool providing a graphical interface for all essential installation and system configuration tasks
+:revdate: 2026-03-06
+
+{yast} is a {productname} tool that provides a graphical interface for all essential installation and system configuration tasks. Whether you need to update packages, configure a printer, modify firewall settings, set up an FTP server, or partition a hard disk—you can do it using {yast}. Written in Ruby, {yast} features an extensible architecture that makes it possible to add new functionality via modules.
+
+Additional information about {yast} is available on the project's official Web site at link:https://yast.opensuse.org/[].
+
+[#sec-yast2-gui]
+== {yast} interface overview
+
+{yast} has two graphical interfaces: one for use with graphical desktop environments like KDE and GNOME, and an ncurses-based pseudo-graphical interface for use on systems without an X server (see xref:yast2-ncurses.adoc[]).
+
+In the graphical version of {yast}, all modules in {yast} are grouped by category, and the navigation sidebar allows you to quickly access modules in the desired category. The search field at the top makes it possible to find modules by their names. To find a specific module, enter its name into the search field, and you should see the modules that match the entered string as you type.
+
+[IMPORTANT]
+.List of installed {yast} modules
+====
+The list of installed modules for the ncurses-based and GUI version of {yast} may differ. Before starting any {yast} module, verify that it is installed for the version of {yast} that you are using.
+====
+
+[#sec-yast-gui-config-files]
+== {yast} modules and configuration files
+
+In {productname} 15, {yast} modules act as a front-end that writes to specific back-end configuration files. Most system-wide settings are stored in `+/etc/sysconfig/+`. The `+sysconfig+` module is the heart of {yast} legacy. Many modules write to variables here, which are then read by system scripts during boot or service start. To verify exactly which file was changed during a {yast} session, check the log at `+/var/log/YaST2/y2log+`. Note that while you can manually edit a file, running a YaST module afterward can sometimes overwrite manual changes if the module does not recognize the manual syntax.
+
+The following table maps the most common {yast} modules to the primary configuration files they modify:
+
+[#yast-module-config-files]
+.{yast} modules and primary configuration files
+[cols="1,1",options="header"]
+|===
+a|{yast} module
+a|Primary configuration files affected
+
+a|Network Settings `+yast2 lan+`
+a|`+/etc/sysconfig/network/ifcfg-*+`, `+/etc/resolv.conf+`, `+/etc/hostname+` `+/etc/routes+`, `+/etc/NetworkManager/system-connections/*+`
+a|Boot Loader `+yast2 bootloader+`
+a|`+/etc/default/grub+`, `+/boot/grub2/grub.cfg+`, `+/etc/sysconfig/bootloader+`
+a|User and Group Management `+yast2 users+`
+a|`+/etc/passwd+`, `+/etc/group+`, `+/etc/shadow+`, `+/etc/login.defs.d/70-yast.defs+` If you have configured LDAP or Active Directory via {yast}, it will also interface with files like `+/etc/nsswitch.conf+` and `+/etc/sssd/sssd.conf+` to manage network-based identities.
+a|Security `+yast2 security+`
+a|`+/etc/selinux/config+`, `+/etc/ssg-apply/override.conf+`
+a|Software Repositories `+repositories+`
+a|`+/etc/zypp/repos.d/*.repo+`
+a|Service Manager `+services-manager+`
+a|`+/etc/systemd/system/+`, `+/usr/lib/systemd/system/+`
+a|NTP Configuration `+ntp-client+`
+a|`+/etc/chrony.conf+`
+a|DNS Server `+dns-server+`
+a|`+/etc/named.conf+`, `+/var/lib/named/+`
+a|DHCP Server `+dhcp-server+`
+a|`+/etc/dhcpd.conf+`, `+/etc/sysconfig/dhcpd+`
+a|Partitioning `+partitioner+`
+a|`+/etc/fstab+`, `+/etc/crypttab+`
+|===
+
+Note that {yast} uses the `+firewall-cmd+` utility to modify the configuration files.
+
+[#sec-yast-gui-key-combination]
+== Useful key combinations
+
+The graphical version of {yast} supports keyboard shortcuts
+
+kbd:[Print Screen]::
+Take and save a screenshot. It may not work on certain desktop environments.
+kbd:[Shift+F4]::
+Enable and disable the color palette optimized for visually impaired users.
+kbd:[Shift+F7]::
+Enable/disable logging of debug messages.
+kbd:[Shift+F8]::
+Open a file dialog to save log files to a user-defined location.
+kbd:[Ctrl+Shift+Alt+D]::
+Send a DebugEvent. {yast} modules can react to this by executing special debugging actions. The result depends on the specific {yast} module.
+kbd:[Ctrl+Shift+Alt+M]::
+Start and stop macro recorder.
+kbd:[Ctrl+Shift+Alt+P]::
+Replay macro.
+kbd:[Ctrl+Shift+Alt+S]::
+Show stylesheet editor.
+kbd:[Ctrl+Shift+Alt+T]::
+Dump widget tree to the log file.
+kbd:[Ctrl+Shift+Alt+X]::
+Open a terminal window (xterm). Useful for installation process via VNC.
+kbd:[Ctrl+Shift+Alt+Y]::
+Show widget tree browser.

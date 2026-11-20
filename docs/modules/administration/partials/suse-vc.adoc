@@ -1,0 +1,8 @@
+// Converted from xml/suse_vc.xml
+
+[#sec-suse-virt-konsolen]
+== Virtual consoles
+
+Linux is a multiuser and multitasking system. The advantages of these features can be appreciated even on a stand-alone PC system. In text mode, there are six virtual consoles available. Switch between them using kbd:[Alt+F1] through kbd:[Alt+F6]. The seventh console is reserved for X and the tenth console shows kernel messages.
+
+To switch to a console from X without shutting it down, use kbd:[Ctrl+Alt+F1] to kbd:[Ctrl+Alt+F6]. To return to X, press kbd:[Alt+F7].

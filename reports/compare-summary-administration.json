@@ -1,0 +1,44 @@
+{
+ "docbook_words": 160614,
+ "antora_words": 160780,
+ "bag_only_docbook": 69,
+ "bag_only_antora": 235,
+ "similarity": 0.9989,
+ "diff_hunks": 103,
+ "words_only_in_docbook": 90,
+ "words_only_in_antora": 256,
+ "structure": {
+  "screens": {
+   "docbook": 968,
+   "antora": 968
+  },
+  "sections": {
+   "docbook": 871,
+   "antora": 871
+  },
+  "ordered items": {
+   "docbook": 817,
+   "antora": 817
+  },
+  "bullet items": {
+   "docbook": 532,
+   "antora": 532
+  },
+  "terms": {
+   "docbook": 1057,
+   "antora": 1057
+  },
+  "admonitions": {
+   "docbook": 233,
+   "antora": 233
+  },
+  "images": {
+   "docbook": 85,
+   "antora": 85
+  },
+  "table rows": {
+   "docbook": 330,
+   "antora": 330
+  }
+ }
+}

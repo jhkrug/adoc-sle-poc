@@ -1,0 +1,294 @@
+// Converted from xml/apps_librewriter.xml
+[#cha-lo-writer]
+= {libo} Writer
+:description: Configure key features of the word processor, including page and text formatting capabilities, in Writer and other SUSE modules
+:revdate: 2026-01-16
+
+[abstract]
+--
+{libo} Writer is a full-featured word processor with page and text formatting capabilities. Its interface is similar to interfaces of other major word processors, and it includes features that are usually found only in desktop publishing applications.
+
+This chapter highlights a few key features of Writer. For more information about these features and complete instructions, look at the {libo} help or at the sources listed in xref:apps-libreoffice.adoc#sec-lo-oview-help[More information].
+
+Much of the information in this chapter can also be applied to other {libo} modules. For example, other modules use styles similarly to how they are used in Writer.
+--
+
+[#sec-lo-writer-createnew]
+== Creating a new document
+
+There are multiple ways to create a new Writer document:
+
+* {empty}
++
+.From scratch
+To create a new empty document, click menu:File[New > Text Document].
+* {empty}
++
+.Using a wizard
+To use a standard format and predefined elements for your own documents, use a wizard. Click menu:File[Wizards > Letter] and follow the steps.
+* {empty}
++
+.From a template
+To use a template, click menu:File[New > Templates] and open, for example, *Modern business letter*. From the list of text document templates, select the one that fits your needs.
+
+For example, to create a business letter, click menu:File[Wizards > Letter]. Using the wizard, you can easily create a basic document using a standard format. A sample wizard dialog is shown in the following <<fig-lo-writer-createnew-wizard,A {libo} wizard>>.
+
+[#fig-lo-writer-createnew-wizard]
+.A {libo} wizard
+image::oo-wizard.png["",width=85%]
+
+Enter text in the document window as needed. Use the tools for applying and changing styles or the tools for direct formatting to adjust the appearance of the document. Use the *File* menu or the relevant buttons in the toolbar to print and save your document. With the options under *Insert*, add extra items to your document, such as a table, picture or chart.
+
+[#sec-lo-writer-styles]
+== Formatting with styles
+
+The traditional way of formatting office documents is direct formatting. That means you use a button, such as *Bold*, which sets a certain property (in this case, a bold typeface). With styles, you can bundle a set of properties (for example, font size and font weight) and give them a speaking name, such as _Headline, first level_. Using styles, rather than direct formatting, has the following advantages:
+
+* Gives your pages, paragraphs, texts and lists a consistent look.
+* Makes it easy to consistently change formatting later.
+* Allows reuse and import of styles from another document.
+* Change one style and its properties are passed on to its descendants.
+
+[#ex-lo-usestyle]
+.Use of styles
+====
+Imagine that you emphasize text by selecting it and clicking the button *Bold*. Later, you decide you want the emphasized text to be italicized. Now, without styles, you need to find all bold text and manually change it to italics.
+
+If you had used a character style from the beginning, however, you would only need to change the style from bold to italics once. All text formatted with a style changes its appearance as the style is changed.
+====
+
+{libo} can use styles for applying consistent formatting to various elements in a document. The following styles are available in Writer:
+
+[#tab-lo-writer-styles]
+.Types of styles
+[cols="28,72",options="header"]
+|===
+a|Type of Style
+a|Function
+
+a|*Paragraph*
+a|Applies standardized formatting to the various types of paragraphs in your document. For example, apply a paragraph style to a first-level heading to set the font and font size, spacing above and below the heading, location of the heading and other formatting specifications.
+a|*Character*
+a|Applies standardized formatting for types of text. For example, if you want emphasized text to appear in italics, you can create an emphasis style that italicizes selected text when you apply the style to it.
+a|*Frame*
+a|Applies standardized formatting to frames. For example, if your document uses marginal notes, you can create frames with specified borders, location and other formatting, so that all of your marginal notes have a consistent appearance.
+
+Frames are also used for captioning images: A frame can keep the caption and the image together. Here, you can use frame style to make sure that all your images have the same size and background color, for example.
+a|*Page*
+a|Applies standardized formatting to a specified type of page. For example, if every page of your document contains a header and footer except for the first page, you can use a first page style that disables headers and footers. You can also use different page styles for left and right pages so that you have bigger margins on the insides of pages and your page numbers appear on an outside corner.
+a|*List*
+a|Applies standardized formatting to specified list types. For example, you can define a checklist with square check boxes and a bullet list with round bullets, then easily apply the correct style when creating your lists.
+|===
+
+Direct formatting overrides any styles you have applied. For example, format a piece of text both with a character style and using the button *Bold*. Now, the text will be bold, no matter what is set in the style.
+
+To remove all direct formatting, first select the appropriate text, then right-click it and choose *Clear Direct Formatting*.
+
+Likewise, if you manually format paragraphs using menu:Format[Paragraph], you can end up with inconsistent paragraph formatting. This is especially true if you copy and paste paragraphs from other documents with different formatting. However, if you apply paragraph styles, formatting remains consistent. If you change a style, the change is automatically applied to all paragraphs formatted with that style.
+
+[#sec-lo-writer-styles-window]
+=== The side bar panel *Styles*
+
+The side bar panel *Styles* is a versatile formatting tool for applying styles to text, paragraphs, pages, frames and lists. To open this panel, click the button *Styles* in the side bar, or press kbd:[F11].
+
+[#fig-lo-writer-stylist]
+.LibreOffice Styles panel
+image::oo-stylist.png["Styles sidebar displaying paragraph formatting options including Default Paragraph Style, Body Text, Heading and other text formatting presets",width=50%]
+
+{libo} comes with several predefined styles. You can use these styles as they are, modify them, or create new styles. Use the icons at the top of the panel to display formatting styles for the most common elements such as paragraphs, frames, pages or lists. To learn more about styles, continue with the instructions below.
+
+[#sec-lo-writer-styles-apply]
+=== Applying a style
+
+To apply a style, select the element you want to apply the style to and double-click the style in the panel *Styles*. For example, to apply a style to a paragraph, place the cursor anywhere in that paragraph and double-click a paragraph style.
+
+Alternatively, use the paragraph style selector in the toolbar *Formatting*.
+
+[#sec-lo-writer-styles-change]
+=== Changing a style
+
+By changing styles, you can change formatting throughout a document, rather than applying the change separately everywhere you want to apply the new formatting.
+
+To change an existing style, proceed as follows:
+
+. In the panel *Styles*, right-click the style you want to change.
+. Click *Modify*.
+. Change the settings for the selected style.
++
+For information about the available settings, refer to the {libo} online help.
+. Click *Apply* and close the dialog with *OK*.
+
+[#sec-lo-writer-styles-create]
+=== Creating a style
+
+{libo} comes with a collection of styles to suit many needs of most users. However, if you need a style that does not yet exist and want to create your own style, follow the procedure below:
+
+[#pro-lo-writer-styles-create]
+.Creating a new style
+. Open the panel *Styles* in the sidebar with *Styles*, or pressing kbd:[F11].
+. Make sure you are in the list of styles for the type of style you want to create.
++
+For example, if you are creating a character style, make sure you are in the character style list by clicking the corresponding icon in the panel *Styles*.
+. Right-click anywhere in the list of styles in the panel *Styles*.
+. To open the style dialog, press the right mouse button and click *New*. The *Organizer* tab is preselected.
+. Configure three basic properties of the new style:
++
+--
+*Name*::
+The name of your style. Choose a descriptive name.
+*Next style*::
+The style that follows your style. The style selected here is used when starting a new paragraph by pressing kbd:[Enter]. This is useful, for example, for headlines, after which you usually want to start a normal paragraph of text.
+*Inherit from*::
+A style that your style depends on. If the selected style is changed, your style changes as well. For example, to make headers consistent, create a “parent” header style and have subsequent headers depend on it. This is useful when you only want to change the properties that need to be different.
+--
++
+For details about the style options available in any tab, click the *Help* button of the dialog.
+. Confirm with *OK*. This closes the dialog.
+
+[#sec-lo-writer-style-exa-note]
+==== Example: defining a note style
+
+Let us assume you need a note with a different background and borders. To create such a style, proceed as follows:
+
+.Creating a note style
+. Press kbd:[F11]. The panel *Styles and Formatting* opens.
+. Make sure you are in the *Paragraph Style* list by checking that the pilcrow icon (¶) is selected.
+. Right-click anywhere in the list of styles in the panel *Styles* and select *New*.
+. Specify the following parameters in the tab *Organizer*:
++
+[cols="1,1"]
+|===
+a|*Name*
+a|Note
+a|*Next style*
+a|Note
+a|*Inherit from*
+a|{empty}- None -
+a|*Category*
+a|Custom Styles
+|===
+. Change the indentation in the tab *Indents & Spacing*, using the text field *Before text*. If you also want more space above and below individual paragraphs, change the values in the *Above paragraph* and *Below paragraph* accordingly.
+. Switch to the tab *Color* and choose a color for the background.
+. Switch to the tab *Borders* and determine your line arrangements, line style, color and other parameters.
+. Confirm with *OK*. This closes the dialog.
+. Select your text in your document and double-click the style *Note*. Your style parameters are applied to the text.
+
+[#sec-lo-writer-style-exa-page]
+==== Example: defining an even-odd page style
+
+If you want to create double-sided printouts of your documents, especially if they are supposed to be bound, use templates for even and odd pages. To create page styles for this, proceed as follows:
+
+[#pro-lo-writer-style-exa-page-even]
+.Create an even (left) page style
+. Press kbd:[F11]. The panel *Styles and Formatting* opens.
+. Make sure you are in the list *Page Style* by checking that the paper sheet icon is selected.
+. Right-click anywhere in the list of styles in the panel *Styles* and select *New*.
+. Enter the following parameters in the tab *Organizer*:
++
+[cols="1,1"]
+|===
+a|*Name*
+a|Left Content Page
+a|*Next style*
+a|Leave empty, will be changed later
+a|*Inherit from*
+a|not applicable
+a|*Category*
+a|not applicable
+|===
+. Change additional parameters as you like in the other tabs. You can also adapt the page format and margins (tab *Page*) or any headers and footers.
+. Confirm with *OK*. This closes the window.
+
+[#pro-lo-writer-style-exa-page-odd]
+.Create an odd (right) page style
+. Follow the instruction in <<pro-lo-writer-style-exa-page-even,Create an even (left) page style>> but use the string `+Right Content Page+` in the *Organizer* tab.
+. Select the entry *Left Page* from the drop-down box *Next style*.
+. Choose the same parameters as you did for the left page style. If you used different sizes for the left and right margin of your even page, mirror these values in your odd pages.
+. Confirm with *OK*. This closes the window.
+
+Then connect the left page style with the right page style:
+
+[#pro-lo-writer-style-exa-page-connect]
+.Connect the right page style with the left page style
+. Right-click the entry *Left Content Page* and choose *Modify*.
+. Choose *Right Content Page* from the drop-down box *Next Style*.
+. Confirm with *OK*. This closes the dialog.
+
+To attach your style, make sure your page is a left (even) page and double-click *Left Content Page*. Whenever your text exceeds the length of a page, the following page automatically receives the alternative page style.
+
+[#sec-lo-writer-largedocs]
+== Working with large documents
+
+You can use Writer to work on large documents. Large documents can be either a single file or a collection of files assembled into a single document.
+
+[#sec-lo-writer-largedocs-navig]
+=== Navigating in large documents
+
+The Navigator tool displays information about the contents of a document. It also lets you quickly jump to different elements. For example, use the Navigator to get a quick overview of all images included in a document.
+
+To open the Navigator, click menu:View[Navigator] or press kbd:[F5]. The elements listed in the Navigator vary with the document loaded in Writer.
+
+The Navigator is also an element of the side bar: There, it can be opened using the button *Navigator* (a compass).
+
+Double-click an item in the Navigator to jump to that item in the document.
+
+[#fig-ooo-navigator]
+.Navigator tool in *Writer*
+image::oo_navigator.png["",width=45%]
+
+[#sec-lo-createmaster]
+=== Using master documents
+
+If you are working with a very large document, such as a book, it can be easier to manage the book with a master document, rather than keeping the book in a single file. A master document enables you to quickly apply formatting changes to a large document or to jump to each subdocument for editing.
+
+A master document is a Writer document that serves as a container for multiple Writer files. You can maintain chapters or other subdocuments as individual files collected in the master document. Master documents are also useful if multiple users are working on a single document. You can separate each user’s section of the document into subdocuments collected in a master document, allowing multiple writers to work on their subdocuments at the same time without fear of overwriting the work of others.
+
+.Creating a master document
+. Click menu:File[New > Master Document].
++
+or
++
+Open an existing document and click menu:File[Send > Create Master Document].
+. The *Navigator* window will open. In it, choose *Insert*, then choose *File*.
+. Select a file to add an existing file to the master document and click *Open*.
+
+[#pro-lo-master-addnewdocument]
+.Adding a new document to a master document
+. In the window or panel *Navigator*, choose *Insert*, then choose *New Document*.
+. A file chooser opens, to allow saving the new document. Specify a name, then click *Save*.
+. When you are done editing the new document, save it. Then switch back to the master document.
+. Update the master document with the contents of the new document. To do so, right-click the entry of your new document in the *Navigator*, then click the arrow to the right of *Update* and choose *Selection*.
+
+To enter some text directly into the master document, click the arrow to the right of *Insert* and choose *Text*.
+
+The {libo} help files contain more complete information about working with master documents. Look for the topic named _Using Master Documents and Subdocuments_.
+
+[TIP]
+.Styles and templates in master documents
+====
+The styles from all of your subdocuments are imported into the master document. To ensure that formatting is consistent throughout your master document, use the same template for each subdocument. Doing so is not mandatory.
+
+However, if subdocuments are formatted differently, you might need to do some reformatting to successfully bring subdocuments into the master document without creating inconsistencies. For example, if two documents within a master document include styles with the same name, the master document will use the formatting specified for the style in the document imported first.
+====
+
+[#sec-lo-writer-html]
+== Using Writer as an HTML editor
+
+In addition to being a full-featured word processor, Writer also functions as an HTML editor. You can style HTML pages like any other document, but there are specific *HTML Styles* that help with creating good HTML. You can view the document as it will appear online, or you can directly edit the HTML code.
+
+[#pro-lo-writer-html-create]
+.Creating an HTML page
+. Click menu:File[New > HTML Document].
+. Press kbd:[F11] to open the panel *Styles*.
+. At the bottom of the panel *Styles*, click the drop-down box to open it.
+. Select *HTML Styles*.
+. Create your HTML page, using the styles to tag your text.
+. Click menu:File[Save As].
+. Select the location where you want to save your file and name the file. Make sure that in the bottom drop-down box, *HTML Document* is selected.
+. Click *OK*.
+
+To edit HTML code directly or to see the HTML code created when you edit the HTML file as a Writer document, click menu:View[HTML Source]. In HTML Source mode, the *Formatting and Styles* list is not available.
+
+The first time you switch to *HTML Source* mode, you are prompted to save the file as HTML, if you have not already done so.
+
+To switch back from *HTML Source* mode to Web Layout, click menu:View[HTML source] again.

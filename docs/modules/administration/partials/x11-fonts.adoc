@@ -1,0 +1,473 @@
+// Converted from xml/x11_fonts.xml
+
+[#sec-x11-fontsys]
+== Installing and configuring fonts
+
+Fonts in Linux can be categorized into two parts:
+
+Outline or vector fonts::
+Contains a mathematical description as drawing instructions about the shape of a glyph. As such, each glyph can be scaled to arbitrary sizes without loss of quality. Before such a font (or glyph) can be used, the mathematical descriptions need to be transformed into a raster (grid). This process is called _font rasterization_. _Font hinting_ (embedded inside the font) improves and optimizes the rendering result for a particular size. Rasterization and hinting is done with the FreeType library.
++
+Common formats under Linux are PostScript Type 1 and Type 2, TrueType, and OpenType.
+Bitmap or raster fonts::
+Consists of an array of pixels designed for a specific font size. Bitmap fonts are extremely fast and simple to render. However, compared to vector fonts, bitmap fonts cannot be scaled without losing quality. As such, these fonts are usually distributed in different sizes. These days, bitmap fonts are still used in the Linux console and sometimes in terminals.
++
+Under Linux, Portable Compiled Format (PCF) or Glyph Bitmap Distribution Format (BDF) are the most common formats.
+
+The appearance of these fonts can be influenced by two main aspects:
+
+* choosing a suitable font family,
+* rendering the font with an algorithm that achieves results comfortable for the receiver's eyes.
+
+The last point is only relevant to vector fonts. Although the above two points are highly subjective, some defaults need to be created.
+
+Linux font rendering systems consist of several libraries with different relations. The basic font rendering library is link:https://www.freetype.org/[FreeType], which converts font glyphs of supported formats into optimized bitmap glyphs. The rendering process is controlled by an algorithm and its parameters (which may be subject to patent issues).
+
+Every program or library which uses FreeType should consult the link:https://www.fontconfig.org/[Fontconfig] library. This library gathers font configuration from users and from the system. When a user amends their Fontconfig setting, this change will result in Fontconfig-aware applications.
+
+More sophisticated OpenType shaping needed for scripts such as Arabic, Han or Phags-Pa and other higher level text processing is done using link:https://harfbuzz.github.io/[Harfbuzz] or link:https://www.pango.org/[Pango].
+
+[#sec-x11-fontsys-showing-fonts]
+=== Showing installed fonts
+
+To get an overview about which fonts are installed on your system, ask the commands `+rpm+` or `+fc-list+`. Both will give you a good answer, but may return a different list depending on system and user configuration:
+
+`+rpm+`::
+Invoke `+rpm+` to see which software packages containing fonts are installed on your system:
++
+----
+> rpm -qa '*fonts*'
+----
++
+Every font package should satisfy this expression. However, the command may return some false positives like `+fonts-config+` (which is neither a font nor does it contain fonts).
+`+fc-list+`::
+Invoke `+fc-list+` to get an overview about what font families can be accessed, whether they are installed on the system or in your home:
++
+----
+> fc-list ':' family
+----
++
+[NOTE]
+.Command `+fc-list+`
+====
+The command `+fc-list+` is a wrapper to the Fontconfig library. It is possible to query a lot of interesting information from Fontconfig—or, to be more precise, from its cache. See `+man 1 fc-list+` for more details.
+====
+
+[#sec-x11-fontsys-viewing]
+=== Viewing fonts
+
+If you want to know what an installed font family looks like, either use the command `+ftview+` (package `+ft2demos+`) or visit link:https://fontinfo.opensuse.org/[]. For example, to display the FreeMono font in 14 point, use `+ftview+` like this:
+
+----
+> ftview 14 /usr/share/fonts/truetype/FreeMono.ttf
+----
+
+If you need further information, go to link:https://fontinfo.opensuse.org/[] to find out which styles (regular, bold, italic, etc.) and languages are supported.
+
+[#sec-x11-fontsys-querying]
+=== Querying fonts
+
+To query which font is used when a pattern is given, use the `+fc-match+` command.
+
+For example, if your pattern contains an already installed font, `+fc-match+` returns the file name, font family, and the style:
+
+----
+> fc-match 'Liberation Serif'
+LiberationSerif-Regular.ttf: "Liberation Serif" "Regular"
+----
+
+If the desired font does not exist on your system, Fontconfig's matching rules take place and try to find the most similar fonts available. This means, your request is substituted:
+
+----
+> fc-match 'Foo Family'
+DejaVuSans.ttf: "DejaVu Sans" "Book"
+----
+
+Fontconfig supports _aliases_: a name is substituted with another family name. A typical example are the generic names such as “sans-serif”, “serif”, and “monospace”. These alias names can be substituted by real family names or even a preference list of family names:
+
+----
+> for font in serif sans mono; do fc-match "$font" ; done
+DejaVuSerif.ttf: "DejaVu Serif" "Book"
+DejaVuSans.ttf: "DejaVu Sans" "Book"
+DejaVuSansMono.ttf: "DejaVu Sans Mono" "Book"
+----
+
+The result may vary on your system, depending on which fonts are currently installed.
+
+[NOTE]
+.Similarity rules according to fontconfig
+====
+Fontconfig _always_ returns a real family (if at least one is installed) according to the given request, as similar as possible. “Similarity” depends on Fontconfig's internal metrics and on the user's or administrator's Fontconfig settings.
+====
+
+[#sec-x11-fontsys-install]
+=== Installing fonts
+
+To install a new font there are these major methods:
+
+. Manually install the font files such as `+*.ttf+` or `+*.otf+` to a known font directory. If it needs to be system-wide, use the standard directory `+/usr/share/fonts+`. For installation in your home directory, use `+~/.config/fonts+`.
++
+If you want to deviate from the standard directories, Fontconfig allows you to choose another one. Let Fontconfig know by using the `+<dir>+` element, see <<sec-x11-fontsys-config-fontconfig,Diving into fontconfig XML>> for details.
+. Install fonts using `+zypper+`. Lots of fonts are already available as a package, be it on your {suse} distribution or in the link:https://download.opensuse.org/repositories/M17N:/fonts/[M17N:fonts] repository. Add the repository to your list using the following command. For example, to add a repository for {productname} {productnumber}:
++
+[subs="attributes+"]
+----
+> sudo zypper ar
+     
+ifdef::os-sles,os-sled[https://download.opensuse.org/repositories/M17N:/fonts/SLE_15/]
+
+ifdef::os-osuse[https://download.opensuse.org/repositories/M17N:/fonts/openSUSE_Leap_{productnumber}/]
+----
++
+To search for your _FONT_FAMILY_NAME_ use this command:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> zypper se '__FONT{underscore}FAMILY{underscore}NAME__{asterisk}fonts'
+----
+
+[#sec-x11-fontsys-config]
+=== Configuring the appearance of fonts
+
+Depending on the rendering medium, and font size, the result may be unsatisfactory. For example, an average monitor these days has a resolution of 100dpi which makes pixels too big and glyphs look clunky.
+
+There are several algorithms available to deal with low resolutions, such as anti-aliasing (grayscale smoothing), hinting (fitting to the grid), or subpixel rendering (tripling resolution in one direction). These algorithms can also differ from one font format to another.
+
+Via Fontconfig, it is possible to select a rendering algorithms for every font individually or for a set of fonts.
+
+[#sec-x11-fontsys-config-sysconfig]
+==== Configuring fonts via `+sysconfig+`
+
+{productname} comes with a `+sysconfig+` layer above Fontconfig. This is a good starting point for experimenting with font configuration. To change the default settings, edit the configuration file `+/etc/sysconfig/fonts-config+`. (or use the {yast} sysconfig module). After you have edited the file, run `+fonts-config+`:
+
+----
+> sudo /usr/sbin/fonts-config
+----
+
+Restart the application to make the effect visible. Keep in mind the following issues:
+
+* A few applications do need not to be restarted. For example, Firefox re-reads Fontconfig configuration from time to time. Newly created or reloaded tabs get new font configurations later.
+* The `+fonts-config+` script is called automatically after every package installation or removal (if not, it is a bug of the font software package).
+* Every sysconfig variable can be temporarily overridden by the `+fonts-config+` command line option. See `+fonts-config --help+` for details.
+
+There are several sysconfig variables which can be altered. See `+man 1 fonts-config+` or the help page of the {yast} sysconfig module. The following variables are examples:
+
+Usage of rendering algorithms::
+Consider `+FORCE_HINTSTYLE+`, `+FORCE_AUTOHINT+`, `+FORCE_BW+`, `+FORCE_BW_MONOSPACE+`, `+USE_EMBEDDED_BITMAPS+` and `+EMBEDDED_BITMAP_LANGAGES+`
+Preference lists of generic aliases::
+Use `+PREFER_SANS_FAMILIES+`, `+PREFER_SERIF_FAMILIES+`, `+PREFER_MONO_FAMILIES+` and `+SEARCH_METRIC_COMPATIBLE+`
+
+The following list provides some configuration examples, sorted from the “most readable” fonts (more contrast) to “most beautiful” (more smoothed).
+
+[[vle-x11-fontsys-sysconfig-bitmap]]Bitmap fonts::
+Prefer bitmap fonts via the `+PREFER_*_FAMILIES+` variables. Follow the example in the help section for these variables. Be aware that these fonts are rendered black and white, not smoothed and that bitmap fonts are available in several sizes only. Consider using
++
+----
+SEARCH_METRIC_COMPATIBLE="no"
+----
++
+to disable metric compatibility-driven family name substitutions.
+[[vle-x11-fontsys-sysconfig-bw]]Scalable fonts rendered black and white::
+Scalable fonts rendered without antialiasing can result in a similar outcome to bitmap fonts, while maintaining font scalability. Use well hinted fonts like the Liberation families. Unfortunately, there is a lack of well hinted fonts though. Set the following variable to force this method:
++
+----
+FORCE_BW="yes"
+----
+[[vle-x11-fontsys-sysconfig-bw-monospace]]Monospaced fonts rendered black and white::
+Render monospaced fonts without antialiasing only, otherwise use default settings:
++
+----
+FORCE_BW_MONOSPACE="yes"
+----
+[[vle-x11-fontsys-sysconfig-default]]Default settings::
+All fonts are rendered with antialiasing. Well hinted fonts will be rendered with the _byte code interpreter_ (BCI) and the rest with autohinter (`+hintstyle=hintslight+`). Leave all relevant sysconfig variables to the default setting.
+[[vle-x11-fontsys-sysconfig-cff]]CFF fonts::
+Use fonts in CFF format. They can be considered also more readable than the default TrueType fonts given the current improvements in FreeType2. Try them out by following the example of `+PREFER_*_FAMILIES+`. Possibly make them more dark and bold with:
++
+----
+SEARCH_METRIC_COMPATIBLE="no"
+----
++
+as they are rendered by `+hintstyle=hintslight+` by default. Also consider using:
++
+----
+SEARCH_METRIC_COMPATIBLE="no"
+----
+[[ex-x11-fontsys-sysconfig-autohint]]Autohinter exclusively::
+Even for a well hinted font, use FreeType2's autohinter. That can lead to thicker, sometimes fuzzier letter shapes with lower contrast. Set the following variable to activate this:
++
+----
+FORCE_AUTOHINTER="yes"
+----
++
+Use `+FORCE_HINTSTYLE+` to control the level of hinting.
+
+[#sec-x11-fontsys-config-fontconfig]
+==== Diving into fontconfig XML
+
+Fontconfig's configuration format is the _eXtensible Markup Language_ (XML). These few examples are not a complete reference, but a brief overview. Details and other inspiration can be found in `+man 5 fonts-conf+` or in `+/etc/fonts/conf.d/+`.
+
+The central Fontconfig configuration file is `+/etc/fonts/fonts.conf+`, which—along other work—includes the whole `+/etc/fonts/conf.d/+` directory. To customize Fontconfig, there are two places where you can insert your changes:
+
+[#ol-x11-fontsys-configfiles]
+.Fontconfig configuration files
+. {empty}
++
+.System-wide changes
+Edit the file `+/etc/fonts/local.conf+` (by default, it contains an empty `+fontconfig+` element).
+. {empty}
++
+.User-specific changes
+Edit the file `+~/.config/fontconfig/fonts.conf+`. Place Fontconfig configuration files in the `+~/.config/fontconfig/conf.d/+` directory.
+
+User-specific changes overwrite any system-wide settings.
+
+[NOTE]
+.Deprecated user configuration file
+====
+The file `+~/.fonts.conf+` is marked as deprecated and should not be used anymore. Use `+~/.config/fontconfig/fonts.conf+` instead.
+====
+
+Every configuration file needs to have a `+fontconfig+` element. As such, the minimal file looks like this:
+
+----
+<?xml version="1.0"?>
+   <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+   <fontconfig>
+   <!-- Insert your changes here -->
+   </fontconfig>
+----
+
+If the default directories are not enough, insert the `+dir+` element with the respective directory:
+
+----
+<dir>/usr/share/fonts2</dir>
+----
+
+Fontconfig searches _recursively_ for fonts.
+
+Font-rendering algorithms can be chosen with following Fontconfig snippet (see <<ex-x11-fontsys-fontconfig-rendering-algorithms,Specifying rendering algorithms>>):
+
+[#ex-x11-fontsys-fontconfig-rendering-algorithms]
+.Specifying rendering algorithms
+====
+[subs="specialchars,quotes,attributes,callouts"]
+----
+<match target="font">
+ <test name="family">
+  <string>__FAMILY{underscore}NAME__</string>
+ </test>
+ <edit name="antialias" mode="assign">
+  <bool>true</bool>
+ </edit>
+ <edit name="hinting" mode="assign">
+  <bool>true</bool>
+ </edit>
+ <edit name="autohint" mode="assign">
+  <bool>false</bool>
+ </edit>
+ <edit name="hintstyle" mode="assign">
+  <const>hintfull</const>
+ </edit>
+</match>
+----
+====
+
+Various properties of fonts can be tested. For example, the `+<test>+` element can test for the font family (as shown in the example), size interval, spacing, font format, and others. When abandoning `+<test>+` completely, all `+<edit>+` elements will be applied to every font (global change).
+
+[#ex-x11-fontsys-fontconfig-aliases1]
+.Aliases and family name substitutions
+====
+[[vle-x11-fontsys-example-alias-default]]Rule 1::
+{empty}
++
+----
+<alias>
+ <family>Alegreya SC</family>
+ <default>
+  <family>serif</family>
+ </default>
+</alias>
+----
+[[vle-x11-fontsys-example-alias-prefer]]Rule 2::
+{empty}
++
+----
+<alias>
+ <family>serif</family>
+ <prefer>
+  <family>Droid Serif</family>
+ </prefer>
+</alias>
+----
+[[vle-x11-fontsys-example-alias-accept]]Rule 3::
+{empty}
++
+----
+<alias>
+ <family>serif</family>
+ <accept>
+  <family>STIXGeneral</family>
+ </accept>
+</alias>
+----
+====
+
+The rules from <<ex-x11-fontsys-fontconfig-aliases1,Aliases and family name substitutions>> create a _prioritized family list_ (PFL). Depending on the element, different actions are performed:
+
+`+<default>+` from <<vle-x11-fontsys-example-alias-default,Rule 1>>::
+This rule adds a `+serif+` family name _at the end_ of the PFL.
+`+<prefer>+` from <<vle-x11-fontsys-example-alias-prefer,Rule 2>>::
+This rule adds “Droid Serif” _just before_ the first occurrence of `+serif+` in the PFL, whenever `+Alegreya SC+` is in PFL.
+`+<accept>+` from <<vle-x11-fontsys-example-alias-accept,Rule 3>>::
+This rule adds a “STIXGeneral” family name _just after_ the first occurrence of the `+serif+` family name in the PFL.
+
+Putting this together, when snippets occur in the order <<vle-x11-fontsys-example-alias-default,Rule 1>> - <<vle-x11-fontsys-example-alias-prefer,Rule 2>> - <<vle-x11-fontsys-example-alias-accept,Rule 3>> and the user requests “Alegreya SC”, then the PFL is created as depicted in <<tab-x11-fontsys-example-alias,Generating PFL from fontconfig rules>>.
+
+[#tab-x11-fontsys-example-alias]
+.Generating PFL from fontconfig rules
+[cols="1,3",options="header"]
+|===
+a|Order
+a|Current PFL
+
+a|Request
+a|`+Alegreya SC+`
+a|<<vle-x11-fontsys-example-alias-default,Rule 1>>
+a|`+Alegreya SC+`, `+serif+`
+a|<<vle-x11-fontsys-example-alias-prefer,Rule 2>>
+a|`+Alegreya SC+`, `+Droid Serif+`, `+serif+`
+a|<<vle-x11-fontsys-example-alias-accept,Rule 3>>
+a|`+Alegreya SC+`, `+Droid Serif+`, `+serif+`, `+STIXGeneral+`
+|===
+
+In Fontconfig's metrics, the family name has the highest priority over other patterns, like style, size, etc. Fontconfig checks which family is currently installed on the system. If “Alegreya SC” is installed, then Fontconfig returns it. If not, it asks for “Droid Serif”, etc.
+
+Be careful. When the order of Fontconfig snippets is changed, Fontconfig can return different results, as depicted in <<tab-x11-fontsys-example-alias2,Results from generating PFL from fontconfig rules with changed order>>.
+
+[#tab-x11-fontsys-example-alias2]
+.Results from generating PFL from fontconfig rules with changed order
+[cols="1,1,1",options="header"]
+|===
+a|Order
+a|Current PFL
+a|Note
+
+a|Request
+a|`+Alegreya SC+`
+a|Same request performed.
+a|<<vle-x11-fontsys-example-alias-prefer,Rule 2>>
+a|`+Alegreya SC+`
+a|`+serif+` not in PFL, nothing is substituted
+a|<<vle-x11-fontsys-example-alias-accept,Rule 3>>
+a|`+Alegreya SC+`
+a|`+serif+` not in PFL, nothing is substituted
+a|<<vle-x11-fontsys-example-alias-default,Rule 1>>
+a|`+Alegreya SC+`, `+serif+`
+a|`+Alegreya SC+` present in PFL, substitution is performed
+|===
+
+[NOTE]
+.Implication
+====
+Think of the `+<default>+` alias as a classification or inclusion of this group (if not installed). As the example shows, `+<default>+` should always precede the `+<prefer>+` and `+<accept>+` aliases of that group.
+
+`+<default>+` classification is not limited to the generic aliases serif, sans-serif and monospace. See `+/usr/share/fontconfig/conf.avail/30-metric-aliases.conf+` for a complex example.
+====
+
+The following Fontconfig snippet in <<ex-x11-fontsys-fontconfig-aliases2,Aliases and family name substitutions>> creates a `+serif+` group. Every family in this group could substitute others when a former font is not installed.
+
+[#ex-x11-fontsys-fontconfig-aliases2]
+.Aliases and family name substitutions
+====
+----
+<alias>
+ <family>Alegreya SC</family>
+ <default>
+  <family>serif</family>
+ </default>
+</alias>
+<alias>
+ <family>Droid Serif</family>
+ <default>
+  <family>serif</family>
+ </default>
+</alias>
+<alias>
+ <family>STIXGeneral</family>
+ <default>
+  <family>serif</family>
+ </default>
+</alias>
+<alias>
+ <family>serif</family>
+ <accept>
+  <family>Droid Serif</family>
+  <family>STIXGeneral</family>
+  <family>Alegreya SC</family>
+ </accept>
+</alias>
+----
+====
+
+Priority is given by the order in the `+<accept>+` alias. Similarly, stronger `+<prefer>+` aliases can be used.
+
+<<ex-x11-fontsys-fontconfig-aliases1,Aliases and family name substitutions>> is expanded by <<ex-x11-fontsys-fontconfig-aliases3,Aliases and family names substitutions>>.
+
+[#ex-x11-fontsys-fontconfig-aliases3]
+.Aliases and family names substitutions
+====
+[[vle-x11-fontsys-example-alias-accept2]]Rule 4::
+{empty}
++
+----
+<alias>
+ <family>serif</family>
+ <accept>
+  <family>Liberation Serif</family>
+ </accept>
+</alias>
+----
+[[vle-x11-fontsys-example-alias-prefer2]]Rule 5::
+{empty}
++
+----
+<alias>
+ <family>serif</family>
+ <prefer>
+  <family>DejaVu Serif</family>
+ </prefer>
+</alias>
+----
+====
+
+The expanded configuration from <<ex-x11-fontsys-fontconfig-aliases3,Aliases and family names substitutions>> would lead to the following PFL evolution:
+
+[#tab-x11-fontsys-example-alias3]
+.Results from generating PFL from fontconfig rules
+[cols="1,3",options="header"]
+|===
+a|Order
+a|Current PFL
+
+a|Request
+a|`+Alegreya SC+`
+a|<<vle-x11-fontsys-example-alias-default,Rule 1>>
+a|`+Alegreya SC+`, `+serif+`
+a|<<vle-x11-fontsys-example-alias-prefer,Rule 2>>
+a|`+Alegreya SC+`, `+Droid Serif+`, `+serif+`
+a|<<vle-x11-fontsys-example-alias-accept,Rule 3>>
+a|`+Alegreya SC+`, `+Droid Serif+`, `+serif+`, `+STIXGeneral+`
+a|<<vle-x11-fontsys-example-alias-accept2,Rule 4>>
+a|`+Alegreya SC+`, `+Droid Serif+`, `+serif+`, `+Liberation Serif+`, `+STIXGeneral+`
+a|<<vle-x11-fontsys-example-alias-prefer2,Rule 5>>
+a|`+Alegreya SC+`, `+Droid Serif+`, `+DejaVu Serif+`, `+serif+`, `+Liberation Serif+`, `+STIXGeneral+`
+|===
+
+[NOTE]
+.Implications.
+====
+* In case multiple `+<accept>+` declarations for the same generic name exist, the declaration that is parsed last “wins”. If possible, do not use `+<accept>+` *after* user (`+/etc/fonts/conf.d/*-user.conf+`) when creating a system-wide configuration.
+* In case multiple `+<prefer+` declarations for the same generic name exist, the declaration that is parsed last “wins”. If possible, do not use `+<prefer>+` *before* user in the system-wide configuration.
+* Every `+<prefer>+` declaration overwrites `+<accept>+` declarations for the same generic name. If the administrator wants to allow the user to use `+<accept>+` and not only `+<prefer>+`, the administrator should not use `+<prefer>+` in the system-wide configuration. On the other hand, as users mostly use `+<prefer>+`, this should not have any detrimental effect. We also see the use of `+<prefer>+` in system-wide configurations.
+====

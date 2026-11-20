@@ -1,0 +1,130 @@
+// Converted from xml/yast2_printer.xml
+[#sec-yast-hw-print]
+= Setting up a printer
+:description: Configure local and network printers in YaST by selecting connection types, choosing drivers, managing print queues and setting defaults
+:revdate: 2026-01-16
+
+{yast} can be used to configure local and network printers. Further information about printing (general information, technical details, and troubleshooting) is available in xref:printing.adoc[].
+
+In {yast}, click menu:Hardware[Printer] to start the printer module. By default it opens in the *Printer Configurations* view, displaying a list of all printers that are available and configured. This is especially useful when having access to a lot of printers via the network. From here you can also *Print a Test Page* and configure printers.
+
+[NOTE]
+.Starting CUPS
+====
+To use the printer connected to your machine, you must have CUPS installed and running on your system. If CUPS is not running, you are prompted to start it. In case CUPS is not started at boot time, you are also prompted to enable it (recommended).
+====
+
+[#sec-yast-hw-print-local]
+== Configuring printers
+
+Normally USB printers are detected automatically. If that does not happen, check whether the printer is switched on and connected to the machine.
+
+Configuring a printer is a three-step process: specify the connection type, choose a driver, and name the print queue for this setup.
+
+Many printer models may have several available drivers. When configuring the printer, {yast} defaults to those marked `+recommended+`. Normally, it is not necessary to change the driver. However, if you want a color printer to print only in black and white, you can use a driver that does not support color printing. If you experience performance problems with a PostScript printer when printing graphics, try switching from a PostScript to a PCL driver (provided your printer understands PCL).
+
+If no driver for your printer is listed, try selecting a generic driver with an appropriate standard language from the list. Refer to your printer's documentation to find out what language (the set of commands controlling the printer) your printer supports. If this does not work, refer to <<sec-yast-hw-print-local-get-ppd,Adding drivers with {yast}>> for an alternative solution.
+
+A printer is always used through a print queue. This ensures that simultaneous jobs can be queued and processed one by one. Each print queue is assigned to a specific driver, and a printer can have multiple queues. As an example, this makes it possible to set up a second queue on a color printer that prints black and white only. Refer to xref:printing.adoc#sec-print-workflow[The CUPS workflow] for more information about print queues.
+
+[#pro-y2-hw-print-local-config]
+.Adding a new printer
+. Start the {yast} printer module with menu:Hardware[Printer].
+. In the *Printer Configurations* screen click *Add*.
+. If the printer is already listed under `+Specify the Connection+`, proceed with the next step. Otherwise, try *Detect More* or start the *Connection Wizard*.
+. In the text box under `+Find and Assign a Driver+` enter the vendor name and the model name and click *Search for*.
+. Choose a driver that matches your printer. It is recommended to choose the driver listed first. If no suitable driver is displayed, try the following.
++
+.. Check the search term.
+.. Expand the search by clicking *Find More*.
+.. Add a driver as described in <<sec-yast-hw-print-local-get-ppd,Adding drivers with {yast}>>.
+. Specify the `+Default paper size+`.
+. In the *Set Arbitrary Name* field, enter a unique name for the print queue.
+. The printer is now configured with the default settings and ready to use. Click *OK* to return to the *Printer Configurations* view. The newly configured printer is now visible in the list of printers.
+
+[#sec-yast-hw-print-local-get-ppd]
+=== Adding drivers with {yast}
+
+Not all printer drivers available for {productname} are installed by default. When adding a printer, if no suitable driver is available in the *Find and Assign a Driver* dialog, install a driver package containing drivers for the printer:
+
+.Installing additional driver packages
+. Start the {yast} printer module with menu:Hardware[Printer].
+. In the *Printer Configurations* screen, click *Add*.
+. In the `+Find and Assign a Driver+` section, click *Driver Packages*.
+. Choose one or more suitable driver packages from the list. Do _not_ specify the path to a printer description file.
+. Choose *OK* and confirm the package installation.
+. To directly use these drivers, proceed as described in <<pro-y2-hw-print-local-config,Adding a new printer>>.
+
+PostScript printers do not need printer driver software. PostScript printers need only a PostScript Printer Description (PPD) file which matches the particular model. PPD files are provided by the printer manufacturer.
+
+If no suitable PPD file is available in the *Find and Assign a Driver* dialog when adding a PostScript printer, install a PPD file for your printer:
+
+There are several sources of PPD files. It is recommended to first try additional driver packages that are shipped with {productname} but not installed by default (see below for installation instructions). If these packages do not contain suitable drivers for your printer, get PPD files directly from your printer vendor or from the driver CD of a PostScript printer. For details, see xref:printing.adoc#sec-print-prob-ppd[No suitable PPD file available for a PostScript printer]. Alternatively, find PPD files at link:https://www.openprinting.org/printers[], the “OpenPrinting.org printer database”. When using PPD files from OpenPrinting, keep in mind that they may not be supported by {productname}.
+
+.Adding a PPD file for PostScript printers
+. Start the {yast} printer module with menu:Hardware[Printer].
+. In the *Printer Configurations* screen, click *Add*.
+. In the `+Find and Assign a Driver+` section, click *Driver Packages*.
+. Enter the full path to the PPD file into the text box under `+Make a Printer Description File Available+`.
+. Click *OK* to return to the `+Add New Printer Configuration+` screen.
+. To directly use this PPD file, proceed as described in <<pro-y2-hw-print-local-config,Adding a new printer>>.
+
+[#sec-yast-hw-print-local-tune]
+=== Editing a local printer configuration
+
+By editing an existing configuration for a printer you can change basic settings such as connection type and driver. It is also possible to adjust the default settings for paper size, resolution, media source, etc. You can change identifiers of the printer by altering the printer description or location.
+
+. Start the {yast} printer module with menu:Hardware[Printer].
+. In the *Printer Configurations* screen, choose a local printer configuration from the list and click *Edit*.
+. Change the connection type or the driver as described in <<pro-y2-hw-print-local-config,Adding a new printer>>. This should only be necessary in case you have problems with the current configuration.
+. Optionally, make this printer the default by checking *Default Printer*.
+. Adjust default settings by clicking *All Options for the Current Driver*. To change a setting, expand the list of options by clicking the `{plus}` sign. Change the default by clicking an option. Apply your changes with *OK*.
+
+[#sec-yast-hw-print-network]
+== Configuring printing via the network with {yast}
+
+Network printers are not detected automatically. They must be configured manually using the {yast} printer module. Depending on your network setup, you can print to a print server (CUPS, LPD, SMB or IPX) or directly to a network printer (preferably via TCP). Access the configuration view for network printing by choosing *Printing via Network* from the left pane in the {yast} printer module.
+
+[#sec-yast-hw-print-network-cups]
+=== Using CUPS
+
+In a Linux environment CUPS is used to print via the network. The simplest setup is to only print via a single CUPS server which can directly be accessed by all clients. Printing via more than one CUPS server requires a running local CUPS daemon that communicates with the remote CUPS servers.
+
+[IMPORTANT]
+.Browsing network print queues
+====
+CUPS servers announce their print queues over the network either via the traditional CUPS browsing protocol or via Bonjour/DNS-SD. Clients need to browse these lists so users can select specific printers to send their print jobs to. To browse network print queues, the service `+cups-browsed+` provided by the package `+cups-filters-cups-browsed+` must run on all clients that print via CUPS servers. `+cups-browsed+` is started automatically when configuring network printing with {yast}.
+
+If browsing does not work after starting `+cups-browsed+`, the CUPS servers may announce the network print queues via Bonjour/DNS-SD. In this case you need to additionally install the package `+avahi+` and start the associated service with `+sudo systemctl start avahi-daemon+` on all clients.
+====
+
+.Printing via a single CUPS server
+. Start the {yast} printer module with menu:Hardware[Printer].
+. From the left pane, select *Print via Network*.
+. Check *Do All Your Printing Directly via One Single CUPS Server* and specify the name or IP address of the server.
+. Click *Test Server* to make sure you have chosen the correct name or IP address.
+. Click *OK* to return to the *Printer Configurations* screen. All printers available via the CUPS server are now listed.
+
+.Printing via multiple CUPS servers
+. Start the {yast} printer module with menu:Hardware[Printer].
+. From the left pane, select *Print via Network*.
+. Check *Accept Printer Announcements from CUPS Servers*.
+. Under `+General Settings+` specify which servers to use. You may accept connections from all networks available or from specific hosts. If you choose the latter option, you need to specify the host names or IP addresses.
+. Click *OK* and then *Yes* when prompted to start a local CUPS server. After the server has started, {yast} returns to the *Printer Configurations* screen. Click *Refresh list* to see the printers detected so far.
+
+[#sec-yast-hw-print-network-other]
+=== Using print servers other than CUPS
+
+If your network offers print services via print servers other than CUPS, start the {yast} printer module with menu:Hardware[Printer] and select *Print via Network* from the left pane. Start the *Connection Wizard* and choose the appropriate *Connection Type*. Ask your network administrator for details on configuring a network printer in your environment.
+
+[#sec-yast-hw-print-share]
+== Sharing printers over the network
+
+Printers managed by a local CUPS daemon can be shared over the network, effectively turning your machine into a CUPS server. You share a printer by enabling so-called “browsing mode” in CUPS. If browsing is enabled, the local print queues are made available on the network for listening to remote CUPS daemons. It is also possible to set up a dedicated CUPS server that manages all print queues and can be accessed by remote clients directly. In this case, enabling browsing is not required.
+
+.Sharing printers
+. Start the {yast} printer module with menu:Hardware[Printer].
+. Select *Share Printers* from the left pane.
+. Select *Allow Remote Access*. Also check *For computers within the local network* and enable browsing mode by also checking *Publish printers by default within the local network*.
+. Click *OK* to restart the CUPS server and to return to the *Printer Configurations* screen.
+. Regarding CUPS and firewall settings, see link:https://en.opensuse.org/SDB:CUPS_and_SANE_Firewall_settings[].

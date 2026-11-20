@@ -1,0 +1,111 @@
+// Converted from xml/fs_structure_i.xml
+
+[#sec-adm-dirstructure]
+=== The directory structure
+
+The following table provides a short overview of the most important higher-level directories that you find on a Linux system. Find more detailed information about the directories and important subdirectories in the following list.
+
+.Overview of a standard directory tree
+[cols="25,75",options="header"]
+|===
+a|Directory
+a|Contents
+
+a|`+/+`
+a|Root directory—the starting point of the directory tree.
+a|`+/bin+`
+a|Essential binary files, such as commands that are needed by both the system administrator and normal users. Usually also contains the shells, such as Bash.
+a|`+/boot+`
+a|Static files of the boot loader.
+a|`+/dev+`
+a|Files needed to access host-specific devices.
+a|`+/etc+`
+a|Host-specific system configuration files.
+a|`+/home+`
+a|Holds the home directories of all users who have accounts on the system. However, `+root+`{apos}s home directory is not located in `+/home+` but in `+/root+`.
+a|`+/lib+`
+a|Essential shared libraries and kernel modules.
+a|`+/media+`
+a|Mount points for removable media.
+a|`+/mnt+`
+a|Mount point for temporarily mounting a file system.
+a|`+/opt+`
+a|Add-on application software packages.
+a|`+/root+`
+a|Home directory for the superuser `+root+`.
+a|`+/sbin+`
+a|Essential system binaries.
+a|`+/srv+`
+a|Data for services provided by the system.
+a|`+/tmp+`
+a|Temporary files.
+a|`+/usr+`
+a|Secondary hierarchy with read-only data.
+a|`+/var+`
+a|Variable data such as log files.
+a|`+/windows+`
+a|Only available if you have both Microsoft Windows{asterisk} and Linux installed on your system. Contains the Windows data.
+|===
+
+The following list provides more detailed information and gives some examples of which files and subdirectories can be found in the directories:
+
+`+/bin+`::
+Contains the basic shell commands that may be used both by `+root+` and by other users. These commands include `+ls+`, `+mkdir+`, `+cp+`, `+mv+`, `+rm+` and `+rmdir+`. `+/bin+` also contains Bash, the default shell in {productname}.
+`+/boot+`::
+Contains data required for booting, such as the boot loader, the kernel, and other data that is used before the kernel begins executing user-mode programs.
+`+/dev+`::
+Holds device files that represent hardware components.
+`+/etc+`::
+Contains local configuration files that control the operation of programs like the X Window System. The `+/etc/init.d+` subdirectory contains LSB init scripts that can be executed during the boot process.
+`/home/_USERNAME_`::
+Holds the private data of every user who has an account on the system. The files located here can only be modified by their owner or by the system administrator. By default, your e-mail directory and personal desktop configuration are located here in the form of hidden files and directories, such as `+.gconf/+` and `+.config+`.
++
+[NOTE]
+.Home directory in a network environment
+====
+If you are working in a network environment, your home directory may be mapped to a directory in the file system other than `+/home+`.
+====
+`+/lib+`::
+Contains the essential shared libraries needed to boot the system and to run the commands in the root file system. The Windows equivalent for shared libraries are DLL files.
+`+/media+`::
+Contains mount points for removable media, such as CD-ROMs, flash disks, and digital cameras (if they use USB). `+/media+` generally holds any type of drive except the hard disk of your system. When your removable medium has been inserted or connected to the system and has been mounted, you can access it from here.
+`+/mnt+`::
+This directory provides a mount point for a temporarily mounted file system. `+root+` may mount file systems here.
+`+/opt+`::
+Reserved for the installation of third-party software. Optional software and larger add-on program packages can be found here.
+`+/root+`::
+Home directory for the `+root+` user. The personal data of `+root+` is located here.
+`+/run+`::
+A tmpfs directory used by `+systemd+` and various components. `+/var/run+` is a symbolic link to `+/run+`.
+`+/sbin+`::
+As the `+s+` indicates, this directory holds utilities for the superuser. `+/sbin+` contains the binaries essential for booting, restoring and recovering the system in addition to the binaries in `+/bin+`.
+`+/srv+`::
+Holds data for services provided by the system, such as FTP and HTTP.
+`+/tmp+`::
+This directory is used by programs that require temporary storage of files.
++
+[IMPORTANT]
+.Cleaning up `+/tmp+` at boot time
+====
+Data stored in `+/tmp+` is not guaranteed to survive a system reboot. It depends, for example, on settings made in `+/etc/tmpfiles.d/tmp.conf+`.
+====
+`+/usr+`::
+`+/usr+` has nothing to do with users, but is the acronym for Unix system resources. The data in `+/usr+` is static, read-only data that can be shared among various hosts compliant with the `+Filesystem Hierarchy Standard+` (FHS). This directory contains all application programs including the graphical desktops such as GNOME and establishes a secondary hierarchy in the file system. `+/usr+` holds several subdirectories, such as `+/usr/bin+`, `+/usr/sbin+`, `+/usr/local+`, and `+/usr/share/doc+`.
+`+/usr/bin+`::
+Contains generally accessible programs.
+`+/usr/sbin+`::
+Contains programs reserved for the system administrator, such as repair functions.
+`+/usr/local+`::
+In this directory the system administrator can install local, distribution-independent extensions.
+`+/usr/share/doc+`::
+Holds various documentation files and the release notes for your system. In the `+manual+` subdirectory find an online version of this manual. If more than one language is installed, this directory may contain versions of the manuals for different languages.
++
+Under `+packages+` find the documentation included in the software packages installed on your system. For every package, a subdirectory `/usr/share/doc/packages/_PACKAGENAME_` is created that often holds README files for the package and sometimes examples, configuration files or additional scripts.
++
+If HOWTOs are installed on your system `+/usr/share/doc+` also holds the `+howto+` subdirectory in which to find additional documentation on many tasks related to the setup and operation of Linux software.
+`+/var+`::
+Whereas `+/usr+` holds static, read-only data, `+/var+` is for data which is written during system operation and thus is variable data, such as log files or spooling data. For an overview of the most important log files you can find under `+/var/log/+`, refer to xref:troubleshooting.adoc#tab-trouble-info[Log files].
+ifdef::os-sled,os-osuse[]
+`+/windows+`::
+Only available if you have both Microsoft Windows and Linux installed on your system. Contains the Windows data available on the Windows partition of your system. Whether you can edit the data in this directory depends on the file system your Windows partition uses. If it is FAT32, you can open and edit the files in this directory. For NTFS, {productname} also includes write access support. However, the driver for the NTFS-3g file system has limited functionality.
+endif::[]

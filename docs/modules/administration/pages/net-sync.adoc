@@ -1,0 +1,229 @@
+// Converted from xml/net_sync.xml
+[#cha-net-rsync]
+= File copying with RSync
+:description: Discover how to configure and manage file synchronization across multiple devices, including home computers, workspaces, laptops, smartphones and tablets
+:revdate: 2026-01-16
+
+[abstract]
+--
+Today, a typical user has several computers: home and workplace machines, a laptop, a smartphone or a tablet. This makes the task of keeping files and documents in synchronization across multiple devices all the more important.
+--
+
+[WARNING]
+.Risk of data loss
+====
+Before you start using a synchronization tool, you should familiarize yourself with its features and functionality. Make sure to back up your important files.
+====
+
+[#sec-net-rsync-overview]
+== Conceptual overview
+
+For synchronizing a large amount of data over a slow network connection, Rsync offers a reliable method of transmitting only changes within files. This applies not only to text files but also binary files. To detect the differences between files, Rsync subdivides the files into blocks and computes check sums over them.
+
+Detecting changes requires certain computing power. So make sure that machines on both ends have enough resources, including RAM.
+
+Rsync can be particularly useful when large amounts of data containing only minor changes need to be transmitted regularly. This is often the case when working with backups. Rsync can also be useful for mirroring staging servers that store complete directory trees of Web servers to a Web server in a DMZ.
+
+Despite its name, Rsync is not a synchronization tool. Rsync is a tool that copies data only in one direction at a time. It does not and cannot do the reverse. If you need a bidirectional tool which can synchronize both source and destination, use Csync.
+
+[#sec-net-rsync-syntax]
+== Basic syntax
+
+Rsync is a command-line tool that has the following basic syntax:
+
+----
+rsync [OPTION] SOURCE [SOURCE]... DEST
+----
+
+You can use Rsync on any local or remote machine, provided you have access and write permissions. It is possible to have multiple _SOURCE_ entries. The _SOURCE_ and _DEST_ placeholders can be paths, URLs or both.
+
+Below are the most common Rsync options:
+
+`+-v+`::
+Outputs more verbose text
+`+-a+`::
+Archive mode; copies files recursively and preserves time stamps, user/group ownership, file permissions, and symbolic links
+`+-z+`::
+Compresses the transmitted data
+
+[NOTE]
+.Trailing slashes count
+====
+When working with Rsync, you should pay particular attention to trailing slashes. A trailing slash after the directory denotes the _content_ of the directory. No trailing slash denotes the _directory itself_.
+====
+
+[#sec-net-rsync-local-copy]
+== Copying files and directories locally
+
+The following description assumes that the current user has write permissions to the directory `+/var/backup+`. To copy a single file from one directory on your machine to another path, use the following command:
+
+----
+> rsync -avz backup.tar.xz /var/backup/
+----
+
+The file `+backup.tar.xz+` is copied to `+/var/backup/+`; the absolute path is `+/var/backup/backup.tar.xz+`.
+
+Do not forget to add the _trailing slash_ after the `+/var/backup/+` directory. If you do not insert the slash, the file `+backup.tar.xz+` is copied to `+/var/backup+` (file) _not_ inside the directory `+/var/backup/+`!
+
+Copying a directory is similar to copying a single file. The following example copies the directory `{exampleuser_plain}/` and its content into the directory `+/var/backup/+`:
+
+[subs="attributes+"]
+----
+> rsync -avz {exampleuser_plain} /var/backup/
+----
+
+Find the copy in the absolute path `/var/backup/{exampleuser_plain}/`.
+
+[#sec-net-rsync-remote-copy]
+== Copying files and directories remotely
+
+The Rsync tool is required on both machines. To copy files from or to remote directories requires an IP address or a domain name. A user name is optional if your current user names on the local and remote machine are the same.
+
+To copy the file `+file.tar.xz+` from your local host to the remote host `{exampledomain1ip}.1` with same users (being local and remote), use the following command:
+
+[subs="attributes+"]
+----
+> rsync -avz file.tar.xz  {exampleuser_plain}@{exampledomain1ip}.1:
+----
+
+Depending on what you prefer, these commands are also possible and equivalent:
+
+[subs="attributes+"]
+----
+> rsync -avz file.tar.xz {exampledomain1ip}.1:~
+> rsync -avz file.tar.xz {exampledomain1ip}.1:/home/{exampleuser_plain}
+----
+
+In all cases with standard configuration, you are prompted to enter your passphrase of the remote user. This command copies `+file.tar.xz+` to the home directory of user `{exampleuser_plain}` (normally `/home/{exampleuser_plain}`).
+
+Copying a directory remotely is similar to copying a directory locally. The following example copies the directory `{exampleuser_plain}/` and its content into the remote directory `+/var/backup/+` on the `{exampledomain1ip}.1` host:
+
+[subs="attributes+"]
+----
+> rsync -avz {exampleuser_plain} {exampledomain1ip}.1:/var/backup/
+----
+
+Assuming you have write permissions on the host `{exampledomain1ip}.1`, you can find the copy in the absolute path `/var/backup/{exampleuser_plain}`.
+
+[#sec-net-rsync-server]
+== Configuring and using an rsync server
+
+Rsync can run as a daemon (`+rsyncd+`) listening on default port 873 for incoming connections. This daemon can receive “copying targets”.
+
+The following description explains how to create an Rsync server on a `{wsi}` host with a _backup_ target. This target can be used to store your backups. To create an Rsync server, do the following:
+
+.Setting up an rsync server
+. [[st-rsync-server-mkdir]]On {wsi}, create a directory to store all your backup files. In this example, we use `+/var/backup+`:
++
+----
+# mkdir /var/backup
+----
+. Specify ownership. In this case, the directory is owned by user `{exampleuser_plain}` in group `+users+`:
++
+[subs="attributes+"]
+----
+# chown {exampleuser_plain}.users /var/backup
+----
+. Configure the rsyncd daemon.
++
+We separate the configuration file into a main file and certain “modules” which hold your backup target. This makes it easier to add additional targets later. Global values can be stored in `+/etc/rsyncd.d/*.inc+` files, whereas your modules are placed in `+/etc/rsyncd.d/*.conf+` files:
++
+.. Create a directory `+/etc/rsyncd.d/+`:
++
+----
+# mkdir /etc/rsyncd.d/
+----
+.. In the main configuration file `+/etc/rsyncd.conf+`, add the following lines:
++
+----
+# rsyncd.conf main configuration file
+log file = /var/log/rsync.log
+pid file = /var/lock/rsync.lock
+
+&merge /etc/rsyncd.d <1>
+&include /etc/rsyncd.d <2>
+----
++
+<1> Merges global values from `+/etc/rsyncd.d/*.inc+` files into the main configuration file.
+<2> Loads any modules (or targets) from `+/etc/rsyncd.d/*.conf+` files. These files should not contain any references to global values.
+.. Create your module (your backup target) in the file `+/etc/rsyncd.d/backup.conf+` with the following lines:
++
+[subs="attributes+"]
+----
+# backup.conf: backup module
+[backup] <1>
+   uid = {exampleuser_plain} <2>
+   gid = users 
+   path = /var/backup <3>
+   auth users = {exampleuser_plain} <4>
+   secrets file = /etc/rsyncd.secrets <5>
+   comment = Our backup target
+----
++
+<1> The _backup_ target. You can use any name you like. However, it is a good idea to name a target according to its purpose and use the same name in your `+*.conf+` file.
+<2> Specifies the user name or group name that is used when the file transfer takes place.
+<3> Defines the path to store your backups (from <<st-rsync-server-mkdir,this step>>).
+<4> Specifies a comma-separated list of allowed users. In its simplest form, it contains the user names that are allowed to connect to this module. In our case, only user `{exampleuser_plain}` is allowed.
+<5> Specifies the path of a file that contains lines with user names and plain passwords.
+.. Create the `+/etc/rsyncd.secrets+` file with the following content and replace _PASSPHRASE_:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} user:passwd
+{exampleuser_plain}:__PASSPHRASE__
+----
+.. Make sure the file is only readable by `+root+`:
++
+----
+# chmod 0600 /etc/rsyncd.secrets
+----
+. Start and enable the rsyncd daemon with:
++
+----
+# systemctl enable rsyncd
+# systemctl start rsyncd
+----
+. Test the access to your Rsync server:
++
+[subs="attributes+"]
+----
+> rsync {wsi}::
+----
++
+You should see a response that looks like this:
++
+----
+backup          Our backup target
+----
++
+Otherwise, check your configuration file, firewall and network settings.
+
+The above steps create an Rsync server that can now be used to store backups. The example also creates a log file listing all connections. This file is stored in `+/var/log/rsyncd.log+`. This is useful to debug your transfers.
+
+To list the content of your backup target, use the following command:
+
+[subs="attributes+"]
+----
+> rsync -avz {wsi}::backup
+----
+
+This command lists all files present in the directory `+/var/backup+` on the server. This request is also logged in the log file `+/var/log/rsyncd.log+`. To start an actual transfer, provide a source directory. Use `+.+` for the current directory. For example, the following command copies the current directory to your Rsync backup server:
+
+[subs="attributes+"]
+----
+> rsync -avz . {wsi}::backup
+----
+
+By default, Rsync does not delete files and directories when it runs. To enable deletion, the additional option `+--delete+` must be stated. To ensure that no newer files are deleted, the option `+--update+` can be used instead. Any conflicts that arise must be resolved manually.
+
+[#sec-net-rsync-summary]
+== More information
+
+Csync::
+Bidirectional file synchronization tool, see link:https://csync.org/[].
+RSnapshot::
+Creates incremental backups, see link:https://rsnapshot.org[].
+Unison::
+A file synchronization tool similar to CSync but with a graphical interface, see link:https://github.com/bcpierce00/unison[].
+Rear::
+A disaster recovery framework, see the link:https://documentation.suse.com/sle-ha/15/html/SLE-HA-all/cha-ha-rear.html[_Administration Guide_ of the {sle} {hasi}, chapter _Disaster Recovery with Rear (Relax-and-Recover)_].

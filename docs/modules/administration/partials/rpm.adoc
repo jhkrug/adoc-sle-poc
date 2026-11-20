@@ -1,0 +1,309 @@
+// Converted from xml/rpm.xml
+
+[#sec-rpm]
+== RPM—the package manager
+
+RPM (RPM Package Manager) is used for managing software packages. Its main commands are `+rpm+` and `+rpmbuild+`. The powerful RPM database can be queried by the users, system administrators and package builders for detailed information about the installed software.
+
+`+rpm+` has five modes: installing, uninstalling (or updating) software packages, rebuilding the RPM database, querying RPM bases or individual RPM archives, integrity checking of packages and signing packages. `+rpmbuild+` can be used to build installable packages from pristine sources.
+
+Installable RPM archives are packed in a special binary format. These archives consist of the program files to install and certain meta information used during the installation by `+rpm+` to configure the software package or stored in the RPM database for documentation purposes. RPM archives normally have the extension `+.rpm+`.
+
+[TIP]
+.Software development packages
+====
+For several packages, the components needed for software development (libraries, headers, include files, etc.) have been put into separate packages. These development packages are only needed if you want to compile software yourself (for example, the most recent {gnome} packages). They can be identified by the name extension `+-devel+`, such as the packages `+alsa-devel+` and `+gimp-devel+`.
+====
+
+[#sec-rpm-package-auth]
+=== Verifying package authenticity
+
+RPM packages have a {gpg} signature. To verify the signature of an RPM package, use the command `+rpm --checksig+` _PACKAGE_-1.2.3.rpm to determine whether the package originates from {suse} or from another trustworthy facility. This is especially recommended for update packages from the Internet.
+
+ifdef::os-sles,os-sled[]
+While fixing issues in the operating system, you might need to install a Problem Temporary Fix (PTF) into a production system. The packages provided by {suse} are signed against a special PTF key. However, in contrast to {sle} 11, this key is not imported by default on {sle} 12 systems. To manually import the key, use the following command:
+endif::[]
+
+ifdef::os-sles,os-sled[]
+----
+> sudo rpm --import \
+/usr/share/doc/packages/suse-build-key/suse_ptf_key.asc
+----
+endif::[]
+
+ifdef::os-sles,os-sled[]
+After importing the key, you can install PTF packages on your system.
+endif::[]
+
+[#sec-rpm-packages-manage]
+=== Managing packages: install, update, and uninstall
+
+Normally, the installation of an RPM archive is quite simple: `+rpm -i+` _PACKAGE_.rpm. With this command the package is installed, but only if its dependencies are fulfilled and if there are no conflicts with other packages. With an error message, `+rpm+` requests those packages that need to be installed to meet dependency requirements. In the background, the RPM database ensures that no conflicts arise—a specific file can only belong to one package. By choosing different options, you can force `+rpm+` to ignore these defaults, but this is only for experts. Otherwise, you risk compromising the integrity of the system and possibly jeopardize the ability to update the system.
+
+The options `+-U+` or `+--upgrade+` and `+-F+` or `+--freshen+` can be used to update a package (for example, `+rpm -F+` _PACKAGE_.rpm). This command removes the files of the old version and immediately installs the new files. The difference between the two versions is that `+-U+` installs packages that previously did not exist in the system, while `+-F+` merely updates previously installed packages. When updating, `+rpm+` updates configuration files carefully using the following strategy:
+
+* If a configuration file was not changed by the system administrator, `+rpm+` installs the new version of the appropriate file. No action by the system administrator is required.
+* If a configuration file was changed by the system administrator before the update, `+rpm+` saves the changed file with the extension `+.rpmorig+` or `+.rpmsave+` (backup file) and installs the version from the new package. This is done only if the originally installed file and the newer version are different. If this is the case, compare the backup file (`+.rpmorig+` or `+.rpmsave+`) with the newly installed file and make your changes again in the new file. Afterward, delete all `+.rpmorig+` and `+.rpmsave+` files to avoid problems with future updates.
+* `+.rpmnew+` files appear if the configuration file already exists _and_ if the `+noreplace+` label was specified in the `+.spec+` file.
+
+Following an update, `+.rpmsave+` and `+.rpmnew+` files should be removed after comparing them, so they do not obstruct future updates. The `+.rpmorig+` extension is assigned if the file has not previously been recognized by the RPM database.
+
+Otherwise, `+.rpmsave+` is used. In other words, `+.rpmorig+` results from updating from a foreign format to RPM. `+.rpmsave+` results from updating from an older RPM to a newer RPM. `+.rpmnew+` does not disclose any information to whether the system administrator has made any changes to the configuration file. A list of these files is available in `+/var/adm/rpmconfigcheck+`. Some configuration files (like `+/etc/httpd/httpd.conf+`) are not overwritten to allow continued operation.
+
+The `+-U+` switch is _not_ only an equivalent to uninstalling with the `+-e+` option and installing with the `+-i+` option. Use `+-U+` whenever possible.
+
+To remove a package, enter `+rpm -e+` _PACKAGE_. This command only deletes the package if there are no unresolved dependencies. It is theoretically impossible to delete Tcl/Tk, for example, as long as another application requires it. Even in this case, RPM calls for assistance from the database. If such a deletion is, for whatever reason, impossible (even if _no_ additional dependencies exist), it may be helpful to rebuild the RPM database using the option `+--rebuilddb+`.
+
+[#sec-rpm-delta]
+=== Delta RPM packages
+
+Delta RPM packages contain the difference between an old and a new version of an RPM package. Applying a delta RPM onto an old RPM results in a completely new RPM. It is not necessary to have a copy of the old RPM because a delta RPM can also work with an installed RPM. The delta RPM packages are even smaller in size than patch RPMs, which is an advantage when transferring update packages over the Internet. The drawback is that update operations with delta RPMs involved consume considerably more CPU cycles than plain or patch RPMs.
+
+The `+makedeltarpm+` and `+applydelta+` binaries are part of the delta RPM suite (package `+deltarpm+`) and help you create and apply delta RPM packages. With the following commands, you can create a delta RPM called `+new.delta.rpm+`. The following command assumes that `+old.rpm+` and `+new.rpm+` are present:
+
+----
+> sudo makedeltarpm old.rpm new.rpm new.delta.rpm
+----
+
+Using `+applydeltarpm+`, you can reconstruct the new RPM from the file system if the old package is already installed:
+
+----
+> sudo applydeltarpm new.delta.rpm new.rpm
+----
+
+To derive it from the old RPM without accessing the file system, use the `+-r+` option:
+
+----
+> sudo applydeltarpm -r old.rpm new.delta.rpm new.rpm
+----
+
+See `+/usr/share/doc/packages/deltarpm/README+` for technical details.
+
+[#sec-rpm-query]
+=== RPM queries
+
+With the `+-q+` option `+rpm+` initiates queries, making it possible to inspect an RPM archive (by adding the option `+-p+`) and to query the RPM database of installed packages. Several switches are available to specify the type of information required. See <<tab-rpm-query,Essential RPM query options>>.
+
+[#tab-rpm-query]
+.Essential RPM query options
+[cols="1,1"]
+|===
+a|`+-i+`
+a|Package information
+a|`+-l+`
+a|File list
+a|`+-f FILE+`
+a|Query the package that contains the file _FILE_ (the full path must be specified with _FILE_)
+a|`+-s+`
+a|File list with status information (implies `+-l+`)
+a|`+-d+`
+a|List only documentation files (implies `+-l+`)
+a|`+-c+`
+a|List only configuration files (implies `+-l+`)
+a|`+--dump+`
+a|File list with complete details (to be used with `+-l+`, `+-c+`, or `+-d+`)
+a|`+--provides+`
+a|List features of the package that another package can request with `+--requires+`
+a|`+--requires+`, `+-R+`
+a|Capabilities the package requires
+a|`+--scripts+`
+a|Installation scripts (preinstall, postinstall, uninstall)
+|===
+
+For example, the command `+rpm -q -i wget+` displays the information shown in <<aus-update-rpm-i,`+rpm -q -i wget+`>>.
+
+[#aus-update-rpm-i]
+.`+rpm -q -i wget+`
+====
+ifdef::os-osuse[]
+----
+Name        : wget
+Name        : wget
+Version     : 1.19.5
+Release     : lp151.4.1
+Architecture: x86_64
+Install Date: Tue 30 Jul 2019 02:26:21 PM PDT
+Group       : Productivity/Networking/Web/Utilities
+Size        : 2881903
+License     : GPL-3.0+
+Signature   : RSA/SHA256, Thu 11 Apr 2019 02:23:42 AM PDT, Key ID b88b2fd43dbdc284
+Source RPM  : wget-1.19.5-lp151.4.1.src.rpm
+Build Date  : Thu 11 Apr 2019 02:23:27 AM PDT
+Build Host  : cloud114
+Relocations : (not relocatable)
+Packager    : https://bugs.opensuse.org
+Vendor      : openSUSE
+URL         : https://www.gnu.org/software/wget/
+Summary     : A Tool for Mirroring FTP and HTTP Servers
+Description :
+Wget enables you to retrieve WWW documents or FTP files from a server.
+This can be done in script files or via the command line.
+Distribution: openSUSE Leap 15.1
+----
+endif::[]
+
+ifdef::os-sles,os-sled[]
+----
+Name        : wget
+Version     : 1.14
+Release     : 17.1
+Architecture: x86_64
+Install Date: Mon 30 Jan 2017 14:01:29 CET
+Group       : Productivity/Networking/Web/Utilities
+Size        : 2046483
+License     : GPL-3.0+
+Signature   : RSA/SHA256, Thu 08 Dec 2016 07:48:44 CET, Key ID 70af9e8139db7c82
+Source RPM  : wget-1.14-17.1.src.rpm
+Build Date  : Thu 08 Dec 2016 07:48:34 CET
+Build Host  : sheep09
+Relocations : (not relocatable)
+Packager    : https://www.suse.com/
+Vendor      : SUSE LLC <https://www.suse.com/>
+URL         : http://www.gnu.org/software/wget/
+Summary     : A Tool for Mirroring FTP and HTTP Servers
+Description :
+Wget enables you to retrieve WWW documents or FTP files from a server.
+This can be done in script files or via the command line.
+Distribution: SUSE Linux Enterprise 15
+----
+endif::[]
+====
+
+The option `+-f+` only works if you specify the complete file name with its full path. Provide as many file names as desired. For example:
+
+----
+> rpm -q -f /bin/rpm /usr/bin/wget
+rpm-4.14.1-lp151.13.10.x86_64
+wget-1.19.5-lp151.4.1.x86_64
+----
+
+If only part of the file name is known, use a shell script as shown in <<dat-rpm-search,Script to search for packages>>. Pass the partial file name to the script shown as a parameter when running it.
+
+[#dat-rpm-search]
+.Script to search for packages
+====
+----
+#! /bin/sh
+for i in $(rpm -q -a -l | grep $1); do
+    echo "\"$i\" is in package:"
+    rpm -q -f $i
+    echo ""
+done
+----
+====
+
+The command `+rpm -q --changelog+` _PACKAGE_ displays a detailed list of change information about a specific package, sorted by date.
+
+With the installed RPM database, verification checks can be made. Initiate these with `+-V+`, or `+--verify+`. With this option, `+rpm+` shows all files in a package that have been changed since installation. `+rpm+` uses eight character symbols to give some hints about the following changes:
+
+[#tab-rpm-verify]
+.RPM verify options
+[cols="1,1"]
+|===
+a|`+5+`
+a|MD5 check sum
+a|`+S+`
+a|File size
+a|`+L+`
+a|Symbolic link
+a|`+T+`
+a|Modification time
+a|`+D+`
+a|Major and minor device numbers
+a|`+U+`
+a|Owner
+a|`+G+`
+a|Group
+a|`+M+`
+a|Mode (permissions and file type)
+|===
+
+In the case of configuration files, the letter `+c+` is printed. For example, for changes to `+/etc/wgetrc+` (`+wget+` package):
+
+----
+> rpm -V wget
+S.5....T c /etc/wgetrc
+----
+
+The files of the RPM database are placed in `+/var/lib/rpm+`. If the partition `+/usr+` has a size of 1 GB, this database can occupy nearly 30 MB, especially after a complete update. If the database is much larger than expected, it is useful to rebuild the database with the option `+--rebuilddb+`. Before doing this, make a backup of the old database. The `+cron+` script `+cron.daily+` makes daily copies of the database (packed with gzip) and stores them in `+/var/adm/backup/rpmdb+`. The number of copies is controlled by the variable `+MAX_RPMDB_BACKUPS+` (default: `+5+`) in `+/etc/sysconfig/backup+`. The size of a single backup is approximately 1 MB for 1 GB in `+/usr+`.
+
+[#sec-rpm-sources]
+=== Installing and compiling source packages
+
+All source packages carry a `+.src.rpm+` extension (source RPM).
+
+[NOTE]
+.Installed source packages
+====
+Source packages can be copied from the installation medium to the hard disk and unpacked with {yast}. They are not, however, marked as installed (`+[i]+`) in the package manager. This is because the source packages are not entered in the RPM database. Only _installed_ operating system software is listed in the RPM database. When you “install” a source package, only the source code is added to the system.
+====
+
+The following directories must be available for `+rpm+` and `+rpmbuild+` in `+/usr/src/packages+` (unless you specified custom settings in a file like `+/etc/rpmrc+`):
+
+`+SOURCES+`::
+for the original sources (`+.tar.bz2+` or `+.tar.gz+` files, etc.) and for distribution-specific adjustments (mostly `+.diff+` or `+.patch+` files)
+`+SPECS+`::
+for the `+.spec+` files, similar to a meta Makefile, which control the _build_ process
+`+BUILD+`::
+all the sources are unpacked, patched and compiled in this directory
+`+RPMS+`::
+where the completed binary packages are stored
+`+SRPMS+`::
+here are the source RPMs
+
+When you install a source package with {yast}, all the necessary components are installed in `+/usr/src/packages+`: the sources and the adjustments in `+SOURCES+` and the relevant `+.spec+` file in `+SPECS+`.
+
+[WARNING]
+.System integrity
+====
+Do not experiment with system components (`+glibc+`, `+rpm+`, etc.), because this endangers the stability of your system.
+====
+
+The following example uses the `+wget.src.rpm+` package. After installing the source package, you should have files similar to those in the following list:
+
+----
+/usr/src/packages/SOURCES/wget-1.19.5.tar.bz2
+/usr/src/packages/SOURCES/wgetrc.patch
+/usr/src/packages/SPECS/wget.spec
+----
+
+`+rpmbuild+` `-b__X__` `+/usr/src/packages/SPECS/wget.spec+` starts the compilation. _X_ is a wild card for various stages of the build process (see the output of `+--help+` or the RPM documentation for details). The following is merely a brief explanation:
+
+`+-bp+`::
+Prepare sources in `+/usr/src/packages/BUILD+`: unpack and patch.
+`+-bc+`::
+Do the same as `+-bp+`, but with additional compilation.
+`+-bi+`::
+Do the same as `+-bp+`, but with additional installation of the built software. Caution: if the package does not support the BuildRoot feature, you might overwrite configuration files.
+`+-bb+`::
+Do the same as `+-bi+`, but with the additional creation of the binary package. If the compile was successful, the binary should be in `+/usr/src/packages/RPMS+`.
+`+-ba+`::
+Do the same as `+-bb+`, but with the additional creation of the source RPM. If the compilation was successful, the binary should be in `+/usr/src/packages/SRPMS+`.
+`+--short-circuit+`::
+Skip some steps.
+
+The binary RPM created can now be installed with `+rpm+` `+-i+` or, preferably, with `+rpm+` `+-U+`. Installation with `+rpm+` makes it appear in the RPM database.
+
+Keep in mind that the `+BuildRoot+` directive in the spec file is deprecated. If you still need this feature, use the `+--buildroot+` option as a workaround.
+
+[#sec-rpm-build]
+=== Compiling RPM packages with build
+
+The danger with many packages is that unwanted files are added to the running system during the build process. To prevent this use `+build+`, which creates a defined environment in which the package is built. To establish this chroot environment, the `+build+` script must be provided with a complete package tree. This tree can be made available on the hard disk, via NFS, or from DVD. Set the position with `+build --rpms+` _DIRECTORY_. Unlike `+rpm+`, the `+build+` command looks for the `+.spec+` file in the source directory. To build `+wget+` (like in the above example) with the DVD mounted in the system under `+/media/dvd+`, use the following commands as `+root+`:
+
+----
+# cd /usr/src/packages/SOURCES/
+# mv ../SPECS/wget.spec .
+# build --rpms /media/dvd/suse/ wget.spec
+----
+
+Subsequently, a minimum environment is established at `+/var/tmp/build-root+`. The package is built in this environment. Upon completion, the resulting packages are located in `+/var/tmp/build-root/usr/src/packages/RPMS+`.
+
+The `+build+` script offers several additional options. For example, cause the script to prefer your own RPMs, omit the initialization of the build environment or limit the `+rpm+` command to one of the above-mentioned stages. Access additional information with `+build+` `+--help+` and by reading the `+build+` man page.
+
+[#sec-rpm-tools]
+=== Tools for RPM archives and the RPM database
+
+Midnight Commander (`+mc+`) can display the contents of RPM archives and copy parts of them. It represents archives as virtual file systems, offering all usual menu options of Midnight Commander. Display the `+HEADER+` with kbd:[F3]. View the archive structure with the cursor keys and kbd:[Enter]. Copy archive components with kbd:[F5].
+
+A full-featured package manager is available as a {yast} module. For details, see xref:yast2-sw.adoc[].

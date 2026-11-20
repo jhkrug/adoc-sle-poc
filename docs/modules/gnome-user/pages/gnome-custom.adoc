@@ -1,0 +1,258 @@
+// Converted from xml/gnome_custom.xml
+[#cha-gnome-settings]
+= Customizing your settings
+:description: Configure the GNOME desktop environment with custom themes and settings to personalize the user experience
+:revdate: 2026-01-16
+
+[abstract]
+--
+The look and feel of {gnome} desktop can be changed to suit your personal tastes and needs.
+--
+
+You can change the way the {gnome} desktop looks and behaves to suit your personal tastes and needs. Some possible changes of settings are:
+
+* Desktop background, as described in <<sec-gnome-settings-look-deskback,Changing the desktop background>>
+* Keyboard and mouse configuration, as described in <<sec-gnome-settings-hardware-keyboard,Configuring the keyboard>> and <<sec-gnome-settings-hardware-mouse,Configuring the mouse and touchpad>>
+* Sounds, as described in <<sec-gnome-settings-hardware-audio,Configuring sound settings>>
+
+These settings and others can be changed in the {gnome} *Settings* dialog. It focuses on look and feel, personal settings and preferences of your {gnome} desktop.
+
+To change system-wide settings, use {yast} instead. This is the case for administrator settings (including most of the hardware, the graphical user interface, Internet access, security settings, user administration, software installation and system updates and information). For information about using {yast}, refer to the integrated {yast} help texts or to the 
+ifdef::os-sles,os-sled[xref:deployment:index.adoc[]]
+ifdef::os-osuse[xref:startup:index.adoc[]]
+{empty}.
+
+To access the {gnome} settings dialog, right-click the desktop and select *Settings*.
+
+[#sec-gnome-settings-look-deskback]
+== Changing the desktop background
+
+The desktop background is the image or color that is applied to your desktop. You can also customize the image shown when the screen is locked.
+
+To change the desktop background:
+
+. Right-click the desktop and choose *Change Background*.
++
+.{gnome} Background settings
+image::preferences_background.png["Change Background dialog showing options to customize desktop and lock screen appearances",width=80%]
+. Select one of the wallpapers (preconfigured images distributed with your system) shown in the content area.
+. Alternatively, click *Add Picture* to select an image from your `+Pictures+` directory (`+~/Pictures+`) or another location in your file system.
+. Close the *Settings* dialog.
++
+The new background is now shown on your desktop.
+
+[#sec-gnome-settings-lang]
+== Configuring language settings
+
+{productname} can be configured to use any of several languages. The language setting determines the language of dialogs and menus and can also determine the keyboard and clock layout.
+
+To configure your language settings, right-click the desktop and choose *Settings*. Now choose *Region & Language*. This dialog window has two sections: *Your Account* that controls personal language and format settings for the current user, and *Login Screen* that manages language settings applied to the system login screen that all users can see.
+
+Here you can choose:
+
+* {empty}
++
+*Language*. Choose a language from the list. For the change to take effect, you are prompted to *Restart* the desktop session. To do so, you must log out of your session and log back in afterward.
+* {empty}
++
+*Formats*: To change the formats for date, number, currency and related options, choose a country from the list. For the change to take effect, you must log out of your session and log back in afterward.
+
+[NOTE]
+.Settings made using `+ibus-setup+` do not take effect
+====
+On {gnome}, settings made using `+ibus-setup+` do not take effect. `+ibus-setup+` can only be used to configure IceWM. Instead, always use the *Settings* application:
+
+* To change input methods, select *Keyboard* in the navigation pane of the *Settings* dialog.
+* To change the key combination that switches between input methods, use menu:Keyboard[Keyboard Shortcuts]. Then select the category *Typing* and the entry *Switch to next input source*.
+====
+
+[#sec-gnome-settings-hardware-keyboard]
+== Configuring the keyboard
+
+Refer to xref:gnome-accessibility.adoc#sec-general-accessibility-mobility[Keyboard and mouse] for additional settings, such as key auto-repetition and cursor blink rate, and accessibility features. To configure your keyboard layout, refer to <<sec-gnome-settings-lang,Configuring language settings>>.
+
+To modify keyboard shortcuts, right-click the desktop and choose *Settings*. Now select menu:Keyboard[Keyboard Shortcuts].
+
+This dialog shows the keyboard shortcuts that are configured for your system. To edit a key combination, click the entry that you want to change. To set a new key combination, press the respective keys. To disable a shortcut, press kbd:[Backspace] instead.
+
+[#sec-gnome-settings-xmodmap]
+== Using XCompose to type special characters
+
+{gnome} supports fast input source (keyboard layout) switching (<<sec-gnome-settings-lang,Configuring language settings>>). However, if you are using `+xmodmap+` to create custom keymaps, it may not work correctly when you switch between multiple input sources. For example, you have two input sources, English and German. Your `+xmodmap+` commands work fine in the first input source you select, but when you switch to the second input source the same `+xmodmap+` commands produce incorrect output. `+xmodmap+` is an older protocol and does not have a full view of the keyboard layout, so in more complex situations it causes errors.
+
+An alternative method is to use `+xcompose+`, a special utility that allows you to define custom keyboard shortcuts for special characters. This works with any input source. This procedure guides you through installing and configuring XCompose:
+
+. Install XCompose:
++
+----
+> sudo zypper install libX11-devel
+----
+. Assign a compose key using the *Tweaks* tool in the *Activities* overview. Press this key in sequence with one or two additional keys to print a special character. The keys must be pressed in the correct sequence, starting with the compose key.
+. In the *Tweaks* tool, navigate to menu:Keyboard[Compose Key] and select your command key:
++
+[#fig-gnome-settings-keyboard-compose]
+.Enabling the compose key in Tweaks
+image::gnome-tweaks-compose.png["Keyboard settings showing the Compose Key configuration, currently set to the Right Ctrl key for typing special characters",width=80%]
+. Next, create a `+~/.XCompose+` file. This is the default per-user configuration file. Enter your key mappings in this file, as in this example:
++
+----
+include "%L"
+      
+      <Multi_key> <a> : "α"
+      <Multi_key> <b> : "β"
+      <Multi_key> <exclam>  : "¡"
+----
++
+`+include "%L"+` includes the default compose file for your locale, for example, `+/usr/share/X11/locale/en_US.UTF-8+`.
++
+The remaining lines specify the compose key, the other key presses, and the symbols they are intended to print.
+. After you make changes to your compose file, log out of your session and log back in to activate the changes.
+
+Your key assignments are case-sensitive. `+~/.XCompose+` overrides the system files. Use the compose file for your locale to see what is already configured, and to copy symbols from it into your personal compose file. (These files may have a lot of whitespace at the beginning; they are not empty so keep scrolling.) As always, watch out for conflicts with the other keymaps on your system.
+
+For additional information, see `+man xcompose+`.
+
+[#sec-gnome-settings-hardware-bluetooth]
+== Configuring Bluetooth settings
+
+The Bluetooth module lets you set the visibility of your machine over Bluetooth and connect to available Bluetooth devices. To configure Bluetooth connectivity, follow these steps:
+
+. Right-click the desktop and choose *Settings*. Now choose *Bluetooth*.
+. To use Bluetooth, set the switch at the top on.
++
+Your computer is visible as long as the Bluetooth panel is open.
++
+[NOTE]
+.Temporary visibility
+====
+The *Visibility* switch is meant to be used only temporarily. You only need to turn it on for the initial setup of a connection to a Bluetooth device. After the connection has been established, turn off the switch.
+====
+. On the device you want to connect, turn on Bluetooth connectivity and visibility, too.
+. If the device has been found and is shown in the list, click it to establish a connection to it.
++
+You are asked whether the PINs of the two devices match.
+. If the PINs match, confirm this on _both_ your computer and the device.
++
+The pairing is now established. On your computer, the device in the list is shown as *Connected*.
++
+// REMARK: jufa: 2022-04-08 can't take screenshot as bluetooth is not enabled on VM. Commented out the screenshot
++
+Depending on the device type, it is also now available in other applications, for example, as a storage device in {nautilus}, or a sound device in playback applications.
+
+To connect to a paired Bluetooth device, select the device in the list. In the dialog that appears, turn the *Connection* switch on. You can send files to the connected device by using the *Send Files* button. If you are connected to a device such as a mobile phone, you can use it as a network device by activating the appropriate option.
+
+To remove a connected device from the list on your computer, click *Remove Device* and confirm your choice. To completely remove the pairing, you also need to do so on your device.
+
+[#sec-gnome-settings-hardware-power]
+== Configuring power settings
+
+Settings available in this dialog depend on your hardware. In the following, the options that are typically available when using a laptop are described. On a workstation, many of the described options are not available.
+
+. Right-click the desktop and choose *Settings*.
+. In the navigation pane, select *Power*.
+. In the *Power Saving Options* of the content area, set after how many minutes to blank the screen (or to not blank it at all).
+. In the *Automatic Suspend* section of the dialog, configure a time after which the computer is paused after a certain period of inactivity.
+
+[#sec-gnome-settings-hardware-mouse]
+== Configuring the mouse and touchpad
+
+To modify mouse and touchpad options, right-click the desktop and choose *Settings*. Then select *Mouse & Touchpad*.
+
+[#fig-gnome-settings-hardware-mouse]
+.*Mouse and Touchpad* settings dialog
+image::preferences_mouse.png["Mouse and Touchpad preferences dialog showing essential pointer configurations, including primary button selection, mouse speed and natural scrolling toggle",width=80%]
+
+* In the *General* section of the dialog, you can set the *Primary Button* orientation (left or right).
+* In the *Mouse* section of the dialog, use *Pointer Speed* to adjust the sensitivity of the mouse pointer.
++
+With *Scroll Direction*, you can set the direction in which the content moves when scrolling with the mouse. When set to *Traditional*, content moves _up_ while pushing the scroll wheel _down_. When set to *Natural*, content moves in the same direction as the mouse wheel movement.
+* To test your settings, click *Test Your Settings* and try the pointing device.
+
+For configuration of mouse accessibility options, refer to the xref:gnome-accessibility.adoc#sec-general-accessibility-mobility[Keyboard and mouse].
+
+[#sec-gnome-settings-hardware-printer]
+== Installing and configuring printers
+
+The *Printers* dialog lets you connect to any available local or remote CUPS server and configure printers.
+
+To start the Printers module, right-click the desktop and choose *Settings*. Now choose *Printers*. For detailed information, refer to xref:gnome-print.adoc[].
+
+[#sec-gnome-settings-hardware-screen]
+== Configuring screens
+
+To specify resolution and orientation for your screen or to configure multiple screens, right-click the desktop and choose *Display Settings*. The configuration options available in this dialog depend on whether you have a single or a multiple monitor setup.
+
+[#sec-gnome-settings-hardware-screen-single]
+=== Changing settings: single monitor setup
+
+[#fig-gnome-settings-hardware-screen-single]
+.Single monitor settings dialog
+image::preferences_screen_single.png["Single monitor settings dialog showing orientation, resolution and scale adjustments and Night Light scheduling",width=80%]
+
+*Orientation*::
+If you use a monitor which can change its orientation, you need to adjust the display before turning the monitor. Use *Orientation* to do this. Choose the orientation your monitor supports, close the selection box and click *Apply*.
+*Resolution*::
+To change the screen resolution, click *Resolution*. Choose a new value and click *Apply*.
+*Scale*::
+Select between two scaling options to adjust UI element size.
+*Night Light*::
+If you are working in a dark environment, your eyes can easily be strained by the monitor. To prevent this, change the screen's color palette to a warmer tone by turning on *Night Light*. Under *Schedule*, you can automate this setting by specifying at which time *Night Light* should be turned on and off.
+
+[#sec-gnome-settings-hardware-screen-multi]
+=== Changing settings: multiple monitor setup
+
+To set up an additional monitor, connect the monitor to your computer. If your system does not recognize it immediately, or you want to adjust the settings, do the following:
+
+. Open the *Activities* overview and start typing `+Displays+`.
+. Click *Displays* to open the panel.
+. In the display arrangement diagram, drag your displays to the relative positions you want.
+. Click *Primary Display* to choose your primary display.
++
+The primary display is the one with the *top bar*, and where the *Activities* overview is shown.
+. Select the orientation, resolution or scale, and refresh rate.
+. Click *Apply*. The new settings are applied for 20 seconds before reverting. If you are happy with the settings, click *Keep Changes*.
+
+With two or more screens, these display modes are available:
+
+*Join Displays*::
+The screen edges are joined so windows and dialogs can pass from one display to another.
+*Mirror*::
+The same content is shown on all displays, with the same resolution and orientation for all.
+*Single Display*::
+Only one display is configured, effectively turning off the other displays. For example, an external monitor connected to a docked laptop with the lid closed.
+
+For further instructions, refer to <<sec-gnome-settings-hardware-screen-single,Changing settings: single monitor setup>>.
+
+[#sec-gnome-settings-hardware-audio]
+== Configuring sound settings
+
+The *Sound* tool lets you manage sound devices. Here you can select the general output volume or turn the sound off completely.
+
+To open the sound settings, right-click the desktop and choose *Settings*. Now choose *Sound*.
+
+.Configuring sound settings
+image::sound_devices.png["Sound settings dialog showing output and input device selection, balance and volume controls and alert sound settings",width=80%]
+
+Use the *Output* category to select the device for sound output. Choose the *Balance* setting you prefer.
+
+Use the *Input* category to set the input device volume or to mute the input temporarily. If you have more than one sound device, you can also select a default device for audio input in the *Input Device* list.
+
+You can also choose an *Alert Sound*.
+
+[#sec-gnome-settings-prefapps]
+== Setting default applications
+
+. To change the default application for common tasks such as browsing the Internet, sending e-mails or playing multimedia files, right-click the desktop and select *Settings*. Now choose *Default Apps*.
++
+.Default Apps
+image::preferences_preferred_apps.png["Default Apps dialog showing options to select preferred applications for Web browsing, e-mail, calendar, music, videos and photos",width=80%]
+. You can choose an application to handle Web, mail, calendar, music, videos or photographs. Select one of the available applications from the drop-down boxes for the task of your choice.
+
+[#sec-gnome-settings-share]
+== Setting session sharing preferences
+
+To open a configuration dialog for allowing remote logins via SSH, right-click the desktop and choose *Settings*. Then choose *Sharing*.
+
+Before you can share anything, you need to turn on the switch in the upper part of the dialog. The switch also helps you if you quickly need to disable all sharing options.
+
+To enable logging in via SSH, click *Remote Login* and enter the administrator password.

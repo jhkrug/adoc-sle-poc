@@ -1,0 +1,7 @@
+= {productname} {productnumber} documentation
+
+Converted from DocBook by the doc-sle Antora spike.
+
+* xref:rmt:index.adoc[]
+* xref:gnome-user:index.adoc[]
+* xref:administration:index.adoc[]

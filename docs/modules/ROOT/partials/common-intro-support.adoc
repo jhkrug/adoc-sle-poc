@@ -1,0 +1,47 @@
+// Converted from xml/common_intro_support.xml
+
+== Support
+
+Find the support statement for {productname} and general information about technology previews below. For details about the product lifecycle, see link:https://www.suse.com/lifecycle[]. 
+ifdef::cond-virt[For the virtualization support status, see xref:virtualization:virt-support.adoc[].]
+
+If you are entitled to support, find details on how to collect information for a support ticket at link:https://documentation.suse.com/sles-15/html/SLES-all/cha-adm-support.html[].
+
+=== Support statement for {productname}
+
+To receive support, you need an appropriate subscription with {suse}. To view the specific support offers available to you, go to link:https://www.suse.com/support/[] and select your product.
+
+The support levels are defined as follows:
+
+L1::
+Problem determination, which means technical support designed to provide compatibility information, usage support, ongoing maintenance, information gathering and basic troubleshooting using available documentation.
+L2::
+Problem isolation, which means technical support designed to analyze data, reproduce customer problems, isolate a problem area and provide a resolution for problems not resolved by Level 1 or prepare for Level 3.
+L3::
+Problem resolution, which means technical support designed to resolve problems by engaging engineering to resolve product defects which have been identified by Level 2 Support.
+
+For contracted customers and partners, {productname} is delivered with L3 support for all packages, except for the following:
+
+* Technology previews.
+* Sound, graphics, fonts, and artwork.
+* Packages that require an additional customer contract.
+ifdef::os-sles[]
+* Some packages shipped as part of the module _Workstation Extension_ are L2-supported only.
+endif::[]
+* Packages with names ending in `+-devel+` (containing header files and similar developer resources) will only be supported together with their main packages.
+
+{suse} will only support the usage of original packages. That is, packages that are unchanged and not recompiled.
+
+=== Technology previews
+
+Technology previews are packages, stacks, or features delivered by {suse} to provide glimpses into upcoming innovations. Technology previews are included for your convenience to give you a chance to test new technologies within your environment. We would appreciate your feedback. If you test a technology preview, please contact your {suse} representative and let them know about your experience and use cases. Your input is helpful for future development.
+
+Technology previews have the following limitations:
+
+* Technology previews are still in development. Therefore, they may be functionally incomplete, unstable, or otherwise _not_ suitable for production use.
+* Technology previews are _not_ supported.
+* Technology previews may only be available for specific hardware architectures.
+* Details and functionality of technology previews are subject to change. As a result, upgrading to subsequent releases of a technology preview may be impossible and require a fresh installation.
+* {suse} may discover that a preview does not meet customer or market needs, or does not comply with enterprise standards. Technology previews can be removed from a product at any time. {suse} does not commit to providing a supported version of such technologies in the future.
+
+For an overview of technology previews shipped with your product, see the release notes at link:{sc-rn}[].

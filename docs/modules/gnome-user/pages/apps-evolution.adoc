@@ -1,0 +1,468 @@
+// Converted from xml/apps_evolution.xml
+[#cha-gnome-evolution]
+= Evolution: e-mailing and calendaring
+:description: Configure Evolution to manage email accounts, contacts, and calendar events, streamlining communication and organization across multiple devices
+:revdate: 2026-01-16
+
+[abstract]
+--
+Learn how to manage e-mails, contact information, and calendars with Evolution.
+--
+
+Evolution makes storing, organizing, and retrieving your personal information easy, so you can work and communicate with others more effectively. It is a professional groupware program and an important part of the Internet-connected desktop.
+
+Evolution helps you work in a group by handling e-mail, contact information, and one or more calendars. It can do that on one or several computers, connected directly or over a network, for one person or for large groups.
+
+It also helps you accomplish common daily tasks quickly. For example, you can easily reuse appointment or contact information sent to you by e-mail, or send e-mails to a contact or appointment. If you receive lots of e-mails, you can use advanced features like search folders, which let you save searches as though they were ordinary e-mail folders.
+
+This chapter introduces you to Evolution and helps you get started. For more information, refer to the application help.
+
+[#sec-gnome-evolution-first-start]
+== Starting Evolution
+
+To start Evolution, open the *Activities* overview by pressing kbd:[Meta] and search for `+evol+`.
+
+[#sec-gnome-evolution-first-start-setup-assistant]
+== Setup assistant
+
+The first time you start Evolution, it opens an assistant to help you set up e-mail accounts and import data from other applications.
+
+The *Evolution Accounts* Assistant helps you provide all the required information.
+
+[#sec-gnome-evolution-first-start-restore]
+=== Restoring from a backup file
+
+When the assistant starts, the *Welcome* page is displayed. Proceed to the *Restore from Backup* page. If you previously backed up your Evolution configuration and want to restore it, activate the restoration option and select the backup file in the file chooser dialog.
+
+Otherwise, proceed to *Identity*.
+
+[#sec-gnome-evolution-first-start-setup-assistant-identity]
+=== Defining your identity
+
+The *Identity* page is the next step in the assistant.
+
+. Type in your *Full Name* and *E-mail Address*.
+. Type an address in the *Reply-To* field.
++
+Only use this field if you want replies to e-mails from you to be sent to a different e-mail address.
+. Type your organization name in the *Organization* field.
++
+This is the company where you work, or the organization you represent when you send e-mails.
+. Proceed to the next page.
+
+[#sec-gnome-evolution-first-start-setup-assistant-receiving]
+=== Receiving E-mail
+
+The *Receiving E-mail* page lets you determine the server that you want to use to receive e-mails.
+
+You need to specify the type of server you want to receive e-mails from. If you are not sure about the type of server, contact your 
+ifdef::os-sles,os-sled[system administrator or]
+ e-mail provider.
+
+Select a server type in the *Server Type* list. The following is a list of available server types:
+
+.Exchange Web services:
+Allows you to connect to newer Microsoft Exchange servers to synchronize e-mail, calendar, and contact information. This is only available if you have installed the connector for Microsoft{asterisk} Exchange{asterisk} which is packaged in `+evolution-ews+` .
+
+.IMAP:
+Keeps the e-mail on your server, so you can access your e-mail from multiple systems.
+
+.POP:
+Downloads your e-mail to your hard disk for permanent storage, freeing up space on the e-mail server.
+
+.USENET news:
+Connects to a news server and downloads a list of available news digests.
+
+.Local delivery:
+If you want to move e-mail from the spool and store it in your home directory, you need to provide the path to the mail spool you want to use. If you want to leave mail in your system’s spool files, select *Standard Unix Mbox Spool File* instead.
+
+.MH format mail directories:
+To download your e-mail using `+mh+` or an `+mh+`-style program, you need to provide the path to the mail directory you want to use.
+
+.Maildir format mail directories:
+If you download your e-mail using Qmail or another Maildir-style program, select this option. You need to provide the path to the mail directory you want to use.
+
+.Standard Unix mbox spool file or directory:
+To read and store e-mail in the mail spool on your local system, select this option. You need to provide the path to the mail spool you want to use.
+
+.None:
+If you do not plan to check e-mail with this account, select this option. There are no configuration options.
+
+[#sec-gnome-evolution-first-start-setup-assistant-receiving-remote]
+==== Configuration options for IMAP{plus}, POP, and USENET
+
+If you selected IMAP{plus}, POP, or USENET News as the server type, you need to specify additional information.
+
+If you are not sure about the correct server address, user name or security setting, contact your 
+ifdef::os-sles,os-sled[system administrator or]
+ e-mail provider.
+
+. Type the host name of your e-mail server into the text box *Server*.
+. Type your user name for the account into the text box *Username*.
+. Choose a security setting supported by your mail server. For security reasons, avoid using *No Encryption*.
+. Select your authentication type in the *Authentication* section. To have Evolution check for supported authentication types, click *Check for Supported Types*. Then choose one of the options without a strikeout.
++
+Some servers do not announce the authentication mechanisms they support. Therefore clicking this button is not a guarantee that the shown mechanisms actually work.
+. Proceed to the next page.
+
+[#sec-gnome-evolution-first-start-setup-assistant-receiving-exchange]
+==== Configuration options for Exchange Web Services
+
+If you selected Exchange Web Services as the server type, you need to specify additional information.
+
+If you are not sure about the correct server address, user name or security setting, contact your 
+ifdef::os-sles,os-sled[system administrator or]
+ e-mail provider.
+
+. Type your user name for the account into the text box *Username*.
+. Type the EWS URL of your e-mail server into the text box *Host URL*.
++
+If available, type the address of an Offline Address Book into the text box *OAB URL*.
++
+If your login name and the name of your mailbox differ, select *Open Mailbox of other user*. Then type the mailbox name into the text box below.
+. Select an authentication type in the *Authentication* list. To have Evolution check for supported authentication types, click *Check for Supported Types*. Then choose one of the options without a strikeout.
++
+Some servers do not announce the authentication mechanisms they support. Therefore clicking this button is not a guarantee that the shown mechanisms actually work.
+. Proceed to the next page.
+
+[#sec-gnome-evolution-first-start-setup-assistant-receiving-local]
+==== Local configuration options
+
+If you selected *Local Delivery*, *MH-Format Mail Directories*, *Maildir-Format Mail Directories*, or *Standard Unix Mbox Spool File or Directory*, specify the path to the local files or directories in the path field.
+
+[#sec-gnome-evolution-first-start-setup-assistant-receiving-opts]
+=== Receiving options
+
+After you have selected a mail delivery mechanism, you can set some preferences for its behavior.
+
+[#sec-gnome-evolution-first-start-setup-assistant-receiving-opts-imap]
+==== IMAP receiving options
+
+If you selected IMAP as the receiving server type, you will now see a page of options to specify the behavior of Evolution.
+
+. You can choose from the following options:
++
+*Check for new messages every \... minutes*::
+Select if you want Evolution to automatically check for new mail. Set how often to check.
+*Check for new message in all folders*::
+Select if you want to check for new messages in all folders.
+*Check for new message in subscribed folders*::
+Select if you want to check for new messages in subscribed folders.
+*Use quick resync if the server supports it*::
+Select to use Quick Resync which makes browsing mail faster on supported servers.
+*Listen for server change notifications*::
+Select if you want Evolution to listen for change notifications. If you activate this option, Evolution will show you mail as it arrives. Therefore, you can usually deactivate *Check for new messages every \... minutes*.
+*Show only subscribed folders*::
+Select if you want Evolution to show only subscribed folders.
++
+You can unsubscribe from folders to cut down on the number of irrelevant folders shown in Evolution and to reduce the amount of mail that is downloaded.
+*Apply filters to new messages in all folders*::
+Select if you want to apply filters to new messages, and whether to do so in all folders or only in the Inbox folder.
+*Check new messages for junk contents*::
+Select if you want to check new messages for junk content, and whether to do so in all folders or only in the Inbox folder.
+*Automatically synchronize remote mail locally*::
+Select this to download all your mail, so you can read it offline.
+. Proceed to the next page.
+
+[#sec-gnome-evolution-first-start-setup-assistant-receiving-opts-pop]
+==== POP receiving options
+
+If you selected POP as the receiving server type, you will now see a page of options to specify the behavior of Evolution.
+
+. You can choose from the following options:
++
+*Check for new messages every \... minutes*::
+Select if you want Evolution to automatically check for new mail. Set how often to check.
+*Leave messages on server*::
+Select if you want to leave your mail on the server or delete it on the server when you download it to your computer. You can also set a period of time for which the messages will be kept on the server after they were downloaded.
+*Disable support for all POP3 extensions*::
+Disabling POP3 extensions can help with old or misconfigured servers. Select if you have trouble receiving mail.
+. Proceed to the next page.
+
+[#sec-gnome-evolution-first-start-setup-assistant-receiving-opts-usenet]
+==== USENET news receiving options
+
+If you selected USENET News as the receiving server type, you will now see a page of options to specify the behavior of Evolution.
+
+. You can choose from the following options:
++
+*Check for new messages every \... minutes*::
+Select if you want Evolution to automatically check for new mail. Set how often to check.
+*Apply filters to new messages in all folders*::
+Select if you want to apply filters to new messages.
+*Show folders in short notations*::
+Abbreviate folder names, for example, `+comp.os.linux+` appears as `+c.o.linux+`.
+*In the subscription dialog, show relative folder names*::
+Display only the name of the folder. For example, the folder `+evolution.mail+` would appear as `+evolution+`.
+. Proceed to the next page.
+
+[#sec-gnome-evolution-first-start-setup-assistant-receiving-opts-exchange]
+==== Exchange Web services receiving options
+
+If you selected Exchange Web Services as the receiving server type, you will now see a page of options to specify the behavior of Evolution.
+
+. You can choose from the following options:
++
+*Check for new messages every \... minutes*::
+Select if you want Evolution to automatically check for new mail. Set how often to check.
+*Check for new message in all folders*::
+Select if you want to check for new messages in all folders.
+*Listen for server change notifications*::
+Select if you want Evolution to listen for change notifications. If you activate this option, Evolution will show you mail as it arrives. Therefore, you can usually deactivate *Check for new messages every \... minutes*.
+*Apply filters to new messages in all folders*::
+Select if you want to apply filters to new messages.
+*Check new messages for junk contents*::
+Select if you want to check new messages for junk content, and whether to do so in all folders or only in the Inbox folder.
+*Automatically synchronize remote mail locally*::
+Select this to download all your mail, so you can read it offline.
+*Connection timeout (in seconds)*::
+Set maximum time to wait for an answer from the server.
+*Cache offline address book*::
+If you provided an OAB URL in the prior step, you can select caching an address book. This will make the address book available when offline.
+. Proceed to the next page.
+
+[#sec-gnome-evolution-first-start-setup-assistant-receiving-opts-local]
+==== Local delivery receiving options
+
+If you selected that you want to receive mail through Local Delivery, you will now see a page of options to specify the behavior of Evolution.
+
+. Select *Check for new messages every \... minutes* if you want Evolution to automatically check for new mail. Set how often to check.
+. Proceed to the next page.
+
+[#sec-gnome-evolution-first-start-setup-assistant-receiving-opts-mh]
+==== MH-format mail directories receiving options
+
+If you selected that you want to receive mail through MH-Format Mail Directories, you will now see a page of options to specify the behavior of Evolution.
+
+. Select *Check for new messages every \... minutes* if you want Evolution to automatically check for new mail. Set how often to check.
++
+Select *Use the .folders summary file* to use the `+.folders+` summary file.
+. Proceed to the next page.
+
+[#sec-gnome-evolution-first-start-setup-assistant-receiving-opts-maildir]
+==== Maildir-format mail directories receiving options
+
+If you selected that you want to receive mail through Maildir-Format Mail Directories, you will now see a page of options to specify the behavior of Evolution.
+
+. Select *Check for new messages every \... minutes* if you want Evolution to automatically check for new mail. Set how often to check.
++
+Select *Apply filters to new messages in Inbox* if you want to apply filters to new messages.
+. Proceed to the next page.
+
+[#sec-gnome-evolution-first-start-setup-assistant-receiving-opts-mbox]
+==== Standard Unix mbox spool or directory receiving options
+
+If you selected that you want to receive mail through a Unix mbox Spool File or Directories, you will now see a page of options to specify the behavior of Evolution.
+
+. Select *Check for new messages every \... minutes* if you want Evolution to automatically check for new mail. Set how often to check.
++
+Select *Apply filters to new messages in Inbox* if you want to apply filters to new messages.
+. Select *Store status headers in Elm/Pine/Mutt format* to store status headers in a way compatible with Elm, Pine, and Mutt.
+. Proceed to the next page.
+
+[#sec-gnome-evolution-first-start-setup-assistant-sending]
+=== Sending E-mail
+
+Now that you have entered information about how you plan to receive mail, Evolution needs to know how you want to send it. Usually, a separate server configuration is necessary for this. Otherwise, this page will be skipped.
+
+Select a server type from the *Server Type* list.
+
+The following server types are available:
+
+.SMTP:
+Sends mail using a separate mail server. This is the most common choice for sending mail. If you choose SMTP, there are additional configuration options.
+
+.Sendmail:
+Uses the Sendmail program to send mail from your system. Sendmail is more flexible, but is not as easy to configure, so you should select this option only if you know how to set up a Sendmail service.
+
+.SMTP configuration
+. Type the host address in the *Server* field.
++
+If you are not sure what your host address is, contact your 
+ifdef::os-sles,os-sled[system administrator or]
+ e-mail provider.
+. Select if your server requires authentication.
++
+If you selected that your server requires authentication, you need to provide the following information:
++
+.. Choose a security setting supported by your mail server. For security reasons, avoid using *No Encryption*.
+.. Select your authentication type in the *Authentication* section.
++
+or
++
+Click *Check for Supported Types* to have Evolution check for supported types. Then choose one of the options without a strikeout.
++
+Some servers do not announce the authentication mechanisms they support. Therefore, clicking this button is not a guarantee that the shown mechanisms actually work.
+.. Type your user name in the *Username* field.
+. Proceed to the next page.
+
+[#sec-gnome-evolution-first-start-setup-assistant-account]
+=== Final steps
+
+Now that you have finished the e-mail configuration process, you need to give the account a name. You can choose any name here. Type your account name on the *Name* field. Proceed to the next page and confirm your changes with *Apply*.
+
+Depending on your configuration, you may now be asked for your e-mail passwords and whether you want to save them or want to always enter them when starting Evolution.
+
+The Evolution main window will then open for the first time.
+
+[#sec-gnome-evolution-usage]
+== Using Evolution
+
+Now that the first-run configuration has finished, you can now start using Evolution. This section sums up the most important parts of the user interface.
+
+.Evolution window
+image::evolution.png["Evolution mail window",width=86%]
+
+Menu bar::
+The menu bar gives you access to nearly all the features of Evolution.
+Folder list::
+The folder list gives you a list of the available folders for each account. To see the contents of a folder, click the folder name. The contents are displayed in the e-mail list.
+Toolbar::
+The toolbar gives you fast and easy access to the frequently used features in each component.
+Search bar::
+The search bar lets you search for e-mails. You can filter e-mails, contacts, and calendar entries and tasks using different criteria: a label, a search term, and an account or folder. The Search bar can also save frequently used searches to a search folder.
+Message list::
+The message list displays a list of e-mails that you have received. To view an e-mail in the preview pane, select the e-mail.
+Shortcut bar::
+The shortcut bar at the left lets you switch between folders and program components.
+Statusbar::
+The statusbar periodically displays a message, or informs you about the progress of a task, such as sending e-mail.
++
+On the far left, you can find the Online/Offline indicator. Click the Online/Offline indicator to switch between being using Evolution in online or offline mode.
+Preview pane::
+The preview pane displays the contents of the e-mails that are selected in the e-mail list.
+
+[#sec-gnome-evolution-usage-menu-bar]
+=== The menu bar
+
+The menu bar’s contents always provide all the possible actions for any view of your data.
+
+.File:
+Anything related to a file or to the operations of the application usually falls under this menu, such as creating things, saving them to disk, printing them, and quitting the program itself.
+
+.Edit:
+Contains tools to edit text and most configuration options.
+
+.View:
+Allows configuring the appearance of Evolution.
+
+.Message:
+Contains actions that can be applied to a message.
+
+.Folder:
+Contains actions that can be performed on folders.
+
+.Search:
+Lets you search for messages, or phrases within a message. You can also see previous searches you have made.
+
+.Help:
+Opens the Evolution application help.
+
+[#sec-gnome-evolution-usage-shortcut-bar]
+=== The shortcut bar
+
+The shortcut bar is the column on the left side of the main window. At the top, there is a list of folders for the selected Evolution component. The buttons at the bottom are shortcuts to the individual components, such as *Mail* and *Contacts*.
+
+The folder list organizes your e-mail, calendars, contact lists, and task lists in a tree. Most people find one to four folders at the base of the tree, depending on the component and their system configuration. Each component has at least one, called *On This Computer*, for local information. For example, the folder list for the e-mail component shows all your e-mail accounts, local folders, and search folders.
+
+If you receive large amounts of e-mail, you need additional ways to organize it. You can create your own e-mail folders, address books, calendars, task lists, or memo lists.
+
+[#sec-gnome-evolution-usage-shortcut-bar-createfolder]
+==== Creating a folder
+
+To create a new folder:
+
+. Click menu:File[New > Mail Folder].
+. Type in the *Folder name*.
+. Select the location of the new folder.
+. Click *Create*.
+
+[#sec-gnome-evolution-usage-shortcut-bar-subfolders]
+==== Folder management
+
+Right-click a folder or subfolder to display a menu with the following options:
+
+.*New Folder*:
+Creates a new folder or subfolder in the same location.
+
+.*Copy Folder To*:
+Copies the folder to a different location. When you select this item, Evolution offers a choice of locations to copy the folder to.
+
+.*Move Folder To*:
+Moves the folder to another location.
+
+[NOTE]
+====
+By default, the user is asked to confirm before a folder is moved to another place. If this is not the case, refer to link:https://www.suse.com/support/kb/doc/?id=000020878[] to reset the settings.
+====
+
+.*Delete*:
+Deletes the folder and all contents.
+
+.*Rename*:
+Lets you change the name of the folder.
+
+.Refresh:
+Refreshes the folder.
+
+.Properties:
+Shows the number of total and unread messages in a folder.
+
+You can also rearrange folders and messages by dragging and dropping them.
+
+Any time new e-mail arrives in an e-mail folder, that folder label is displayed in bold text, along with the number of new messages in that folder.
+
+[#sec-gnome-evolution-usage-e-mail]
+=== Using e-mail
+
+The e-mail component of Evolution has the following features:
+
+* It supports multiple e-mail sources from many protocols.
+* It lets you guard your privacy with encryption.
+* It can speedily handle large amounts of e-mail.
+* Search folders allow you to come back to often-used searches.
+
+Below is a summary of the user interface elements of the e-mail window.
+
+Message list::
+The message list displays all the e-mails that you have. This includes all your read and unread messages and e-mail that is flagged to be deleted. With the *Show* drop-down box above the message you can filter the message list view using predefined and custom labels.
+Preview pane::
+This is where your e-mail is displayed.
++
+If you find the preview pane too small, you can resize the pane, enlarge the whole window, or double-click the message in the message list to have it open in a new window. To change the size of a pane, drag the divider between the two panes.
++
+As with folders, you can right-click messages in the message list and get a menu of possible actions. This includes moving or deleting them, creating filters or search folders based on them, and marking them as junk mail.
++
+Actions related to e-mail, like *Reply* and *Forward*, appear as buttons in the toolbar and are also located in the right-click menu.
+Templates::
+Evolution allows you to create and edit message templates that you can use at any time to send mail with the same pattern.
+
+[#sec-gnome-evolution-usage-calendar]
+=== Calendaring
+
+To begin using the calendar, click *Calendar* in the shortcut bar. By default, the calendar shows today’s schedule on a ruled background. At the upper right, there is a *Tasks* list, where you can keep a list of tasks separate from your calendar appointments. Below that, there is a list for memos.
+
+Appointment list::
+The appointment list displays all your scheduled appointments.
+Month pane::
+The month pane is a small view of a calendar month. You can also select a range of days in the month pane to display a custom range of days in the appointment list.
+Tasks::
+Tasks are distinct from appointments because they generally do not have times associated with them. You can see a larger view of your task list by clicking *Tasks* in the shortcut bar.
+Memos::
+Memos, like Tasks, do not have times associated with them. You can see a larger view of your Memo list by clicking *Memos* in the shortcut bar.
+
+[#sec-gnome-evolution-usage-contacts]
+=== Managing contacts
+
+To use the contacts component, click *Contacts* in the shortcut bar. The Evolution contacts component can handle all the functions of an address book or phone book.
+
+It does, however, also do more than a paper book. To share your address book on a network, you can use LDAP directories. To create a new contact entry, right-click an e-mail address or double-click an empty space in the right pane. You can also search contacts using the search bar.
+
+By default, the display shows all your contacts in alphabetical order, in a card-based view. You can select other views from the *View* menu.
+
+[#sec-evolution-moreinfo]
+== More information
+
+Get more information about Evolution from the application help available via kbd:[F1].
+
+Find more information on the project home page link:https://wiki.gnome.org/Apps/Evolution[].

@@ -1,0 +1,78 @@
+// Converted from xml/apps_pidgin.xml
+[#cha-gnome-pidgin]
+= Pidgin: instant messaging
+:description: Master Pidgin’s instant messaging interface to communicate efficiently in real time across multiple networks and protocols
+:revdate: 2026-09-02
+
+[abstract]
+--
+Learn how to use the Pidgin instant messaging application to chat live with your contacts.
+--
+
+Pidgin is an instant messaging (IM) client that allows you to connect to multiple accounts simultaneously. Chat live with your contacts, regardless of which IM system they use.
+
+It supports the following instant messaging protocols: AIM, Bonjour, Gadu-Gadu, Google Talk, Groupwise, ICQ, IRC, SIMPLE, XMPP, and Zephyr. Microsoft Office Communicator is also supported if you install the additional package `+pidgin-plugin-sipe+`.
+
+In the following, learn how to set up Pidgin and how to communicate with your contacts.
+
+[#sec-gnome-pidgin-start]
+== Starting Pidgin
+
+To start Pidgin, open the *Activities* overview by pressing kbd:[Meta] and search for `+pid+`.
+
+[#sec-gnome-pidgin-configure]
+== Configuring accounts
+
+To use Pidgin, you must already have an account for the messaging service you want to use. For example, to use Pidgin to chat via AIM, you need to have an AIM account.
+
+.Adding and editing accounts in Pidgin
+. If you start Pidgin for the first time, a message appears, prompting you to configure an account. Proceed with *Add* to add your account.
++
+If you have already configured an account and want to add a new one or modify existing ones, open this dialog via menu:Accounts[Manage Accounts]. Either *Add* a new account, or *Modify* or *Delete* existing ones.
+. The *Add/Modify Account* dialog opens. Use the *Basic* tab to select a protocol and enter or modify your login credentials.
++
+The availability of other tabs and the data you are required to enter depends on the protocol you have chosen. In most cases, server details such as address and port number need to be entered on the *Advanced* tab.
++
+On the *Proxy* tab you can enter a custom proxy configuration for the chosen protocol. By default the system settings (*Use Global Proxy Settings*) are preselected. This default should be sufficient for most users.
+. Continue with *Add* or *Save*. Make sure all accounts you want to use are set to *Enabled* in the resulting *Accounts* window. If you want to temporarily disable an account, deselect it in the *Enabled* column.
+
+[#sec-gnome-pidgin-buddy-list]
+== Managing contacts
+
+Use the *Contact List* to manage your contacts (so-called “Buddies”). You can add and remove contacts and organize them in groups, so they are easy to find.
+
+.Adding contacts
+. To add a contact, click menu:Buddies[Add Buddy].
+. Select the *Account* for which you want to add a contact.
+. Enter the contact's user name under *Buddy' username*. Ask your contact for this name prior to adding the contact—this data is required and usually depends on the protocol.
+. By default, the contact is shown under the name they have provided with their account. Use *(Optional): Alias* to display the contact with a custom name. With some protocols you can also send the contact an invite message with *(Optional): Invite Message*.
+. If you have sorted your contacts by group, choose an existing group from the drop-down text box or enter a new group name.
+. Proceed with *Add*.
+
+In case the groups or the newly added contacts are not displayed in the contact list, check the display preferences by clicking menu:Buddies[Show]. Activate *Offline Buddies* and *Empty Groups* to make all contacts and groups appear in the *Contact List*.
+
+To remove a contact from the list, right-click the name of that contact, select *Remove* and confirm your choice.
+
+[#sec-gnome-pidgin-chat]
+== Chatting with friends
+
+To chat with other participants, you need to be connected to the Internet. After a successful login, you are usually marked as *Available* in the *Contact List*, and are visible to others. To change your status, click the drop-down box at the bottom of the *Contact List* and select another option.
+
+To open a chat session, double-click a contact name in the *Contact List*. The chat screen opens. Type your message, then press kbd:[Enter] to send.
+
+If you open more than one chat session, the new session appears as a tab in the existing chat window. To see all messages of a session and to be able to write a reply, click the tab of that session. To see multiple session side by side, use the mouse to drag a tab out of the window. A second window will open.
+
+To close a chat session, close the tab or window for it.
+
+[TIP]
+.Finding a contact
+====
+In case you contact list is very long, contacts may be hard to find. Use kbd:[Ctrl+F] to open a search box at the bottom of the contact list. Type one or more letters to find a contact. Use kbd:[down] to move to the next result, or kbd:[up] to move to the previous result.
+====
+
+[#sec-gnome-pidgin-more]
+== More information
+
+This chapter only explains the basic configuration and usage option of Pidgin. For more information, click menu:Help[Online Help] to open the help in a browser.
+
+For updates about new features and for the latest information, refer to the home page of the project at link:https://pidgin.im/[].

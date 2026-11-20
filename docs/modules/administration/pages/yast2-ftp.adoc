@@ -1,0 +1,101 @@
+// Converted from xml/yast2_ftp.xml
+[#cha-ftp]
+= Setting up an FTP server with {yast}
+:description: Configure and manage an FTP server using the YaST FTP Server module to enable file transfer and uploads
+:revdate: 2026-01-16
+
+[abstract]
+--
+Using the {yast} *FTP Server* module, you can configure your machine to function as an FTP (File Transfer Protocol) server. Anonymous and/or authenticated users can connect to your machine and download files using the FTP protocol. Depending on the configuration, they can also upload files to the FTP server. {yast} uses vsftpd (Very Secure FTP Daemon).
+--
+
+If the {yast} FTP Server module is not available in your system, install the `+yast2-ftp-server+` package. (For managing the FTP server from the command line, see xref:yast2-ncurses.adoc#sec-yast-ftp-server[yast ftp-server].)
+
+To configure the FTP server using {yast}, follow these steps:
+
+. Open the {yast} control center and choose menu:Network Services[FTP Server] or run the `+yast2 ftp-server+` command as `+root+`.
+. If there is not any FTP server installed in your system, you are asked which server to install when the {yast} FTP Server module starts. Choose the vsftpd server and confirm the dialog.
+. In the *Start-Up* dialog, configure the options for starting of the FTP server. For more information, see <<sec-ftp-start,Starting the FTP server>>.
++
+In the *General* dialog, configure FTP directories, welcome message, file creation masks and other parameters. For more information, see <<sec-ftp-general,FTP general settings>>.
++
+In the *Performance* dialog, set the parameters that affect the load on the FTP server. For more information, see <<sec-ftp-performance,FTP performance settings>>.
++
+In the *Authentication* dialog, set whether the FTP server should be available for anonymous and/or authenticated users. For more information, see <<sec-ftp-auth,Authentication>>.
++
+In the *Expert Settings* dialog, configure the operation mode of the FTP server, SSL connections and firewall settings. For more information, see <<sec-ftp-expert,Expert settings>>.
+. Click *Finish* to save the configurations.
+
+[#sec-ftp-start]
+== Starting the FTP server
+
+In the *Service Start* frame of the *FTP Start-Up* dialog set the way the FTP server is started up. You can choose between starting the server automatically during the system boot and starting it manually. If the FTP server should be started only after an FTP connection request, choose *Via socket*.
+
+The current status of the FTP server is shown in the *Switch On and Off* frame of the *FTP Start-Up* dialog. Start the FTP server by clicking *Start FTP Now*. To stop the server, click *Stop FTP Now*. After having changed the settings of the server click *Save Settings and Restart FTP Now*. Your configurations will be saved by leaving the configuration module with *Finish*.
+
+[#fig-yast2-ftp-start-up]
+.FTP server configuration — start-up
+image::yast2_ftp-start-up.png["",width=75%]
+
+[#sec-ftp-general]
+== FTP general settings
+
+In the *General Settings* frame of the *FTP General Settings* dialog you can set the *Welcome message* which is shown after connecting to the FTP server.
+
+If you check the *Chroot Everyone* option, all local users are placed in a chroot jail in their home directory after login. This option has security implications, especially if the users have upload permission or shell access, so be careful enabling this option.
+
+If you check the *Verbose Logging* option, all FTP requests and responses are logged.
+
+You can limit permissions of files created by anonymous and/or authenticated users with umask. Set the file creation mask for anonymous users in *Umask for Anonymous* and the file creation mask for authenticated users in *Umask for Authenticated Users*. The masks should be entered as octal numbers with a leading zero. For more information about umask, see the umask man page (`+man 1p umask+`).
+
+In the *FTP Directories* frame set the directories used for anonymous and authorized users. With *Browse*, you can select a directory to be used from the local file system. The default FTP directory for anonymous users is `+/srv/ftp+`. vsftpd does not allow this directory to be writable for all users. The subdirectory `+upload+` with write permissions for anonymous users is created instead.
+
+[#sec-ftp-performance]
+== FTP performance settings
+
+In the *Performance* dialog set the parameters which affect the load on the FTP server. *Max Idle Time* is the maximum time (in minutes) the remote client may spend between FTP commands. In case of longer inactivity, the remote client is disconnected. *Max Clients for One IP* determines the maximum number of clients that can be connected from a single IP address. *Max Clients* determines the maximum number of clients that may be connected. Any additional clients are refused.
+
+The maximum data transfer rate (in KB/s) is set in *Local Max Rate* for local authenticated users, and in *Anonymous Max Rate* for anonymous clients respectively. The default value for the rate settings is `+0+`, which means unlimited data transfer rate.
+
+[#sec-ftp-auth]
+== Authentication
+
+In the *Enable/Disable Anonymous and Local Users* frame of the *Authentication* dialog, you can set which users are allowed to access your FTP server. You can choose between the following options: granting access to anonymous users only, to authenticated users only (with accounts on the system) or to both types of users.
+
+To allow users to upload files to the FTP server, check *Enable Upload* in the *Uploading* frame of the *Authentication* dialog. Here you can allow uploading or creating directories even for anonymous users by checking the respective box.
+
+[NOTE]
+.vsftp—allowing file upload for anonymous users
+====
+If a vsftpd server is used and you want anonymous users to be able to upload files or create directories, a subdirectory with writing permissions for all users needs to be created in the anonymous FTP directory.
+====
+
+[#sec-ftp-expert]
+== Expert settings
+
+An FTP server can run in active or in passive mode. By default the server runs in passive mode. To switch into active mode, deselect the *Enable Passive Mode* option in the *Expert Settings* dialog. You can also change the range of ports on the server used for the data stream by tweaking the *Min Port for Pas. Mode* and *Max Port for Pas. Mode* options.
+
+If you want encrypted communication between clients and the server, you can *Enable SSL* and, additionally, *Enable TLS*. Specify the RSA certificate to be used for SSL encrypted connections.
+
+[IMPORTANT]
+====
+By default, new versions of the `+vsftpd+` daemon have the TLS protocol older than version 1.2 disabled. If you use an FTP client that requires an older version of the TLS protocol, you need to add the following configuration to the `+/etc/vsftpd.conf+` file:
+
+----
+ssl_tlsv1 = YES
+ssl_tlsv1_1 = YES
+----
+
+Then restart the `+vsftpd+` daemon to reread the configuration:
+
+----
+> sudo systemctl restart vsftpd.service
+----
+====
+
+If your system is protected by a firewall, check *Open Port in Firewall* to enable a connection to the FTP server.
+
+[#sec-ftp-info]
+== More information
+
+For more information about the FTP server read the manual pages of `+vsftpd+` and `+vsftpd.conf+`.

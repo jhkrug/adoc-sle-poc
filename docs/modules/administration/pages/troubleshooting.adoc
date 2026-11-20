@@ -1,0 +1,426 @@
+// Converted from xml/troubleshooting.xml
+[#cha-trouble]
+= Common problems and their solutions
+:description: Learn how to troubleshoot common problems and gather essential information for support requests on a Linux system
+:revdate: 2026-01-16
+
+This chapter describes a range of potential problems and their solutions. Even if your situation is not precisely listed, there may be one similar enough to offer hints to the solution of your problem.
+
+[#sec-trouble-info]
+== Finding and gathering information
+
+Linux reports things in a detailed way. There are several places to look when you encounter problems with your system. Most of them are standard to Linux systems, and several are relevant to {productname} systems. Most log files can be viewed with {yast} (menu:Miscellaneous[Start-Up Log]).
+
+{yast} offers the possibility to collect all system information needed by the support team. Use menu:Other[Support] and select the problem category. When all information is gathered, attach it to your support request.
+
+A list of the most frequently checked log files follows with the description of their typical purpose. Paths containing `+~+` refer to the current user's home directory.
+
+[#tab-trouble-info]
+.Log files
+[cols="1,1",options="header"]
+|===
+a|Log File
+a|Description
+
+a|`+~/.xsession-errors+`
+a|Messages from the desktop applications currently running.
+a|`+/var/log/apparmor/+`
+a|Log files from AppArmor, see xref:security:index.adoc#part-apparmor[Confining privileges with AppArmor] for detailed information.
+a|`+/var/log/audit/audit.log+`
+a|Log file from Audit to track any access to files, directories, or resources of your system, and trace system calls. See xref:security:index.adoc#part-audit[{auditguide}] for detailed information.
+a|`+/var/log/mail.*+`
+a|Messages from the mail system.
+a|`+/var/log/NetworkManager+`
+a|Log file from {nm} to collect problems with network connectivity
+a|`+/var/log/samba/+`
+a|Directory containing Samba server and client log messages.
+a|`+/var/log/warn+`
+a|All messages from the kernel and system log daemon with the “warning” level or higher.
+a|`+/var/log/wtmp+`
+a|Binary file containing user login records for the current machine session. View it with `+last+`.
+a|`+/var/log/Xorg.*.log+`
+a|Start-up and runtime log files from the X Window System. It is useful for debugging failed X start-ups.
+a|`+/var/log/YaST2/+`
+a|Directory containing {yast}'s actions and their results.
+a|`+/var/log/zypper.log+`
+a|Log file of Zypper.
+|===
+
+Apart from log files, your machine also supplies you with information about the running system. See <<tab-trouble-system,System information with the `+/proc+` file system>>
+
+[#tab-trouble-system]
+.System information with the `+/proc+` file system
+[cols="1,1",options="header"]
+|===
+a|File
+a|Description
+
+a|`+/proc/cpuinfo+`
+a|Contains processor information, including its type, make, model, and performance.
+a|`+/proc/dma+`
+a|Shows which DMA channels are currently being used.
+a|`+/proc/interrupts+`
+a|Shows which interrupts are in use, and how many of each have been in use.
+a|`+/proc/iomem+`
+a|Displays the status of I/O (input/output) memory.
+a|`+/proc/ioports+`
+a|Shows which I/O ports are in use at the moment.
+a|`+/proc/meminfo+`
+a|Displays memory status.
+a|`+/proc/modules+`
+a|Displays the individual modules.
+a|`+/proc/mounts+`
+a|Displays devices currently mounted.
+a|`+/proc/partitions+`
+a|Shows the partitioning of all hard disks.
+a|`+/proc/version+`
+a|Displays the current version of Linux.
+|===
+
+Apart from the `+/proc+` file system, the Linux kernel exports information with the `+sysfs+` module, an in-memory file system. This module represents kernel objects, their attributes and relationships. For more information about `+sysfs+`, see the context of udev in xref:udev.adoc[]. <<tab-trouble-sysfs,System information with the `+/sys+` file system>> contains an overview of the most common directories under `+/sys+`.
+
+[#tab-trouble-sysfs]
+.System information with the `+/sys+` file system
+[cols="1,1",options="header"]
+|===
+a|File
+a|Description
+
+a|`+/sys/block+`
+a|Contains subdirectories for each block device discovered in the system. Generally, these are mostly disk type devices.
+a|`+/sys/bus+`
+a|Contains subdirectories for each physical bus type.
+a|`+/sys/class+`
+a|Contains subdirectories grouped together as a functional types of devices (like graphics, net, printer, etc.)
+a|`+/sys/device+`
+a|Contains the global device hierarchy.
+|===
+
+Linux comes with several tools for system analysis and monitoring. See xref:tuning:utilities.adoc[] for a selection of the most important ones used in system diagnostics.
+
+Each of the following scenarios begins with a header describing the problem followed by a paragraph or two offering suggested solutions, available references for more detailed solutions, and cross-references to other scenarios that are related.
+
+[#sec-trouble-boot]
+== Boot problems
+
+Boot problems are situations when your system does not boot properly (does not boot to the expected target and login screen).
+
+[#sec-trouble-boot-nogrub]
+=== The {grub} boot loader fails to load
+
+If the hardware is functioning properly, it is possible that the boot loader is corrupted and Linux cannot start on the machine. In this case, it is necessary to repair the boot loader. To do so, you need to start the Rescue System as described in <<sec-trouble-data-recover-rescue,Using the rescue system>> and follow the instructions in <<sec-trouble-data-recover-rescue-grub,Modifying and re-installing the boot loader>>.
+
+Alternatively, you can use the Rescue System to fix the boot loader as follows. Boot your machine from the installation media. In the boot screen, choose menu:More[Boot Linux System]. Select the disk containing the installed system and kernel with the default kernel options.
+
+ifdef::os-osuse[]
+[#fig-rescue-selectdisk]
+.Select disk
+image::rescue_select_disk.png["",width=50%]
+endif::[]
+
+When the system is booted, start {yast} and switch to menu:System[Boot Loader]. Make sure that the *Write generic Boot Code to MBR* option is enabled, and click *OK*. This fixes the corrupted boot loader by overwriting it, or installs the boot loader if it is missing.
+
+Other reasons for the machine not booting may be BIOS-related:
+
+BIOS settings::
+Check your BIOS for references to your hard disk. {grub} may simply not be started if the hard disk itself cannot be found with the current BIOS settings.
+BIOS boot order::
+Check whether your system's boot order includes the hard disk. If the hard disk option was not enabled, your system may install properly, but fails to boot when access to the hard disk is required.
+
+ifdef::os-sled,os-osuse[]
+[#sec-trouble-boot-hang]
+=== No login or prompt appears
+
+This behavior typically occurs after a failed kernel upgrade and it is known as a _kernel panic_ because of the type of error on the system console that sometimes can be seen at the final stage of the process. If, in fact, the machine has just been rebooted following a software update, the immediate goal is to reboot it using the old, proven version of the Linux kernel and associated files. This can be done in the {grub} boot loader screen during the boot process as follows:
+
+. Reboot the computer using the reset button, or switch it off and on again.
+. When the {grub} boot screen becomes visible, select the *Advanced Options* entry and choose the previous kernel from the menu. The machine will boot using the prior version of the kernel and its associated files.
+. [[st-trouble-boot-hang-modify-grub]]After the boot process has completed, remove the newly installed kernel and, if necessary, set the default boot entry to the old kernel using the {yast} *Boot Loader* module. For more information, refer to xref:grub2.adoc#sec-grub2-yast2-config[Configuring the boot loader with {yast}]. However, doing this is not necessary because automated update tools normally modify it for you during the rollback process.
+. Reboot.
+
+If this does not fix the problem, boot the computer using the installation media. After the machine has booted, continue with <<st-trouble-boot-hang-modify-grub,this step>>.
+endif::[]
+
+[#sec-trouble-boot-prompt]
+=== No graphical login
+
+If the machine starts, but does not boot into the graphical login manager, anticipate problems either with the choice of the default systemd target or the configuration of the X Window System. To check the current systemd default target run the command `+sudo systemctl get-default+`. If the value returned is _not_ `+graphical.target+`, run the command `+sudo systemctl isolate graphical.target+`. If the graphical login screen starts, log in and start menu:{yast}[System > {ycc_runlevel}] and set the *Default System Target* to *Graphical Interface*. From now on the system should boot into the graphical login screen.
+
+If the graphical login screen does not start even if having booted or switched to the graphical target, your desktop or X Window software may be misconfigured or corrupted. Examine the log files at `+/var/log/Xorg.*.log+` for detailed messages from the X server as it attempted to start. If the desktop fails during start, it may log error messages to the system journal that can be queried with the command `+journalctl+` (see xref:journalctl.adoc[] for more information). If these error messages hint at a configuration problem in the X server, try to fix these issues. If the graphical system still does not come up, consider reinstalling the graphical desktop.
+
+[#sec-trouble-boot-btrfs]
+=== Root Btrfs partition cannot be mounted
+
+If a `+btrfs+` root partition becomes corrupted, try the following options:
+
+* Mount the partition with the `+-o recovery+` option.
+* {empty}
++
+// REMARK: toms 2014-03-12: According to FATE#315126: "this one is open to debate, it might do more harm than good.."
++
+If that fails, run `+btrfs-zero-log+` on your root partition.
+
+[#sec-trouble-boot-forcecheck]
+=== Force checking root partitions
+
+// REMARK: toms 2016-05-18: FATE#320126
+
+If the root partition becomes corrupted, use the parameter `+forcefsck+` on the boot prompt. This passes the option `+-f+` (force) to the `+fsck+` command.
+
+[#sec-trouble-boot-disable-swap]
+=== Disable swap to enable booting
+
+When a swap device is not available and the system cannot enable it during boot, booting may fail. Try disabling all swap devices by appending the following options to the kernel command line:
+
+----
+systemd.device_wants_unit=off systemd.mask=swap.target
+----
+
+You may also try disabling specific swap devices:
+
+----
+systemd.mask=dev-sda1.swap
+----
+
+[#sec-trouble-boot-dual-boot]
+=== {grub} fails during reboot on a dual-boot system
+
+// REMARK: jufa 2021-06-09: bsc#1185274
+
+If {grub} fails during reboot, disable the `+Fast Boot+` setting in the BIOS.
+
+[#sec-trouble-login]
+== Login problems
+
+Login problems occur when your system refuses to accept the user name and password, or accepts them but then fails to start the graphic desktop, produces errors, or drops to a command line, for example.
+
+[#sec-trouble-login-no]
+=== Valid user name and password combinations fail
+
+This often occurs when the system is configured to use network authentication or directory services and cannot retrieve results from its configured servers. The `+root+` user is the only local user that can still log in to these machines. The following are common reasons a machine appears functional but cannot process logins correctly:
+
+* The network is not working. For further directions on this, turn to <<sec-trouble-netconfig,Network problems>>.
+* DNS is not working at the moment (which prevents {gnome} from working and the system from making validated requests to secure servers). One indication that this is the case is that the machine takes a long time to respond to any action. Find more information about this topic in <<sec-trouble-netconfig,Network problems>>.
+* If the system is configured to use Kerberos, the system's local time may have drifted past the accepted variance with the Kerberos server time (this is typically 300 seconds). If NTP (network time protocol) is not working properly or local NTP servers are not working, Kerberos authentication ceases to function because it depends on common clock synchronization across the network.
+* The system's authentication configuration is misconfigured. Check the PAM configuration files involved for any typographical errors or misordering of directives. For additional background information about PAM and the syntax of the configuration files involved, refer to xref:security:security-pam.adoc[].
+* The home partition is encrypted. Find more information about this topic in <<sec-trouble-login-encrypted,Login to encrypted home partition fails>>.
+
+In cases that do not involve external network problems, the solution is to log in as `+root+` and repair the configuration. If you cannot log in to the running system, reboot it into the rescue mode as outlined in xref:grub2.adoc#proc-rescue-mode[Entering rescue mode].
+
+[#sec-trouble-login-pw]
+=== Valid user name and password not accepted
+
+This is by far the most common problem users encounter, because there are many reasons this can occur. Depending on whether you use local user management and authentication or network authentication, login failures occur for different reasons.
+
+Local user management can fail for the following reasons:
+
+* The user may have entered the wrong password.
+* The user's home directory containing the desktop configuration files is corrupted or write protected.
+* There may be problems with the X Window System authenticating this particular user, especially if the user's home directory has been used with another Linux distribution before installing the current one.
+
+To locate the reason for a local login failure, proceed as follows:
+
+. Check whether the user remembered their password correctly before you start debugging the whole authentication mechanism. If the user may have not have remembered their password correctly, use the {yast} User Management module to change the user's password. Pay attention to the kbd:[Caps Lock] key and unlock it, if necessary.
+. Log in as `+root+` and check the system journal with `+journalctl -e+` for error messages of the login process and of PAM.
+. Try to log in from a console (using kbd:[Ctrl+Alt+F1]). If this is successful, the blame cannot be put on PAM, because it is possible to authenticate this user on this machine. Try to locate any problems with the X Window System or the {gnome} desktop. For more information, refer to <<sec-trouble-login-dk,{gnome} desktop has issues>>.
+. If the user's home directory has been used with another Linux distribution, remove the `+Xauthority+` file in the user's home. Use a console login via kbd:[Ctrl+Alt+F1] and run `+rm .Xauthority+` as this user. This should eliminate X authentication problems for this user. Try graphical login again.
+. If the desktop could not start because of corrupt configuration files, proceed with <<sec-trouble-login-dk,{gnome} desktop has issues>>.
+
+In the following, common reasons a network authentication for a particular user may fail on a specific machine are listed:
+
+* The user may have entered the wrong password.
+* The user name exists in the machine's local authentication files and is also provided by a network authentication system, causing conflicts.
+* The home directory exists but is corrupt or unavailable. Perhaps it is write protected or is on a server that is inaccessible at the moment.
+* The user does not have permission to log in to that particular host in the authentication system.
+* The machine has changed host names, for whatever reason, and the user does not have permission to log in to that host.
+* The machine cannot reach the authentication server or directory server that contains that user's information.
+* There may be problems with the X Window System authenticating this particular user, especially if the user's home has been used with another Linux distribution before installing the current one.
+
+To locate the cause of the login failures with network authentication, proceed as follows:
+
+[#proc-trouble-login-pw]
+. Check whether the user remembered their password correctly before you start debugging the whole authentication mechanism.
+. Determine the directory server which the machine relies on for authentication and make sure that it is up and running and properly communicating with the other machines.
+. Determine that the user's user name and password work on other machines to make sure that their authentication data exists and is properly distributed.
+. See if another user can log in to the misbehaving machine. If another user can log in without difficulty or if `+root+` can log in, log in and examine the system journal with the `+journalctl -e+` > file. Locate the time stamps that correspond to the login attempts and determine if PAM has produced any error messages.
+. Try to log in from a console (using kbd:[Ctrl+Alt+F1]). If this is successful, the problem is not with PAM or the directory server on which the user's home is hosted, because it is possible to authenticate this user on this machine. Try to locate any problems with the X Window System or the {gnome} desktop. For more information, refer to <<sec-trouble-login-dk,{gnome} desktop has issues>>.
+. If the user's home directory has been used with another Linux distribution, remove the `+Xauthority+` file in the user's home. Use a console login via kbd:[Ctrl+Alt+F1] and run `+rm .Xauthority+` as this user. This should eliminate X authentication problems for this user. Try graphical login again.
+. If the desktop could not start because of corrupt configuration files, proceed with <<sec-trouble-login-dk,{gnome} desktop has issues>>.
+
+[#sec-trouble-login-encrypted]
+=== Login to encrypted home partition fails
+
+It is recommended to use an encrypted home partition for laptops. If you cannot log in to your laptop, the reason might be that your partition could not be unlocked.
+
+During the boot time, you need to enter the passphrase to unlock your encrypted partition. If you do not enter it, the boot process continues, leaving the partition locked.
+
+To unlock your encrypted partition, proceed as follows:
+
+. Switch to the text console with kbd:[Ctrl+Alt+F1].
+. Become `+root+`.
+. Restart the unlocking process again with:
++
+----
+# systemctl restart home.mount
+----
+. Enter your passphrase to unlock your encrypted partition.
+. Exit the text console and switch back to the login screen with kbd:[Alt+F7].
+. Log in as usual.
+
+[#sec-trouble-login-dk]
+=== {gnome} desktop has issues
+
+If you are experiencing issues with the {gnome} desktop, there are several ways to troubleshoot the misbehaving graphical desktop environment. The recommended procedure described below offers the safest option to fix a broken {gnome} desktop.
+
+.Troubleshooting {gnome}
+. Launch {yast} and switch to *Security and Users*.
+. Open the *User and Group Management* dialog and click *Add*.
+. Fill out the required fields and click *OK* to create a new user.
+. Log out and log in as the new user. This gives you a fresh {gnome} environment.
+. Copy individual subdirectories from the `+~/.local/+` and `+~/.config/+` directories of the old user account to the respective directories of the new user account.
++
+Log out and log in again as the new user after every copy operation to check whether {gnome} still works correctly.
+. Repeat the previous step until you find the configuration file that breaks {gnome}.
+. Log in as the old user, and move the offending configuration file to a different location. Log out and log in again as the old user.
+. Delete the previously created user.
+
+[#sec-trouble-netconfig]
+== Network problems
+
+Many problems of your system may be network-related, although the symptoms look different. For example, the reason for a system not allowing users to log in may be a network problem. This section introduces a simple checklist you can apply to identify the cause of any network problem encountered.
+
+[#proc-trouble-config-net]
+.How to identify network problems
+When checking the network connection of your machine, proceed as follows:
+
+. If you use an Ethernet connection, check the hardware first. Make sure that your network cable is properly plugged into your computer and router (or hub, etc.). The control lights next to your Ethernet connector are normally both be active.
++
+If the connection fails, check whether your network cable works with another machine. If it does, your network card causes the failure. If hubs or switches are included in your network setup, they may be faulty, as well.
+. If using a wireless connection, check whether the wireless link can be established by other machines. If not, contact the wireless network's administrator.
+. When you have checked your basic network connectivity, try to find out which service is not responding. Gather the address information of all network servers needed in your setup. Either look them up in the appropriate {yast} module or ask your system administrator. The following list gives typical network servers involved in a setup together with the symptoms of an outage.
++
+DNS (name service)::
+A broken or malfunctioning name service affects the network's functionality in many ways. If the local machine relies on any network servers for authentication and these servers cannot be found because of name resolution issues, users would not even be able to log in. Machines in the network managed by a broken name server would not be able to “see” each other and communicate.
+NTP (time service)::
+A malfunctioning or broken NTP service could affect Kerberos authentication and X server functionality.
+NFS (file service)::
+If any application needs data stored in an NFS mounted directory, it cannot start or function properly if this service was down or misconfigured. In the worst case scenario, a user's personal desktop configuration would not come up if their home directory containing the `+.gconf+` subdirectory could not be found because of a faulty NFS server.
+Samba (file service)::
+If any application needs data stored in a directory on a faulty Samba server, it cannot start or function properly.
+NIS (user management)::
+If your {productname} system relies on a faulty NIS server to provide the user data, users cannot log in to this machine.
+LDAP (user management)::
+If your {productname} system relies on a faulty LDAP server to provide the user data, users cannot log in to this machine.
+Kerberos (authentication)::
+Authentication does not work and login to any machine fails.
+CUPS (network printing)::
+Users cannot print.
+. Check whether the network servers are running and whether your network setup allows you to establish a connection:
++
+[IMPORTANT]
+.Limitations
+====
+The debugging procedure described below only applies to a simple network server/client setup that does not involve any internal routing. It assumes both server and client are members of the same subnet without the need for additional routing.
+====
++
+.. Use `+ping+` _IP_ADDRESS/HOSTNAME_ (replace with the host name or IP address of the server) to check whether each one of them is up and responding to the network. If this command is successful, it tells you that the host you were looking for is up and running and that the name service for your network is configured correctly.
++
+If ping fails with `+destination host unreachable+`, either your system or the desired server is not properly configured or down. Check whether your system is reachable by running `+ping+` _IP address_ or _YOUR_HOSTNAME_ from another machine. If you can reach your machine from another machine, it is the server that is not running or not configured correctly.
++
+If ping fails with `+unknown host+`, the name service is not configured correctly or the host name used was incorrect. For further checks on this matter, refer to <<st-trouble-config-net-host,this step>>. If ping still fails, either your network card is not configured correctly or your network hardware is faulty.
+.. [[st-trouble-config-net-host]]Use `+host+` _HOSTNAME_ to check whether the host name of the server you are trying to connect to is properly translated into an IP address and vice versa. If this command returns the IP address of this host, the name service is up and running. If the `+host+` command fails, check all network configuration files relating to name and address resolution on your host:
++
+`+/var/run/netconfig/resolv.conf+`::
+This file is used to keep track of the name server and domain you are currently using. It is a symbolic link to `+/run/netconfig/resolv.conf+` and is usually automatically adjusted by {yast} or DHCP. Make sure that this file has the following structure and all network addresses and domain names are correct:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+search __FULLY{underscore}QUALIFIED{underscore}DOMAIN{underscore}NAME__
+nameserver __IPADDRESS{underscore}OF{underscore}NAMESERVER__
+----
++
+This file can contain more than one name server address, but at least one of them must be correct to provide name resolution to your host. If needed, adjust this file using the {yast} Network Settings module (Hostname/DNS tab).
++
+If your network connection is handled via DHCP, enable DHCP to change host name and name service information by selecting *Set Hostname via DHCP* (can be set globally for any interface or per interface) and *Update Name Servers and Search List via DHCP* in the {yast} Network Settings module (Hostname/DNS tab).
+`+/etc/nsswitch.conf+`::
+This file tells Linux where to look for name service information. It should look like this:
++
+----
+ ...
+hosts: files dns
+networks: files dns
+...
+----
++
+The `+dns+` entry is vital. It tells Linux to use an external name server. Normally, these entries are automatically managed by {yast}, but it would be prudent to check.
++
+If all the relevant entries on the host are correct, let your system administrator check the DNS server configuration for the correct zone information. 
+ifdef::os-sles,os-osuse[For detailed information about DNS, refer to xref:net-dns.adoc[].]
+ If you have made sure that the DNS configuration of your host and the DNS server are correct, proceed with checking the configuration of your network and network device.
+.. If your system cannot establish a connection to a network server and you have excluded name service problems from the list of possible culprits, check the configuration of your network card.
++
+Use the command `+ip addr show+` _NETWORK_DEVICE_ to check whether this device was properly configured. Make sure that the `+inet address+` with the netmask (`/_MASK_`) is configured correctly. An error in the IP address or a missing bit in your network mask would render your network configuration unusable. If necessary, perform this check on the server as well.
+.. If the name service and network hardware are properly configured and running, but certain external network connections still get long timeouts or fail entirely, use `+traceroute+` _FULLY_QUALIFIED_DOMAIN_NAME_ (executed as `+root+`) to track the network route these requests are taking. This command lists any gateway (hop) that a request from your machine passes on its way to its destination. It lists the response time of each hop and whether this hop is reachable. Use a combination of traceroute and ping to track down the culprit and let the administrators know.
+
+When you have identified the cause of your network trouble, you can resolve it yourself (if the problem is located on your machine) or let the system administrators of your network know about your findings so they can reconfigure the services or repair the necessary systems.
+
+[#sec-trouble-networkmanager]
+=== {nm} problems
+
+// REMARK: This is a bit small, needs more text.
+
+If you have a problem with network connectivity, narrow it down as described in <<proc-trouble-config-net,How to identify network problems>>. If {nm} looks suspicious, proceed as follows to get logs providing hints on why {nm} fails:
+
+. Open a shell and log in as `+root+`.
+. Restart the NetworkManager:
++
+----
+> sudo systemctl restart NetworkManager
+----
+. Open a Web page, for example, link:https://www.opensuse.org[] as normal user to see, if you can connect.
+. Collect any information about the state of NetworkManager in `+/var/log/NetworkManager+`.
+
+For more information about NetworkManager, refer to xref:nm.adoc[].
+
+[#sec-trouble-data]
+== Data problems
+
+Data problems are when the machine may or may not boot properly but, in either case, it is clear that there is data corruption on the system and that the system needs to be recovered. These situations call for a backup of your critical data, enabling you to recover the system state from before your system failed.
+
+[#sec-trouble-data-partitions]
+=== Managing partition images
+
+Sometimes you need to perform a backup from an entire partition or even hard disk. Linux comes with the `+dd+` tool which can create an exact copy of your disk. Combined with `+gzip+` you save space.
+
+.Backing up and restoring hard disks
+. Start a Shell as user `+root+`.
+. Select your source device. Typically this is something like `+/dev/sda+` (labeled as _SOURCE_).
+. Decide where you want to store your image (labeled as _BACKUP_PATH_). It must be different from your source device. In other words: if you make a backup from `+/dev/sda+`, your image file must not to be stored under `+/dev/sda+`.
+. Run the commands to create a compressed image file:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} dd if=/dev/__SOURCE__ | gzip > /__BACKUP{underscore}PATH__/image.gz 
+----
+. Restore the hard disk with the following commands:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} gzip -dc /__BACKUP{underscore}PATH__/image.gz | dd of=/dev/__SOURCE__
+----
+
+If you only need to back up a partition, replace the _SOURCE_ placeholder with your respective partition. In this case, your image file can lie on the same hard disk, but on a different partition.
+
+include::partial$system-repair.adoc[]
+
+ifdef::os-sles[]
+ifdef::arch-zseries[]
+include::partial$zseries-rescue-initrd.adoc[]
+endif::[]
+endif::[]
+
+ifdef::os-sles[]
+ifdef::arch-zseries[]
+include::partial$zseries-boot-new-kernel.adoc[]
+endif::[]
+endif::[]

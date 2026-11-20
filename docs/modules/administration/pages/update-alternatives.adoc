@@ -1,0 +1,317 @@
+// Converted from xml/update-alternatives.xml
+[#cha-update-alternative]
+= `+update-alternatives+`: managing multiple versions of commands and files
+:description: Learn how to manage multiple tool versions consistently with the alternatives system, giving administrators flexibility and control over their installations
+:revdate: 2026-01-16
+
+[abstract]
+--
+Often, there are several versions of the same tool installed on a system. To give administrators a choice and to make it possible to install and use different versions side by side, the alternatives system allows managing such versions consistently.
+--
+
+[#sec-ua-concept]
+== Overview
+
+On {productname}, several programs perform the same or similar tasks. For example, if Java 1.7 and Java 1.8 are both installed on the system, the {as} script (`+update-alternatives+`) is called from inside the RPM package. By default, the {as} will refer to version 1.8: higher versions also have a higher priority. However, the administrator can change the default and can point the generic name to version 1.7.
+
+The following terminology is used in this chapter:
+
+.Terminology
+Administrative directory::
+The default `+/var/lib/rpm/alternatives+` directory contains information about the current state of alternatives.
+Alternative::
+The name of a specific file in the file system, which can be made accessible via a generic name using the {as}.
+Alternatives directory::
+The default `+/etc/alternatives+` directory containing symbolic links.
+Generic name::
+A name (for example, `+/usr/bin/edit+`) that refers to one file out of several available using the {as}.
+Link group::
+A set of related symbolic links that can be updated as a group.
+Master link::
+The link in a link group that determines how the other links in the group are configured.
+Slave link::
+A link in a link group controlled by the master link.
+Symbolic link (symlink)::
+A file that is a reference to another file in the same file system. The {as} uses symbolic links in the alternatives directory to switch between versions of a file.
++
+Symbolic links in the alternatives directory can be modified by the administrator through the `+update-alternatives+` command.
+
+The {as} provides the `+update-alternatives+` command to create, remove, maintain and show information about symbolic links. While these symbolic links normally point to commands, they can also point to JAR archives, man pages, and other files. Examples in this chapter use commands and man pages, but they are also applicable to other file types.
+
+The {as} uses the alternatives directory to collect links to possible alternatives. When a new package with an alternative is installed, the new alternative is added to the system. Whether the new package's alternative is selected as the default depends on its priority and on the mode that is set. Packages with a higher version also have a higher priority. The {as} can operate in two modes:
+
+* {empty}
++
+.Automatic mode
+In this mode, the {as} ensures that the links in the group point to the highest priority alternatives appropriate for the group.
+* {empty}
++
+.Manual mode
+In this mode, the {as} does not make any changes to the system administrator's settings.
+
+For example, the `+java+` command has the following link hierarchy in the {as}:
+
+.{as-cap} of the `+java+` command
+====
+----
+/usr/bin/java <1>
+ -> /etc/alternatives/java <2>
+     -> /usr/lib64/jvm/jre-10-openjdk/bin/java <3>
+----
+
+<1> The generic name.
+<2> The symbolic link in the alternatives directory.
+<3> One of the alternatives.
+====
+
+[#sec-ua-use-cases]
+== Use cases
+
+By default, the `+update-alternatives+` script is called from inside an RPM package. When a package is installed or removed, the script takes care of all its symbolic links. But you can run it manually from the command line for:
+
+* displaying the current alternatives for a generic name.
+* changing the defaults of an alternative.
+* creating a set of related files for an alternative.
+
+[#sec-ua-view-all]
+== Getting an overview of alternatives
+
+To retrieve the names of all configured alternatives, use:
+
+----
+> ls /var/lib/alternatives
+----
+
+To get an overview of all configured alternatives and their values, use
+
+----
+> sudo update-alternatives --get-selections
+asadmin                        auto     /usr/bin/asadmin-2.7
+awk                            auto     /usr/bin/gawk
+chardetect                     auto     /usr/bin/chardetect-3.6
+dbus-launch                    auto     /usr/bin/dbus-launch.x11
+default-displaymanager         auto     /usr/lib/X11/displaymanagers/gdm
+[...]
+----
+
+[#sec-ua-view]
+== Viewing details on specific alternatives
+
+The easiest way to check the alternatives is to follow the symbolic links of your command. For example, to find out what the `+java+` command is referring to, use the following command:
+
+----
+> readlink --canonicalize /usr/bin/java
+/usr/lib64/jvm/jre-10-openjdk/bin/java
+----
+
+If you see the same path (in our example, it is `+/usr/bin/java+`), there are no alternatives available for this command.
+
+To see the full alternatives (including slaves), use the `+--display+` option:
+
+----
+> sudo update-alternatives --display java
+java - auto mode
+  link best version is /usr/lib64/jvm/jre-1.8.0-openjdk/bin/java
+  link currently points to /usr/lib64/jvm/jre-1.8.0-openjdk/bin/java
+  link java is /usr/bin/java
+  slave java.1.gz is /usr/share/man/man1/java.1.gz
+  slave jre is /usr/lib64/jvm/jre
+  slave jre_exports is /usr/lib64/jvm-exports/jre
+  slave keytool is /usr/bin/keytool
+  slave keytool.1.gz is /usr/share/man/man1/keytool.1.gz
+  slave orbd is /usr/bin/orbd
+  slave orbd.1.gz is /usr/share/man/man1/orbd.1.gz
+[...]
+----
+
+[#sec-ua-set]
+== Setting the default version of alternatives
+
+By default, commands in `+/usr/bin+` refer to the alternatives directory with the highest priority. For example, by default, the command `+java+` shows the following version number:
+
+----
+> java -version
+openjdk version "10.0.1" 2018-04-17
+OpenJDK Runtime Environment (build 10.0.1+10-suse-lp150.1.11-x8664)
+OpenJDK 64-Bit Server VM (build 10.0.1+10-suse-lp150.1.11-x8664, mixed mode)
+----
+
+To change the default `+java+` command to refer to a previous version, run:
+
+------
+> sudo update-alternatives --config java
+root's password:
+There are 2 choices for the alternative java (providing /usr/bin/java).
+
+  Selection    Path                                       Priority   Status
+------------------------------------------------------------
+* 0            /usr/lib64/jvm/jre-10-openjdk/bin/java      2005      auto mode
+  1            /usr/lib64/jvm/jre-1.8.0-openjdk/bin/java   1805      manual mode
+  2            /usr/lib64/jvm/jre-10-openjdk/bin/java      2005      manual mode
+  3            /usr/lib64/jvm/jre-11-openjdk/bin/java      0         manual mode
+
+Press <enter> to keep the current choice[*], or type selection number:
+------
+
+Depending on your system and installed versions, the exact Java version number will be different. After you have selected `+1+`, `+java+` shows the following version number:
+
+----
+> java -version
+java version "1.8.0_171"
+OpenJDK Runtime Environment (IcedTea 3.8.0) (build 1.8.0_171-b11 suse-lp150.2.3.1-x86_64)
+OpenJDK 64-Bit Server VM (build 25.171-b11, mixed mode)
+----
+
+Also, keep in mind the following points:
+
+* When working in manual mode and installing another Java version, the {as} neither touches the links nor changes the generic name.
+* When working in automatic mode and installing another Java version, the {as} changes the Java master link and all slave links (as you can see in <<sec-ua-view,Viewing details on specific alternatives>>). To check the master-slave relationships, use:
++
+----
+> sudo update-alternatives --display java
+----
+
+[#sec-ua-install]
+== Installing custom alternatives
+
+This section describes how to set up custom alternatives on a system.
+
+[WARNING]
+.No custom alternatives for python3
+====
+Do not install custom alternatives for python3. `+/usr/bin/python3+` does not have update alternatives and always points to specific tested versions. Creating a custom python3 alternative pointing to a different version—such as python 3.11—breaks dependent system tools.
+====
+
+The example makes the following assumptions:
+
+* There are two scripts, `+foo-2+` and `+foo-3+`, with similar functionality.
+* The scripts are stored in the `+/usr/local/bin+` directory to avoid any conflicts with the system tools in `+/usr/bin+`.
+* There is a master link `+foo+` that points to either `+foo-2+` or `+foo-3+`.
+
+To provide alternatives on your system, follow these steps:
+
+. Copy your scripts into the `+/usr/local/bin+` directory.
+. Make the scripts executable:
++
+----
+> sudo chmod +x /usr/local/bin/foo-{2,3}
+----
+. Run `+update-alternatives+` for both scripts:
++
+----
+> sudo update-alternatives --install \
+   /usr/local/bin/foo \ <1>
+   foo \ <2>
+   /usr/local/bin/foo-2 \ <3>
+   200 <4>
+> sudo update-alternatives --install \
+   /usr/local/bin/foo \
+   foo \
+   /usr/local/bin/foo-3 \
+   300 
+----
++
+The options after `+--install+` have the following meanings:
++
+<1> The generic name. To avoid confusion, this is normally the script name without any version numbers.
+<2> The name of the master link. Must be the same.
+<3> The path to the original scripts located in `+/usr/local/bin+`.
+<4> The priority. We give `+foo-2+` a lower priority than `+foo-3+`. It is good practice to use a significant number increase to separate priorities. For example, a priority of 200 for `+foo-2+` and 300 for `+foo-3+`.
+. Check the master link:
++
+----
+> sudo update-alternatives --display foo
+foo - auto mode
+  link best version is /usr/local/bin/foo-3
+  link currently points to /usr/local/bin/foo-3
+  link foo is /usr/local/bin/foo
+/usr/local/bin/foo-2 - priority 200
+/usr/local/bin/foo-3 - priority 300
+----
+
+After you completed the described steps, you can use the master link `+/usr/local/bin/foo+`.
+
+If needed, you can install additional alternatives. To remove an alternative, use the following command:
+
+----
+> sudo update-alternatives --remove foo /usr/local/bin/foo-2
+----
+
+After this script has been removed, the {as} for the foo group looks like this:
+
+----
+> sudo update-alternatives --display foo
+foo - auto mode
+  link best version is /usr/local/bin/foo-3
+  link currently points to /usr/local/bin/foo-3
+  link foo is /usr/local/bin/foo
+/usr/local/bin/foo-3 - priority 300
+----
+
+[#sec-ua-slave]
+== Defining dependent alternatives
+
+If you have alternatives, the script itself is not enough. Most commands are not stand-alone—they ship with additional files, such as extensions, configurations or man pages. To create alternatives which are dependent on a master link, use _slave alternatives_.
+
+Let us assume we want to extend our example in <<sec-ua-install,Installing custom alternatives>> and provide man pages and configuration files:
+
+* Two man pages, `+foo-2.1.gz+` and `+foo-3.1.gz+` stored in the `+/usr/local/man/man1+` directory.
+* Two configuration files, `+foo-2.conf+` and `+foo-3.conf+`, stored in `+/etc+`.
+
+Follow these steps to add the additional files to your alternatives:
+
+. Copy the configuration files into `+/etc+`:
++
+----
+> sudo cp foo-{2,3}.conf /etc
+----
+. Copy the man pages into the `+/usr/local/man/man1+` directory:
++
+----
+> sudo cp foo-{2,3}.1.gz /usr/local/man/man1/
+----
+. Add the slave links to the main scripts with the `+--slave+` option:
++
+----
+> sudo update-alternatives --install \
+   /usr/local/bin/foo foo /usr/local/bin/foo-2 200 \
+   --slave /usr/local/man/man1/foo.1.gz \
+   foo.1.gz \
+   /usr/local/man/man1/foo-2.1.gz \
+   --slave /etc/foo.conf \
+   foo.conf \
+   /etc/foo-2.conf
+> sudo update-alternatives --install \
+   /usr/local/bin/foo foo /usr/local/bin/foo-3 300 \
+   --slave /usr/local/man/man1/foo.1.gz \
+   foo.1.gz \
+   /usr/local/man/man1/foo-3.1.gz \
+   --slave /etc/foo.conf \
+   foo.conf \
+   /etc/foo-3.conf
+----
+. Check the master link:
++
+----
+foo - auto mode
+  link best version is /usr/local/bin/foo-3
+  link currently points to /usr/local/bin/foo-3
+  link foo is /usr/local/bin/foo
+  slave foo.1.gz is /usr/local/man/man1/foo.1.gz
+  slave foo.conf is /etc/foo.conf
+/usr/local/bin/foo-2 - priority 200
+  slave foo.1.gz: /usr/local/man/man1/foo-2.1.gz
+  slave foo.conf: /etc/foo-2.conf
+/usr/local/bin/foo-3 - priority 300
+  slave foo.1.gz: /usr/local/man/man1/foo-3.1.gz
+  slave foo.conf: /etc/foo-3.conf
+----
+
+If you change the links with `+update-alternatives --config foo+` to `+foo-2+`, then all slave links will change as well.
+
+ifdef::os-osuse[]
+[#sec-ua-yast]
+== Managing alternatives with {yast}
+
+To manage alternatives with {yast}, install the package `+yast2-alternatives+`. You can then start the module from the {yast} control center, using the entry menu:Miscellaneous[Alternatives].
+endif::[]

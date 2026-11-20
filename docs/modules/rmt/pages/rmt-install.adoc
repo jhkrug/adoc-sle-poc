@@ -1,0 +1,338 @@
+// Converted from xml/rmt_install.xml
+[#cha-rmt-installation]
+= {rmt} installation and configuration
+:description: Learn how to configure and deploy RMT servers within a Kubernetes cluster using Helm as the package manager
+:revdate: 2026-01-16
+
+{rmt} is included in {sls} starting with version 15. Install {rmt} directly during the installation of {productname} or install it on a running system. After the packages are installed, use {yast} to do an initial configuration.
+
+[WARNING]
+.{rmt} server conflicts with installation server
+====
+Configuring a server to be an {rmt} server installs and configures the NGINX Web server, listening on port 80.
+
+However, configuring a machine to be an installation server automatically installs the Apache Web server and configures it to listen on port 80.
+
+Do not try to enable both these functions on the same server. It is not possible for a single server to host both simultaneously.
+====
+
+[#sec-rmt-storage-requirements]
+== Storage requirements
+
+Downloaded packages are stored in `+/usr/share/rmt/public/repo+`, which is a symbolic link to `+/var/lib/rmt/public/repo/+`.
+
+The amount of storage your {rmt} server requires depends on several variables: the number of repositories and architectures that you mirror, and the number of products that are enabled. As a general guide, 1.5 times the total size of all enabled repositories should be sufficient. This is about 200 GB per {sle} release, including all extensions.
+
+[NOTE]
+.{rmt} mirroring fails when `+/tmp+` runs out of space
+====
+When {rmt} mirrors repositories from {scc}, it writes large temporary files in `+/tmp+`. If `+/tmp+` is too small, or is part of the `+/root+` files system, and this file system is small in size, `+/tmp+` quickly runs out of space, resulting in a mirroring failure. For more information, refer to link:https://support.scc.suse.com/s/kb/RMT-mirroring-fails-when-tmp-runs-out-of-disk-space?language=en_US[].
+====
+
+[#sec-rmt-installation-yast]
+== Installation during system installation
+
+To install it during installation, select the `+rmt-server+` package. Package selection can be found in _Installation Settings_ when selecting _Software_.
+
+.{rmt} pattern
+image::rmt_installation.png["",width=70%]
+
+Check for available {rmt} updates immediately after installing {sls} using the `+zypper patch+` command because {suse} continuously releases maintenance updates for {rmt}.
+
+[#sec-rmt-installation-zypper]
+== Installation on an existing system
+
+To install {rmt} on a running {productname} installation, use `+zypper+`:
+
+----
+> sudo zypper in rmt-server
+----
+
+[#sec-rmt-installation-zypper-jeos]
+=== Installation on {minvm}
+
+{minvm} is a minimal customizable operating system that is designed for specific usage scenarios, for example, to be run as:
+
+* A container host
+* A virtual machine guest
+* An appliance base system
+* A small server image
+
+{minvm} image is a good choice for being used as an {rmt} server. You can download {minvm} images for {kvm}, {xen}, {hyperv}, {vmware}, and OpenStack from the public {sls} download page at link:https://www.suse.com/download/sles/[]. Find more information on {minvm} at link:https://documentation.suse.com/smart/virtualization-cloud/html/minimal-vm/[].
+
+Installing {rmt} on {minvm} is the same as installing it on an existing system (see <<sec-rmt-installation-zypper,Installation on an existing system>>). To install {rmt} on {minvm}, run the following command from the {minvm} command line as `+root+`:
+
+----
+# zypper install rmt-server yast2-rmt nginx mariadb
+----
+
+[IMPORTANT]
+.Hardware requirements
+====
+When installing {rmt} on {minvm}, be aware that it requires a minimum of 100 GB disk space, depending on the products you select to mirror. Another requirement is a CPU with at least two cores and 2 GB of RAM.
+====
+
+[#sec-rmt-deploy-kubernetes]
+== Deploying {rmt} on top of the {kube} cluster
+
+This section describes how to deploy {rmt} on top of the {kube} cluster. It uses _Helm_ as the package manager to interact with the {kube} cluster. Find more details about using Helm at link:https://helm.sh/docs/intro/using_helm/[].
+
+[#sec-rmt-deploy-kubernetes-prerequisites]
+=== Prerequisites
+
+* Running {kube} cluster
+* `+helm+` command configured to interact with the cluster
+
+[#sec-rmt-deploy-kubernetes-components]
+=== Application components
+
+Each component of the {rmt} application is deployed in its own container. {rmt} consists of the following components:
+
+{rmt} server::
+Containerized version of the {rmt} application server with the ability to pass its configuration via Helm values. Storage is done on a volume that is allocated to the {kube} cluster. You need to adjust the size of the storage depending on the number of repositories you need to mirror.
+{mariadb}::
+The database back-end for {rmt}. No post-installation task is needed since {rmt} creates the required database and tables at start-up. If passwords are not specified in the `+values.yaml+` file, they are generated automatically.
+Nginx::
+A Web server configured for {rmt} routes. Having a properly configured Web server allows you to target your Ingress traffic (for {rmt}) to this Nginx service directly. You do not need to configure Ingress for {rmt} specific paths handling, as Nginx is configured to take care of this itself.
+
+[#sec-rmt-deploy-kubernetes-values]
+=== The `+values.yaml+` file
+
+The {rmt} chart includes the `+values.yaml+` file where all parameters are documented and their default values are defined. You can override these values by providing your own values file, for example:
+
+----
+> cat << EOF > rmt-config.yaml
+---
+app:
+  storage:
+    class: local-path <1>
+  scc:
+    enabled: false
+    username: "UXXXXXXX"
+    password: "PASSXXXX"
+    products_enable:
+      - SLES/15.3/x86_64
+      - sle-module-python2/15.3/x86_64
+    products_disable:
+      - sle-module-legacy/15.3/x86_64
+      - sle-module-cap-tools/15.3/x86_64
+db:
+  storage:
+    class: local-path <2>
+ingress:
+  enabled: true
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: "/"
+          pathType: Prefix
+  tls:
+    - secretName: rmt-cert
+      hosts:
+        - chart-example.local
+EOF
+----
+
+<1> The `+local-path+` storage class is only available in Rancher workloads. To make the helm chart succeed, you need to install the `+local-path+` storage provisioner by running the following command:
++
+----
+> kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.26/deploy/local-path-storage.yaml
+----
+
+And to install RMT, run:
+
+----
+> helm install rmtsle oci://registry.suse.com/suse/rmt-helm -f rmt-config.yaml
+----
+
+[#sec-rmt-helm-required-values]
+==== Required values
+
+*Key*: app.scc.password::
+{empty}
++
+*Type*: string
++
+*Default*: `+nil+`
++
+*Description*: link:{sccurl}[{scc}] proxy password. The password string needs to be put inside quotes. If the quote character `+"+` is part of the string, it has to be escaped with `+\+`.
+*Key*: app.scc.username::
+{empty}
++
+*Type*: string
++
+*Default*: `+nil+`
++
+*Description*: link:{sccurl}[{scc}] proxy user name. The user name string needs to be put inside quotes. If the quote character `+"+` is part of the string, it has to be escaped with `+\+`.
+*Key*: app.scc.products_enable::
+{empty}
++
+*Type*: list
++
+*Default*: `+[]+`
++
+*Description*: list of products to enable for mirroring
+*Key*: app.scc.products_disable::
+{empty}
++
+*Type*: list
++
+*Default*: `+[]+`
++
+*Description*: list of products to disable for mirroring
+*Key*: app.storage.class::
+{empty}
++
+*Type*: string
++
+*Default*: `+""+`
++
+*Description*: Kubernetes `+storageclass+`.
+*Key*: db.storage.class::
+{empty}
++
+*Type*: string
++
+*Default*: `+""+`
++
+*Description*: Kubernetes `+storageclass+`.
+*Key*: ingress.enabled::
+{empty}
++
+*Type*: bool
++
+*Default*: `+false+`
++
+*Description*: Ingress Enabled
+*Key*: ingress.hosts[0]::
+{empty}
++
+*Type*: object
++
+*Default*: `+{"host":"chart-example.local","paths":[{"path":"/","pathType":"Prefix"}]}+`
++
+*Description*: DNS name at which the {rmt} service will be accessible from clients
+*Key*: ingress.tls[0].hosts[0]::
+{empty}
++
+*Type*: string
++
+*Default*: `+"chart-example.local"+`
++
+*Description*: DNS name at which the {rmt} service will be accessible from clients
+*Key*: ingress.tls[0].secretName::
+{empty}
++
+*Type*: string
++
+*Default*: `+"rmt-cert"+`
++
+*Description*: TLS Ingress Certificate
+
+[#sec-rmt-installation-yast-configuration]
+== {rmt} configuration with {yast}
+
+Configure {rmt} with {yast} as described in the following procedure. It is assumed that this procedure is executed on a newly installed system.
+
+. Start {yast} with the `+rmt+` module.
++
+----
+> sudo yast2 rmt
+----
++
+Alternatively, start {yast} and select menu:Network Services[{rmt} Configuration].
+. Enter your organization credentials. To retrieve your credentials, refer to xref:rmt-mirroring.adoc#sec-rmt-mirroring-credentials[Mirroring credentials].
+. Enter credentials for a new {mariadb} user and database name, and confirm with *Next*.
++
+If a password for the {mariadb} `+root+` user is already set, you are required to enter it. If no password is set for `+root+`, you are asked to enter a new one.
+. Enter a common name for the SSL certificates. The common name should be the _fully qualified domain name_ (_FQDN_) of the server. Enter all domain names and IP addresses with which you want to reach the {rmt} server as alternative common names.
++
+When all common names are entered, select *Next*.
++
+[TIP]
+.Certificate locations for RMT
+====
+* `+/etc/rmt/ssl/rmt-ca.crt+`
++
+This is the CA certificate bundle that `+yast2 rmt+` uses to certify the {rmt} server certificate. `+yast2 rmt+` only creates this file if it does not already exist.
+* `+/etc/rmt/ssl/rmt-server.crt+` and `+/etc/rmt/ssl/rmt-server.key+`
++
+`+yast2 rmt+` only generates a new server certificate and private key if one does not already exist. To regenerate this certificate, refer to xref:rmt-certificates.adoc#cha-manage-certificates-https[Regenerating HTTPS certificates].
+====
+. If `+firewalld+` is enabled on this system, enable the check box to open the required ports.
++
+.Enabling ports in `+firewalld+`
+image::rmt_firewalld.png["",width=65%]
++
+If `+firewalld+` is not enabled now and you plan to enable it later, you can always open relevant ports by running the `+yast2 rmt+` module.
++
+[TIP]
+.Fine-tuning `+firewalld+` settings
+====
+By clicking *Firewall Details*, you can open the relevant ports for specific network interfaces only.
+====
++
+Continue with *Next*.
+. To view the summary, click *Next*. Close {yast} by clicking *Finish*. {yast} then enables and starts all `+systemd+` services and timers.
+
+== Enabling SLP announcements
+
+{rmt} includes the SLP service description file `+/etc/slp.reg.d/rmt-server.reg+`. To enable SLP announcements of the {rmt} service, follow these steps:
+
+. If `+firewalld+` is running, open relevant ports and reload the `+firewalld+` configuration:
++
+----
+> sudo firewall-cmd --permanent --add-port=427/tcp
+success
+> sudo firewall-cmd --permanent --add-port=427/udp
+success
+> sudo firewall-cmd --reload
+----
+. Verify that the SLP server is installed and install it if it is not:
++
+----
+> sudo zypper install openslp-server
+----
+. Enable and start the SLP service:
++
+----
+> sudo systemctl enable slpd.service
+> sudo systemctl restart slpd.service
+----
+
+[#rmt-self-update-firewall]
+== Accessing {scc} from behind a firewall
+
+If the {rmt} server is behind a firewall and cannot access {scc} directly, you need to allow connections to the following domains for both 80 and 443 ports on the firewall.
+
+* scc.suse.com
+* updates.suse.com
+* installer-updates.suse.com
+
+If the firewall you are using does not support host name allowlisting—such as `+firewalld+`—you need to allow connections to the corresponding IP addresses as described in the following steps.
+
+. Resolve the IP address of the domain, for example, `+installer-updates.suse.com+`.
++
+----
+> nslookup installer-updates.suse.com
+[...]
+Address: 152.199.22.115
+----
+. Add firewall rules for ports 80 and 443 for each discovered IP address.
++
+----
+> sudo firewall-cmd --permanent --zone=public \
+  --add-rich-rule='rule family="ipv4" source address="152.199.22.115" \
+  port protocol="tcp" port="80" accept'
+----
++
+----
+> sudo firewall-cmd --permanent --zone=public \
+  --add-rich-rule='rule family="ipv4" source address="152.199.22.115" \
+  port protocol="tcp" port="443" accept'
+----
+. Reload the firewall configuration.
++
+----
+> sudo firewall-cmd --reload
+----

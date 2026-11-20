@@ -1,0 +1,20 @@
+[
+ {
+  "op": "insert",
+  "context": "Repository Mirroring Tool Guide",
+  "docbook": "",
+  "antora": "An administrator's guide to Repository Mirroring Tool—a proxy system for SUSE Customer Center with repository and registration targets."
+ },
+ {
+  "op": "delete",
+  "context": "possible errors or the consequences thereof.",
+  "docbook": "An administrator's guide to Repository Mirroring Tool—a proxy system for SUSE Customer Center with repository and registration targets.",
+  "antora": ""
+ },
+ {
+  "op": "replace",
+  "context": "detailed information on the online migration,",
+  "docbook": "see.",
+  "antora": "see upgrade:sle-update-upgrading.adoc."
+ }
+]

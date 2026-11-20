@@ -1,0 +1,25 @@
+// Converted from xml/common_intro_available_doc.xml
+
+== Available documentation
+
+Online documentation::
+Our documentation is available online at 
+ifdef::cond-suse-product[link:{dsc}[]]
+ifdef::cond-community-project[link:{doo}[]]
+{empty}. Browse or download the documentation in various formats.
++
+[NOTE]
+.Latest updates
+====
+The latest updates are usually available in the English-language version of this documentation.
+====
+{suse} Knowledgebase::
+If you run into an issue, check out the Technical Information Documents (TIDs) that are available online at link:https://www.suse.com/support/kb/[]. Search the {suse} Knowledgebase for known solutions driven by customer need.
+ifdef::cond-suse-product[]
+Release notes::
+For release notes, see link:https://www.suse.com/releasenotes/[].
+endif::[]
+On your system::
+For offline use, the release notes are also available under `+/usr/share/doc/release-notes+` on your system. The documentation for individual packages is available at `+/usr/share/doc/packages+`.
++
+Many commands are also described in their _manual pages_. To view them, run `+man+`, followed by a specific command name. If the `+man+` command is not installed on your system, install it with `+sudo zypper install man+`.

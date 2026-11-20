@@ -1,0 +1,18 @@
+{
+ "only_docbook": [
+  [
+   "see.",
+   1
+  ]
+ ],
+ "only_antora": [
+  [
+   "see",
+   1
+  ],
+  [
+   "upgrade:sle-update-upgrading.adoc.",
+   1
+  ]
+ ]
+}

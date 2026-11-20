@@ -1,0 +1,48 @@
+// Converted from xml/rmt_certificates.xml
+[#cha-manage-certificates]
+= Managing TLS/SSL certificates
+:description: Learn to manage and regenerate TLS/SSL certificates for your RMT server by stopping services, removing old certificates, and importing new ones
+:revdate: 2026-01-16
+
+[#cha-manage-certificates-https]
+== Regenerating HTTPS certificates
+
+HTTPS certificates should be regenerated before they expire or to include additional common alternative names. No additional actions are required on the client machines registered to the {rmt} server if only HTTPS certificates are regenerated.
+
+. Stop nginx and rmt-server services.
++
+----
+# systemctl stop nginx
+# systemctl stop rmt-server
+----
+. Remove previously generated certificates.
++
+----
+# rm /etc/rmt/ssl/rmt-server.*
+----
+. Run the `+yast rmt+` module as described in xref:rmt-install.adoc#sec-rmt-installation-yast-configuration[{rmt} configuration with {yast}].
+
+[#cha-manage-certificates-ca]
+== Regenerating CA certificates and HTTPS certificates
+
+CA certificates can be regenerated after they have expired or in case of security issues.
+
+[WARNING]
+.Import CA certificate on all clients
+====
+The newly generated CA certificate must be imported on all clients registered to the RMT server. This can be done by running the `+rmt-client-setup+` script on the client machines as described in xref:rmt-client.adoc#sec-rmt-client-clientsetupscript[Configuring clients with `+rmt-client-setup+`].
+====
+
+. Stop nginx and rmt-server services.
++
+----
+# systemctl stop nginx
+# systemctl stop rmt-server
+----
+. Remove previously generated CA and HTTPS certificates.
++
+----
+# rm /etc/rmt/ssl/rmt-ca.*
+# rm /etc/rmt/ssl/rmt-server.*
+----
+. Run the `+yast rmt+` module as described in xref:rmt-install.adoc#sec-rmt-installation-yast-configuration[{rmt} configuration with {yast}].

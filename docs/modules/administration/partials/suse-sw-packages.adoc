@@ -1,0 +1,145 @@
+// Converted from xml/suse_sw_packages.xml
+
+[#sec-suse-packages]
+== Information about special software packages
+
+The following chapter provides basic information about the following tools: `+bash+`, `+cron+`, `+logrotate+`, `+locate+`, `+ulimit+` and `+free+`.
+
+[#sec-suse-packages-bash]
+=== The `+bash+` package and `+/etc/profile+`
+
+Bash is the default system shell. When used as a login shell, it reads several initialization files. Bash processes them in the order they appear in this list:
+
+. `+/etc/profile+`
+. `+~/.profile+`
+. `+/etc/bash.bashrc+`
+. `+~/.bashrc+`
+
+Make custom settings in `+~/.profile+` or `+~/.bashrc+`. To ensure the correct processing of these files, it is necessary to copy the basic settings from `+/etc/skel/.profile+` or `+/etc/skel/.bashrc+` into the home directory of the user. It is recommended to copy the settings from `+/etc/skel+` after an update. Execute the following shell commands to prevent the loss of personal adjustments:
+
+----
+> mv ~/.bashrc ~/.bashrc.old
+> cp /etc/skel/.bashrc ~/.bashrc
+> mv ~/.profile ~/.profile.old
+> cp /etc/skel/.profile ~/.profile
+----
+
+Then copy personal adjustments back from the `+*.old+` files.
+
+[#sec-suse-packages-cron]
+=== The cron package
+
+Use `+cron+` to automatically run commands in the background at predefined times. `+cron+` uses specially formatted time tables, and the tool comes with several default ones. Users can also specify custom tables, if needed.
+
+The cron tables are located in `+/var/spool/cron/tabs+`. `+/etc/crontab+` serves as a systemwide cron table. Enter the user name to run the command directly after the time table and before the command. In <<ex-suse-packages-cron,Entry in /etc/crontab>>, `+root+` is entered. Package-specific tables, located in `+/etc/cron.d+`, have the same format. See the `+cron+` man page (`+man cron+`).
+
+[#ex-suse-packages-cron]
+.Entry in /etc/crontab
+====
+----
+1-59/5 * * * *   root   test -x /usr/sbin/atrun && /usr/sbin/atrun
+----
+====
+
+You cannot edit `+/etc/crontab+` by calling the command `+crontab -e+`. This file must be loaded directly into an editor, then modified and saved.
+
+Several packages install shell scripts to the directories `+/etc/cron.hourly+`, `+/etc/cron.daily+`, `+/etc/cron.weekly+` and `+/etc/cron.monthly+`, whose execution is controlled by `+/usr/lib/cron/run-crons+`. `+/usr/lib/cron/run-crons+` is run every 15 minutes from the main table (`+/etc/crontab+`). This guarantees that processes that may have been neglected can be run at the proper time.
+
+To run the `+hourly+`, `+daily+` or other periodic maintenance scripts at custom times, remove the time stamp files regularly using `+/etc/crontab+` entries (see <<ex-suse-packages-cron-time,/etc/crontab: remove time stamp files>>, which removes the `+hourly+` one before every full hour, the `+daily+` one once a day at 2:14 a.m., etc.).
+
+[#ex-suse-packages-cron-time]
+./etc/crontab: remove time stamp files
+====
+----
+59 *  * * *     root  rm -f /var/spool/cron/lastrun/cron.hourly
+14 2  * * *     root  rm -f /var/spool/cron/lastrun/cron.daily
+29 2  * * 6     root  rm -f /var/spool/cron/lastrun/cron.weekly
+44 2  1 * *     root  rm -f /var/spool/cron/lastrun/cron.monthly
+----
+====
+
+Or you can set `+DAILY_TIME+` in `+/etc/sysconfig/cron+` to the time at which `+cron.daily+` should start. The setting of `+MAX_NOT_RUN+` ensures that the daily tasks get triggered to run, even if the user did not turn on the computer at the specified `+DAILY_TIME+` for a longer time. The maximum value of `+MAX_NOT_RUN+` is 14 days.
+
+[#sec-suse-packages-cronstatus]
+=== Stopping cron status messages
+
+To avoid the mail flood caused by cron status messages, the default value of `+SEND_MAIL_ON_NO_ERROR+` in `+/etc/sysconfig/cron+` is set to "``+no+``" for new installations. Even with this setting to "``+no+``", cron data output will still be sent to the `+MAILTO+` address, as documented in the cron man page.
+
+In the update case it is recommended to set these values according to your needs.
+
+include::partial$suse-logfiles.adoc[]
+
+[#sec-suse-locate]
+=== The `+locate+` command
+
+`+locate+`, a command for quickly finding files, is not included in the standard scope of installed software. If desired, install the package `+mlocate+`, the successor of the package `+findutils-locate+`. The `+updatedb+` process is started automatically every night or about 15 minutes after booting the system.
+
+[#sec-suse-ulimit]
+=== The `+ulimit+` command
+
+With the `+ulimit+` (_user limits_) command, it is possible to set limits for the use of system resources and to have these displayed. `+ulimit+` is especially useful for limiting available memory for applications. With this, an application can be prevented from co-opting too much of the system resources and slowing or even hanging up the operating system.
+
+`+ulimit+` can be used with various options. To limit memory usage, use the options listed in <<tab-suse-packages-ulimit,`+ulimit+`: Setting resources for the user>>.
+
+[#tab-suse-packages-ulimit]
+.`+ulimit+`: Setting resources for the user
+[cols="1,1"]
+|===
+a|`+-m+`
+a|The maximum resident set size
+a|`+-v+`
+a|The maximum amount of virtual memory available to the shell
+a|`+-s+`
+a|The maximum size of the stack
+a|`+-c+`
+a|The maximum size of core files created
+a|`+-a+`
+a|All current limits are reported
+|===
+
+Systemwide default entries are set in `+/etc/profile+`. Editing this file directly is not recommended, because changes will be overwritten during system upgrades. To customize systemwide profile settings, use `+/etc/profile.local+`. Per-user settings should be made in `{tilde}__USER__/.profile`.
+
+[#ex-u-ulimit-bashrc]
+.`+ulimit+`: Settings in `+~/.bashrc+`
+====
+----
+# Limits maximum resident set size (physical memory):
+ulimit -m 98304
+
+# Limits of virtual memory:
+ulimit -v 98304
+----
+====
+
+Memory allocations must be specified in KB. For more detailed information, see `+man bash+`.
+
+[IMPORTANT]
+.`+ulimit+` support
+====
+Not all shells support `+ulimit+` directives. PAM (for example, `+pam_limits+`) offers comprehensive adjustment possibilities as an alternative to `+ulimit+`.
+====
+
+[#sec-suse-free]
+=== The `+free+` command
+
+The `+free+` command displays the total amount of free and used physical memory and swap space in the system and the buffers and cache consumed by the kernel. The concept of _available RAM_ dates back to before the days of unified memory management. The slogan _free memory is bad memory_ applies well to Linux. As a result, Linux has always made the effort to balance out caches without allowing free or unused memory.
+
+The kernel does not have direct knowledge of any applications or user data. Instead, it manages applications and user data in a _page cache_. If memory runs short, parts of it are written to the swap partition or to files, from which they can initially be read using the `+mmap+` command (see `+man mmap+`).
+
+The kernel also contains other caches, such as the _slab cache_, where the caches used for network access are stored. This may explain the differences between the counters in `+/proc/meminfo+`. Most, but not all, of them can be accessed via `+/proc/slabinfo+`.
+
+However, if your goal is to find out how much RAM is currently being used, find this information in `+/proc/meminfo+`.
+
+[#sec-suse-manpages]
+=== Man pages and info pages
+
+For some GNU applications (such as tar), the man pages are no longer maintained. For these commands, use the `+--help+` option to get a quick overview of the info pages, which provide more in-depth instructions. Info is GNU's hypertext system. Read an introduction to this system by entering `+info+` `+info+`. Info pages can be viewed with Emacs by entering `+emacs+` `+-f info+` or directly in a console with `+info+`. You can also use tkinfo, xinfo or the help system to view info pages.
+
+[#sec-suse-packages-man]
+=== Selecting man pages using the `+man+` command
+
+To read a man page enter `+man+` _MAN_PAGE_. If a man page with the same name exists in different sections, they will all be listed with the corresponding section numbers. Select the one to display. If you do not enter a section number within a few seconds, the first man page will be displayed.
+
+To change this to the default system behavior, set `+MAN_POSIXLY_CORRECT=1+` in a shell initialization file such as `+~/.bashrc+`.
+
+include::partial$suse-emacs.adoc[]

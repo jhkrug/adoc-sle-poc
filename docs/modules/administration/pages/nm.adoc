@@ -1,0 +1,273 @@
+// Converted from xml/nm.xml
+[#cha-nm]
+= Using {nm}
+:description: Configure network connections with NetworkManager by enabling it in YaST
+:revdate: 2026-01-16
+
+{nm} is the ideal solution for laptops and other portable computers. It supports state-of-the-art encryption types and standards for network connections, including connections to 802.1X protected networks. 802.1X is the “IEEE Standard for Local and Metropolitan Area Networks—Port-Based Network Access Control”. With {nm}, you need not worry about configuring network interfaces and switching between wired or wireless networks when you are on the move. {nm} can automatically connect to known wireless networks or manage several network connections in parallel—the fastest connection is then used as default. Furthermore, you can manually switch between available networks and manage your network connection using an applet in the system tray.
+
+Instead of only one connection being active, multiple connections may be active at once. This enables you to unplug your laptop from an Ethernet and remain connected via a wireless connection.
+
+ifdef::os-sles,os-sled,os-slemicro[]
+[IMPORTANT]
+.Support coverage
+====
+{nm} is only supported by {suse} for desktop workloads with {sleda} or the Workstation extension. All server certifications are done with `+wicked+` as the network configuration tool, and using {nm} may invalidate them. {nm} is not supported by {suse} for server workloads.
+====
+endif::[]
+
+[#sec-nm-usecase]
+== Use cases for {nm}
+
+{nm} provides a sophisticated and intuitive user interface, which enables users to easily switch their network environment. However, {nm} is not a suitable solution in the following cases:
+
+* Your computer provides network services for other computers in your network, for example, it is a DHCP or DNS server.
+* Your computer is a {xen} server or your system is a virtual system inside {xen}.
+
+[#sec-nm-activate]
+== Enabling or disabling {nm}
+
+On desktop and laptop computers, {nm} is enabled by default. You can disable and enable it at any time using the Network Settings module in {yast}.
+
+. Run {yast} and go to menu:System[Network Settings].
+. The *Network Settings* dialog opens. Go to the *Global Options* tab.
+. To configure and manage your network connections with {nm}:
++
+.. In the *Network Setup Method* field, select *User Controlled with {nm}*.
+.. Click *OK* and close {yast}.
+.. Configure your network connections with {nm} as described in <<sec-nm-configure,Configuring network connections>>.
+. To deactivate {nm} and control the network with your own configuration:
++
+.. In the *Network Setup Method* field, choose *Controlled by wicked*.
+.. Click *OK*.
+.. Set up your network card with {yast} using automatic configuration via DHCP or a static external IP address.
++
+Find a detailed description of the network configuration with {yast} in xref:net-basic.adoc#sec-network-yast[Configuring a network connection with {yast}].
+
+[#sec-nm-configure]
+== Configuring network connections
+
+After enabling {nm} in {yast}, configure your network connections with the {nm} front-end available in {gnome}. It shows tabs for all types of network connections, such as wired, wireless, mobile broadband, DSL and VPN connections.
+
+To open the network configuration dialog in {gnome}, open the settings menu via the status menu and click the *Network* entry.
+
+[NOTE]
+.Availability of options
+====
+Depending on your system setup, you may not be allowed to configure certain connections. In a secured environment, certain options may be locked or require `+root+` permission. Ask your system administrator for details.
+====
+
+.{gnome} Network Connections dialog
+image::nm_gnome_tabs.png["",width=50%]
+
+[#pro-nm-configure-add]
+.Adding and editing connections
+. Open the Status Menu, click the gear icon to open *Settings* and click *Network* from the left menu.
+. To add a Connection:
++
+.. Click the *{plus}* icon next to the connection type tab that you want to add.
+.. Depending on the connection type, fill the required fields in the corresponding dialog.
+.. When you are finished click *Add*.
+.. After confirming your changes, the newly configured network connection appears in the list of available networks in the Status Menu.
+. To edit a connection:
++
+.. Click the gear icon on the right side of the connection type tab that you want to edit.
+.. Insert your changes and click *Apply* to save them.
+.. To make your connection available as a system connection go to the *Details* tab and set the check box *Make available to other users*. For more information about user and system connections, see <<sec-nm-sec-types,User and system connections>>.
+
+[#sec-nm-gome-applet-wired]
+=== Managing wired network connections
+
+If your computer is connected to a wired network, use the {nm} applet to manage the connection.
+
+. Open the Status Menu and click *Wired* to switch it off or click the related right arrow to change the connection details.
+. To change the settings click *Wired Settings* and then click the gear icon.
+. To switch off all network connections, activate the *Airplane Mode* setting.
+
+[#sec-nm-gnome-applet-wireless]
+=== Managing wireless network connections
+
+Visible wireless networks are listed in the {gnome} {nm} applet menu under *Wireless Networks*. The signal strength of each network is also shown in the menu. Encrypted wireless networks are marked with a shield icon.
+
+.Connecting to a visible wireless network
+. To connect to a visible wireless network, open the Status Menu and click *Wi-Fi*.
+. Click *Turn On* to enable it.
+. Click *Select Network*, select your Wi-Fi Network and click *Connect*.
+. If the network is encrypted, a configuration dialog opens. It shows the type of encryption the network uses and text boxes for entering the login credentials.
+
+.Connecting to an invisible wireless network
+. To connect to a network that does not broadcast its service set identifier (SSID or ESSID) and therefore cannot be detected automatically, open the Status Menu and click *Wi-Fi*.
+. Click *Wi-Fi Settings* to open the detailed settings menu.
+. Make sure your Wi-Fi is enabled and click *Connect to Hidden Network*.
+. In the dialog that opens, enter the SSID or ESSID in *Network Name* and set encryption parameters if necessary.
+
+A wireless network that has been chosen explicitly remains connected as long as possible. If a network cable is plugged in during that time, any connections that have been set to *Stay connected when possible* will be connected, while the wireless connection remains up.
+
+ifdef::os-sled[]
+[#sec-nm-gnome-applet-captive-portal-detection]
+=== Enabling wireless captive portal detection
+
+On the initial connection, many public wireless hotspots force users to visit a landing page (the _captive portal_). Before you have logged in or agreed to the terms and conditions, all your HTTP requests are redirected to the provider's captive portal.
+
+When connecting to a wireless network with a captive portal, {nm} and {gnome} automatically show the login page as part of the connection process. This ensures that you always know when you are connected, and helps you to get set up as quickly as possible without using the browser to login.
+
+To enable this feature, install the package `+NetworkManager-branding-SLE+` and restart {nm} with:
+
+----
+> sudo systemctl restart network
+----
+
+Whenever you connect to a network with a captive portal, {nm} (or {gnome}) opens the captive portal login page for you. Login with your credentials to get access to the Internet.
+endif::[]
+
+[#sec-nm-gnome-applet-accesspoint]
+=== Configuring your Wi-Fi/Bluetooth card as an access point
+
+If your Wi-Fi/Bluetooth card supports access point mode, you can use {nm} for the configuration.
+
+. Open the Status Menu and click *Wi-Fi*.
+. Click *Wi-Fi Settings* to open the detailed settings menu.
+. Click *Use as Hotspot* and follow the instructions.
+. Use the credentials shown in the resulting dialog to connect to the hotspot from a remote machine.
+
+[#sec-nm-vpn]
+=== {nm} and VPN
+
+{nm} supports several Virtual Private Network (VPN) technologies. For each technology, {productname} comes with a base package providing the generic support for {nm}. Besides that, you also need to install the respective desktop-specific package for your applet.
+
+OpenVPN::
+To use this VPN technology, install:
++
+* `{nm}-openvpn`
+* `{nm}-openvpn-gnome`
+OpenConnect::
+To use this VPN technology, install:
++
+* `{nm}-openconnect`
+* `{nm}-openconnect-gnome`
+PPTP (point-to-point tunneling protocol)::
+To use this VPN technology, install:
++
+* `{nm}-pptp`
+* `{nm}-pptp-gnome`
+
+The following procedure describes how to set up your computer as an OpenVPN client using {nm}. Setting up other types of VPNs works analogously.
+
+Before you begin, make sure that the package `+NetworkManager-openvpn-gnome+` is installed and all dependencies have been resolved.
+
+.Setting up OpenVPN with {nm}
+. Open the application *Settings* by clicking the status icons at the right end of the panel and clicking the *wrench and screwdriver* icon. In the window *All Settings*, choose *Network*.
+. Click the *{plus}* icon.
+. Select *VPN* and then *OpenVPN*.
+. Choose the *Authentication* type. Depending on the setup of your OpenVPN server, choose *Certificates (TLS)* or *Password with Certificates (TLS)*.
+. Insert the necessary values into the respective text boxes. For our example configuration, these are:
++
+[cols="30,70"]
+|===
+a|*Gateway*
+a|The remote endpoint of the VPN server
+a|*User name*
+a|The user (only available when you have selected *Password with Certificates (TLS)*)
+a|*Password*
+a|The password for the user (only available when you have selected *Password with Certificates (TLS)*)
+a|*User Certificate*
+a|`+/etc/openvpn/client1.crt+`
+a|*CA Certificate*
+a|`+/etc/openvpn/ca.crt+`
+a|*Private Key*
+a|`+/etc/openvpn/client1.key+`
+|===
+. Finish the configuration with *Add*.
+. To enable the connection, in the *Network* panel of the *Settings* application click the switch button. Alternatively, click the status icons at the right end of the panel, click the name of your VPN and then *Connect*.
+
+[#sec-nm-security]
+== {nm} and security
+
+{nm} distinguishes two types of wireless connections: trusted and untrusted. A trusted connection is any network that you explicitly selected in the past. All others are untrusted. Trusted connections are identified by the name and MAC address of the access point. Using the MAC address ensures that you cannot use a different access point with the name of your trusted connection.
+
+{nm} periodically scans for available wireless networks. If multiple trusted networks are found, the most recently used is automatically selected. {nm} waits for your selection in case if all networks are untrusted.
+
+If the encryption setting changes but the name and MAC address remain the same, {nm} attempts to connect, but first you are asked to confirm the new encryption settings and provide any updates, such as a new key.
+
+If you switch from using a wireless connection to offline mode, NetworkManager blanks the SSID or ESSID. This ensures that the card is disconnected.
+
+[#sec-nm-sec-types]
+=== User and system connections
+
+{nm} knows two types of connections: `+user+` and `+system+` connections.
+
+User connections require every user to authenticate in {nm}, which stores the user's credentials in their local GNOME keyring so that they do not need to re-enter them every time they connect.
+
+System connections are available to all users automatically. The first user to create the connection enters any necessary credentials, and then all other users have access without needing to know the credentials. The difference in configuring a user or system connection is a single check box, *Make available to other users*. For information on how to configure user or system connections with {nm}, refer to <<sec-nm-configure,Configuring network connections>>.
+
+[#sec-nm-sec-store]
+=== Storing passwords and credentials
+
+If you do not want to re-enter your credentials each time you want to connect to an encrypted network, you can use the {gnome} Keyring Manager to store your credentials encrypted on the disk, secured by a master password.
+
+ifdef::os-sles,os-sled[]
+[#sec-nm-sec-firewall]
+=== Firewall zones
+
+.`+firewalld+` zones in {nm}
+image::nm_firewalld_zones.png["",width=50%]
+
+The firewall zones set general rules about which network connections are allowed. To configure the zone of _firewalld_ for a wired connection, go to the _Identity_ tab of the connection settings. To configure the zone of _firewalld_ for a Wi-Fi connection, go to the _Security_ tab of the connection settings.
+
+If you are in your home network, use the zone `+home+`. For public wireless networks, switch to `+public+`. If you are in a secure environment and want to allow all connections, use the zone `+trusted+`.
+
+For details about firewalld, see xref:security:security-firewall.adoc#sec-security-firewall-firewalld[`+firewalld+`].
+endif::[]
+
+[#sec-nm-faq]
+== Frequently asked questions
+
+In the following, find several frequently asked questions about configuring special network options with {nm}.
+
+[qanda]
+How to tie a connection to a specific device?::
+By default, connections in {nm} are device type-specific: they apply to all physical devices with the same type. If more than one physical device per connection type is available (for example, your machine is equipped with two Ethernet cards), you can tie a connection to a certain device.
++
+To do this in {gnome}, first look up the MAC address of your device (use the *Connection Information* available from the applet, or use the output of command line tools like `+nm-tool+` or `+wicked show all+`). Then start the dialog for configuring network connections and choose the connection you want to modify. On the *Wired* or *Wireless* tab, enter the *MAC Address* of the device and confirm your changes.
+How to specify a certain access point in case multiple access points with the same ESSID are detected?::
+When multiple access points with different wireless bands (a/b/g/n) are available, the access point with the strongest signal is automatically chosen by default. To override this, use the *BSSID* field when configuring wireless connections.
++
+The Basic Service Set Identifier (BSSID) uniquely identifies each Basic Service Set. In an infrastructure Basic Service Set, the BSSID is the MAC address of the wireless access point. In an independent (ad-hoc) Basic Service Set, the BSSID is a locally administered MAC address generated from a 46-bit random number.
++
+Start the dialog for configuring network connections as described in <<sec-nm-configure,Configuring network connections>>. Choose the wireless connection you want to modify and click *Edit*. On the *Wireless* tab, enter the BSSID.
+How to share network connections with other computers?::
+The primary device (the device which is connected to the Internet) does not need any special configuration. However, you need to configure the device that is connected to the local hub or machine as follows:
++
+. Start the dialog for configuring network connections as described in <<sec-nm-configure,Configuring network connections>>. Choose the connection you want to modify and click *Edit*. Switch to the *IPv4 Settings* tab and from the *Method* drop-down list, activate *Shared to other computers*. That will enable IP traffic forwarding and run a DHCP server on the device. Confirm your changes in {nm}.
+. As the DHCP server uses port `+67+`, make sure that it is not blocked by the firewall: On the machine sharing the connections, start {yast} and select menu:Security and Users[Firewall]. Switch to the *Allowed Services* category. If *DHCP Server* is not already shown as *Allowed Service*, select *DHCP Server* from *Services to Allow* and click *Add*. Confirm your changes in {yast}.
+How to provide static DNS information with automatic (DHCP, PPP, VPN) addresses?::
+In case a DHCP server provides invalid DNS information (and/or routes), you can override it. Start the dialog for configuring network connections as described in <<sec-nm-configure,Configuring network connections>>. Choose the connection you want to modify and click *Edit*. Switch to the *IPv4 Settings* tab, and from the *Method* drop-down box, activate *Automatic (DHCP) addresses only*. Enter the DNS information in the *DNS Servers* and *Search Domains* fields. To *Ignore automatically obtained routes* click *Routes* and activate the respective check box. Confirm your changes.
+How to make {nm} connect to password protected networks before a user logs in?::
+Define a `+system connection+` that can be used for such purposes. For more information, refer to <<sec-nm-sec-types,User and system connections>>.
+
+[#sec-nm-trouble]
+== Troubleshooting
+
+Connection problems can occur. Common problems related to {nm} include the applet not starting or a missing VPN option. Methods for resolving and preventing these problems depend on the tool used.
+
+{nm} desktop applet does not start::
+The applets starts automatically if the network is set up for {nm} control. If the applet does not start, check if {nm} is enabled in {yast} as described in <<sec-nm-activate,Enabling or disabling {nm}>>. Then make sure that the {nm}-gnome package is also installed.
++
+If the desktop applet is installed but is not running, start it manually with the command `+nm-applet+`.
+{nm} applet does not include the VPN option::
+Support for {nm}, applets, and VPN for {nm} is distributed in separate packages. If your {nm} applet does not include the VPN option, check if the packages with {nm} support for your VPN technology are installed. For more information, see <<sec-nm-vpn,{nm} and VPN>>.
+No network connection available::
+If you have configured your network connection correctly and all other components for the network connection (router, etc.) are also up and running, it sometimes helps to restart the network interfaces on your computer. To do so, log in to a command line as `+root+` and run `+systemctl restart wickeds+`.
+
+[#sec-nm-more]
+== More information
+
+More information about {nm} can be found on the following Web sites and directories:
+
+{nm} project page::
+link:https://gitlab.freedesktop.org/NetworkManager/NetworkManager[]
+Package documentation::
+Also check out the information in the following directories for the latest information about {nm} and the {gnome} applet:
++
+* `+/usr/share/doc/packages/NetworkManager/+`,
+* `+/usr/share/doc/packages/NetworkManager-gnome/+`.

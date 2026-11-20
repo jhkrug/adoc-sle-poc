@@ -1,0 +1,302 @@
+// Converted from xml/net_yast.xml
+
+[#sec-network-yast]
+== Configuring a network connection with {yast}
+
+There are many supported networking types on Linux. Most of them use different device names and the configuration files are spread over several locations in the file system. For a detailed overview of the aspects of manual network configuration, see <<sec-network-manconf,Configuring a network connection manually>>.
+
+ifdef::os-sled[On {productname}, where {nm} is active by default, all network cards are configured. If {nm} is not active, only the first interface with link up (with a network cable connected) is automatically configured.]
+ifdef::os-sles,os-osuse[All network interfaces with link up (with a network cable connected) are automatically configured.]
+ Additional hardware can be configured any time on the installed system. The following sections describe the network configuration for all types of network connections supported by {productname}.
+
+ifdef::os-sles[]
+ifdef::arch-zseries[]
+[TIP]
+.{zseries}: hotpluggable network cards
+====
+On {zseries} platforms, hotpluggable network cards are supported, but not their automatic network integration via DHCP (as is the case on the PC). After they have been detected, you need to manually configure the interface.
+====
+endif::[]
+endif::[]
+
+[#sec-network-yast-netcard]
+=== Configuring the network card with {yast}
+
+To configure your Ethernet or Wi-Fi/Bluetooth card in {yast}, select menu:System[Network Settings]. After starting the module, {yast} displays the *Network Settings* dialog with four tabs: *Global Options*, *Overview*, *Hostname/DNS* and *Routing*.
+
+The *Global Options* tab allows you to set general networking options such as the network setup method, IPv6, and general DHCP options. For more information, see <<sec-network-yast-netcard-global,Configuring global networking options>>.
+
+The *Overview* tab contains information about installed network interfaces and configurations. Any properly detected network card is listed with its name. You can manually configure new cards, remove or change their configuration in this dialog. To manually configure a card that was not automatically detected, see <<sec-network-yast-netcard-man,Configuring an undetected network card>>. To change the configuration of an already configured card, see <<sec-network-yast-netcard-change,Changing the configuration of a network card>>.
+
+The *Hostname/DNS* tab allows to set the host name of the machine and name the servers to be used. For more information, see <<sec-network-yast-change-host,Configuring host name and DNS>>.
+
+The *Routing* tab is used for the configuration of routing. See <<sec-network-yast-change-route,Configuring routing>> for more information.
+
+[#fig-yast2-neticard]
+.Configuring network settings
+image::yast2_net_icard.png["",width=75%]
+
+[#sec-network-yast-netcard-global]
+==== Configuring global networking options
+
+The *Global Options* tab of the {yast} *Network Settings* module allows you to set important global networking options, such as the use of {nm}, IPv6 and DHCP client options. These settings are applicable for all network interfaces.
+
+ifdef::os-sles[]
+[NOTE]
+.{nm} provided by workstation extension
+====
+{nm} is now provided by the {slewe}. To install {nm}, activate the Workstation Extension repository, and select the {nm} packages.
+====
+endif::[]
+
+In the *Network Setup Method* choose the way network connections are managed. If you want a {nm} desktop applet to manage connections for all interfaces, choose *{nm} Service*. {nm} is well suited for switching between multiple wired and wireless networks. If you do not run a desktop environment, or if your computer is a {xen} server, virtual system, or provides network services such as DHCP or DNS in your network, use the *Wicked Service* method. If {nm} is used, `+nm-applet+` should be used to configure network options and the *Overview*, *Hostname/DNS* and *Routing* tabs of the *Network Settings* module are disabled. 
+ifdef::os-sled,os-osuse[For more information on {nm}, see xref:nm.adoc[].]
+ifdef::os-sles[For more information on {nm}, see the {sled} documentation.]
+
+In the *IPv6 Protocol Settings* choose whether to use the IPv6 protocol. It is possible to use IPv6 together with IPv4. By default, IPv6 is enabled. However, in networks not using IPv6 protocol, response times can be faster with IPv6 protocol disabled. To disable IPv6, deactivate *Enable IPv6*. If IPv6 is disabled, the kernel no longer loads the IPv6 module automatically. This setting will be applied after reboot.
+
+In the *DHCP Client Options* configure options for the DHCP client. The *DHCP Client Identifier* must be different for each DHCP client on a single network. If left empty, it defaults to the hardware address of the network interface. However, if you are running several virtual machines using the same network interface and, therefore, the same hardware address, specify a unique free-form identifier here.
+
+The *Hostname to Send* specifies a string used for the host name option field when the DHCP client sends messages to DHCP server. Some DHCP servers update name server zones (forward and reverse records) according to this host name (Dynamic DNS). Also, some DHCP servers require the *Hostname to Send* option field to contain a specific string in the DHCP messages from clients. Leave `+AUTO+` to send the current host name (that is the one defined in `+/etc/hostname+`). Make the option field empty for not sending any host name.
+
+If you do not want to change the default route according to the information from DHCP, deactivate *Change Default Route via DHCP*.
+
+[#sec-network-yast-netcard-change]
+==== Changing the configuration of a network card
+
+To change the configuration of a network card, select a card from the list of the detected cards in menu:Network Settings[Overview] in {yast} and click *Edit*. The *Network Card Setup* dialog appears in which to adjust the card configuration using the *General*, *Address* and *Hardware* tabs.
+
+[#sec-network-yast-change-address]
+===== Configuring IP addresses
+
+You can set the IP address of the network card or the way its IP address is determined in the *Address* tab of the *Network Card Setup* dialog. Both IPv4 and IPv6 addresses are supported. The network card can have *No IP Address* (which is useful for bonding devices), a *Statically Assigned IP Address* (IPv4 or IPv6) or a *Dynamic Address* assigned via *DHCP* or *Zeroconf* or both.
+
+If using *Dynamic Address*, select whether to use *DHCP Version 4 Only* (for IPv4), *DHCP Version 6 Only* (for IPv6) or *DHCP Both Version 4 and 6*.
+
+If possible, the first network card with link that is available during the installation is automatically configured to use automatic address setup via DHCP. 
+ifdef::os-sled[On {sled}, where {nm} is active by default, all network cards are configured.]
+
+ifdef::os-sles[]
+ifdef::arch-zseries[]
+[NOTE]
+.{zseries} and DHCP
+====
+On {zseries} platforms, DHCP-based address configuration is only supported with network cards that have a MAC address. This is only the case with OSA and OSA Express cards.
+====
+endif::[]
+endif::[]
+
+DHCP should also be used if you are using a DSL line but with no static IP assigned by the ISP (Internet Service Provider). If you decide to use DHCP, configure the details in *DHCP Client Options* in the *Global Options* tab of the *Network Settings* dialog of the {yast} network card configuration module. If you have a virtual host setup where different hosts communicate through the same interface, an *DHCP Client Identifier* is necessary to distinguish them.
+
+DHCP is a good choice for client configuration but it is not ideal for server configuration. To set a static IP address, proceed as follows:
+
+. Select a card from the list of detected cards in the *Overview* tab of the {yast} network card configuration module and click *Edit*.
+. In the *Address* tab, choose *Statically Assigned IP Address*.
+. Enter the *IP Address*. Both IPv4 and IPv6 addresses can be used. Enter the network mask in *Subnet Mask*. If the IPv6 address is used, use *Subnet Mask* for prefix length in format `+/64+`.
++
+Optionally, you can enter a fully qualified *Hostname* for this address, which will be written to the `+/etc/hosts+` configuration file.
+. Click *Next*.
+. To activate the configuration, click *OK*.
+
+[NOTE]
+.Interface activation and link detection
+====
+During activation of a network interface, `+wicked+` checks for a carrier and only applies the IP configuration when a link has been detected. If you need to apply the configuration regardless of the link status (for example, when you want to test a service listening to a certain address), you can skip link detection by adding the variable `+LINK_REQUIRED=no+` to the configuration file of the interface in `+/etc/sysconfig/network/ifcfg+`.
+
+Additionally, you can use the variable `LINK_READY_WAIT=_5_` to specify the timeout for waiting for a link in seconds.
+
+For more information about the `+ifcfg-*+` configuration files, refer to <<sec-network-manconf-files-ifcfg,`+/etc/sysconfig/network/ifcfg-*+`>> and `+man 5 ifcfg+`.
+====
+
+If you use the static address, the name servers and default gateway are not configured automatically. To configure name servers, proceed as described in <<sec-network-yast-change-host,Configuring host name and DNS>>. To configure a gateway, proceed as described in <<sec-network-yast-change-route,Configuring routing>>.
+
+[#sec-network-yast-configure-addresses]
+===== Configuring multiple addresses
+
+A single network device can have multiple IP addresses called aliases or labels.
+
+[NOTE]
+.Aliases are a compatibility feature
+====
+Aliases or labels work with IPv4 only. Using `+iproute2+` network interfaces makes it possible to have one or more addresses.
+====
+
+To set additional addresses for your network card using {yast}, proceed as follows:
+
+. Select a card from the list of detected cards in the *Overview* tab of the {yast} *Network Settings* dialog and click *Edit*.
+. In the menu:Address[Additional Addresses] tab, click *Add*.
+. Enter *IPv4 Address Label*, *IP Address*, and *Netmask*. Note that IP aliases must be added with the `+/32+` netmask. Do not include the interface name in the alias name.
+. To activate the configuration, confirm the settings.
+
+[#sec-network-yast-change-udev]
+===== Changing the device name and udev rules
+
+It is possible to change the device name of the network card when it is used. It is also possible to determine whether the network card should be identified by udev via its hardware (MAC) address or via the bus ID. The latter option is preferable in large servers to simplify hotplugging of cards. To set these options with {yast}, proceed as follows:
+
+. Select a card from the list of detected cards in the *Overview* tab of the {yast} *Network Settings* dialog and click *Edit*.
+. Go to the *General* tab. The current device name is shown in *Udev Rules*. Click *Change*.
+. Select whether udev should identify the card by its *MAC Address* or *Bus ID*. The current MAC address and bus ID of the card are shown in the dialog.
+. To change the device name, check the *Change Device Name* option and edit the name.
+. To activate the configuration, confirm the settings.
+
+[#sec-network-yast-change-driver]
+===== Changing network card kernel driver
+
+For some network cards, several kernel drivers may be available. If the card is already configured, {yast} allows you to select a kernel driver to be used from a list of available suitable drivers. It is also possible to specify options for the kernel driver. To set these options with {yast}, proceed as follows:
+
+. Select a card from the list of detected cards in the *Overview* tab of the {yast} Network Settings module and click *Edit*.
+. Go to the *Hardware* tab.
+. Select the kernel driver to be used in *Module Name*. Enter any options for the selected driver in *Options* in the form `+=+` =_VALUE_. If more options are used, they should be space-separated.
+. To activate the configuration, confirm the settings.
+
+[#sec-network-yast-change-start]
+===== Activating the network device
+
+If you use the method with `+wicked+`, you can configure your device to either start during boot, on cable connection, on card detection, manually, or never. To change device start-up, proceed as follows:
+
+. In {yast} select a card from the list of detected cards in menu:System[Network Settings] and click *Edit*.
+. In the *General* tab, select the desired entry from *Device Activation*.
++
+Choose *At Boot Time* to start the device during the system boot. With *On Cable Connection*, the interface is watched for any existing physical connection. With *On Hotplug*, the interface is set when available. It is similar to the *At Boot Time* option, and only differs in that no error occurs if the interface is not present at boot time. Choose *Manually* to control the interface manually with `+ifup+`. Choose *Never* to not start the device. The *On NFSroot* is similar to *At Boot Time*, but the interface does not shut down with the `+systemctl stop network+` command; the `+network+` service also cares about the `+wicked+` service if `+wicked+` is active. Use this if you use an NFS or iSCSI root file system.
+. To activate the configuration, confirm the settings.
+
+[TIP]
+.NFS as a root file system
+====
+On (diskless) systems where the root partition is mounted via network as an NFS share, you need to be careful when configuring the network device with which the NFS share is accessible.
+
+When shutting down or rebooting the system, the default processing order is to turn off network connections, then unmount the root partition. With NFS root, this order causes problems as the root partition cannot be cleanly unmounted as the network connection to the NFS share is already not activated. To prevent the system from deactivating the relevant network device, open the network device configuration tab as described in <<sec-network-yast-change-start,Activating the network device>> and choose *On NFSroot* in the *Device Activation* pane.
+====
+
+[#sec-network-yast-change-mtu]
+===== Setting up maximum transfer unit size
+
+You can set a maximum transmission unit (MTU) for the interface. MTU refers to the largest allowed packet size in bytes. A higher MTU brings higher bandwidth efficiency. However, large packets can block up a slow interface for some time, increasing the lag for further packets.
+
+. In {yast} select a card from the list of detected cards in menu:System[Network Settings] and click *Edit*.
+. In the *General* tab, select the desired entry from the *Set MTU* list.
+. To activate the configuration, confirm the settings.
+
+[#sec-network-yast-change-pciemulti]
+===== PCIe multifunction devices
+
+Multifunction devices that support LAN, iSCSI, and FCoE are supported. The {yast} FCoE client (`+yast2 fcoe-client+`) shows the private flags in additional columns to allow the user to select the device meant for FCoE. The {yast} network module (`+yast2 lan+`) excludes “storage only devices” for network configuration.
+
+ifdef::os-sles[]
+For more information about FCoE, see xref:storage:storage-fcoe.adoc#sec-fcoe-yast[Managing FCoE services with {yast}].
+endif::[]
+
+[#sec-network-yast-change-infiniband]
+===== Infiniband configuration for IP-over-InfiniBand (IPoIB)
+
+. In {yast} select the InfiniBand device in menu:System[Network Settings] and click *Edit*.
+. In the *General* tab, select one of the *IP-over-InfiniBand* (IPoIB) modes: *connected* (default) or *datagram*.
+. To activate the configuration, confirm the settings.
+
+For more information about InfiniBand, see `+/usr/src/linux/Documentation/infiniband/ipoib.txt+`.
+
+[#sec-network-yast-change-fire]
+===== Configuring the firewall
+
+Without having to perform the detailed firewall setup as described in xref:security:security-firewall.adoc#sec-security-firewall-firewalld[`+firewalld+`], you can determine the basic firewall configuration for your device as part of the device setup. Proceed as follows:
+
+. Open the {yast} menu:System[Network Settings] module. In the *Overview* tab, select a card from the list of detected cards and click *Edit*.
+. Enter the *General* tab of the *Network Settings* dialog.
+. Determine the *Firewall Zone* to which your interface should be assigned. The following options are available:
++
+Firewall disabled::
+This option is available only if the firewall is disabled and the firewall does not run. Only use this option if your machine is part of a greater network that is protected by an outer firewall.
+Automatically assign zone::
+This option is available only if the firewall is enabled. The firewall is running and the interface is automatically assigned to a firewall zone. The zone which contains the keyword `+any+` or the external zone will be used for such an interface.
+Internal zone (unprotected)::
+The firewall is running, but does not enforce any rules to protect this interface. Use this option if your machine is part of a greater network that is protected by an outer firewall. It is also useful for the interfaces connected to the internal network, when the machine has more network interfaces.
+Demilitarized zone::
+A demilitarized zone is an additional line of defense in front of an internal network and the (hostile) Internet. Hosts assigned to this zone can be reached from the internal network and from the Internet, but cannot access the internal network.
+External zone::
+The firewall is running on this interface and fully protects it against other—presumably hostile—network traffic. This is the default option.
+. To activate the configuration, confirm the settings.
+
+[#sec-network-yast-netcard-man]
+==== Configuring an undetected network card
+
+If a network card is not detected correctly, the card is not included in the list of detected cards. If you are sure that your system includes a driver for your card, you can configure it manually. You can also configure special network device types, such as bridge, bond, TUN or TAP. To configure an undetected network card (or a special device) proceed as follows:
+
+. In the menu:System[Network Settings > Overview] dialog in {yast} click *Add*.
+. In the *Hardware* dialog, set the *Device Type* of the interface from the available options and *Configuration Name*. If the network card is a USB device, activate the respective check box and exit this dialog with *Next*. Otherwise, you can define the kernel *Module Name* to be used for the card and its *Options*, if necessary.
++
+In *Ethtool Options*, you can set `+ethtool+` options used by `+ifup+` for the interface. For information about available options, see the `+ethtool+` manual page.
++
+If the option string starts with a `+-+` (for example, `-K _INTERFACE_NAME_ rx on`), the second word in the string is replaced with the current interface name. Otherwise (for example, `+autoneg off speed 10+`) `+ifup+` adds `-s _INTERFACE_NAME_` to the beginning.
+. Click *Next*.
+. Configure any needed options, such as the IP address, device activation or firewall zone for the interface in the *General*, *Address*, and *Hardware* tabs. For more information about the configuration options, see <<sec-network-yast-netcard-change,Changing the configuration of a network card>>.
+. If you selected *Wireless* as the device type of the interface, configure the wireless connection in the next dialog.
+. To activate the new network configuration, confirm the settings.
+
+[#sec-network-yast-change-host]
+==== Configuring host name and DNS
+
+If you did not change the network configuration during installation and the Ethernet card was already available, a host name was automatically generated for your computer and DHCP was activated. The same applies to the name service information your host needs to integrate into a network environment. If DHCP is used for network address setup, the list of domain name servers is automatically filled with the appropriate data. If a static setup is preferred, set these values manually.
+
+To change the name of your computer and adjust the name server search list, proceed as follows:
+
+. Go to the menu:Network Settings[Hostname/DNS] tab in the *System* module in {yast}.
+. Enter the *Hostname*. Note that the host name is global and applies to all network interfaces.
++
+If you are using DHCP to get an IP address, the host name of your computer will be automatically set by the DHCP server. You should disable this behavior if you connect to different networks, because they may assign different host names and changing the host name at runtime may confuse the graphical desktop. To disable using DHCP to get an IP address deactivate *Change Hostname via DHCP*.
+. In *Modify DNS Configuration*, select the way the DNS configuration (name servers, search list, the content of the `+/run/netconfig/resolv.conf+` file) is modified.
++
+If the *Use Default Policy* option is selected, the configuration is handled by the `+netconfig+` script which merges the data defined statically (with {yast} or in the configuration files) with data obtained dynamically (from the DHCP client or NetworkManager). This default policy is usually sufficient.
++
+If the *Only Manually* option is selected, `+netconfig+` is not allowed to modify the `+/run/netconfig/resolv.conf+` file. However, this file can be edited manually.
++
+If the *Custom Policy* option is selected, a *Custom Policy Rule* string defining the merge policy should be specified. The string consists of a comma-separated list of interface names to be considered a valid source of settings. Except for complete interface names, basic wild cards to match multiple interfaces are allowed, as well. For example, `+eth* ppp?+` will first target all eth and then all ppp0-ppp9 interfaces. There are two special policy values that indicate how to apply the static settings defined in the `+/etc/sysconfig/network/config+` file:
++
+--
+`+STATIC+`::
+The static settings need to be merged together with the dynamic settings.
+`+STATIC_FALLBACK+`::
+The static settings are used only when no dynamic configuration is available.
+--
++
+For more information, see the man page of `+netconfig+`(8) (`+man 8 netconfig+`).
+. Enter the *Name Servers* and fill in the *Domain Search* list. Name servers must be specified by IP addresses, such as {dnsip}, not by host names. Names specified in the *Domain Search* tab are domain names used for resolving host names without a specified domain. If more than one *Domain Search* is used, separate domains with commas or white space.
+. To activate the configuration, confirm the settings.
+
+It is also possible to edit the host name using {yast} from the command line. The changes made by {yast} take effect immediately (which is not the case when editing the `+/etc/hostname+` file manually). To change the host name, use the following command:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} yast dns edit hostname=__HOSTNAME__
+----
+
+To change the name servers, use the following commands:
+
+[subs="attributes+"]
+----
+# yast dns edit nameserver1={dnsip}
+# yast dns edit nameserver2={dnsip117}
+# yast dns edit nameserver3={dnsip118}
+----
+
+[#sec-network-yast-change-route]
+==== Configuring routing
+
+To make your machine communicate with other machines and other networks, routing information must be given to make network traffic take the correct path. If DHCP is used, this information is automatically provided. If a static setup is used, this data must be added manually.
+
+. In {yast} go to menu:Network Settings[Routing].
+. Enter the IP address of the *Default Gateway* (IPv4 and IPv6 if necessary). The default gateway matches every possible destination, but if a routing table entry exists that matches the required address, this will be used instead of the default route via the Default Gateway.
+. More entries can be entered in the *Routing Table*. Enter the *Destination* network IP address, *Gateway* IP address and the *Netmask*. Select the *Device* through which the traffic to the defined network will be routed (the minus sign stands for any device). To omit any of these values, use the minus sign `+-+`. To enter a default gateway into the table, use `+default+` in the *Destination* field.
++
+[NOTE]
+.Route prioritization
+====
+If more default routes are used, it is possible to specify the metric option to determine which route has a higher priority. To specify the metric option, enter `- metric _NUMBER_` in *Options*. The lowest possible metric is 0. The route with the lowest metric has the highest priority and is used as default. If the network device is disconnected, its route will be removed and the next one will be used.
+====
+. If the system is a router, enable *IPv4 Forwarding* and *IPv6 Forwarding* in the *Network Settings* as needed.
+. To activate the configuration, confirm the settings.
+
+ifdef::os-sles[]
+ifdef::arch-zseries[]
+include::partial$zseries-net-lan-devices.adoc[]
+endif::[]
+endif::[]

@@ -1,0 +1,264 @@
+// Converted from xml/x11.xml
+[#cha-gui-desktop]
+= Graphical user interface
+:description: Configure and customize the graphical interface of SUSE products, including X.org, Wayland, GNOME and NVIDIA/Intel GPU settings for all users
+:revdate: 2026-07-21
+
+[abstract]
+--
+{productname} includes the X.org server
+ifdef::os-sled,os-osuse[, Wayland]
+ and the {gnome} desktop. This chapter describes the configuration of the graphical user interface for all users.
+--
+
+[#sec-gui-desktop-xorg]
+== X Window System
+
+The X.org server is the de facto standard for implementing the X11 protocol. X is network-based, enabling applications started on one host to be displayed on another host connected over any kind of network (LAN or Internet).
+
+The X Window System needs no configuration in most cases. The hardware is dynamically detected during X start-up. The use of `+xorg.conf+` is therefore deprecated. If you still need to specify custom options to change the way X behaves, you can still do so by modifying configuration files under `+/etc/X11/xorg.conf.d/+`.
+
+ifdef::os-sled,os-osuse[]
+In {productname} {productnumber} Wayland is included as an alternative to the X.org server. It can be selected during the installation.
+endif::[]
+
+ifdef::os-sles[]
+ifdef::arch-zseries[]
+[TIP]
+.{zseries}: configuring the graphical user interface
+====
+{zseries} does not have any input or output devices supported by {xvendor}. Therefore, none of the configuration procedures described in this section apply. More relevant information for {zseries} can be found in xref:deployment:deployment-prep-zseries.adoc[].
+====
+endif::[]
+endif::[]
+
+Install the package `+xorg-docs+` to get more in-depth information about X11. `+man 5 xorg.conf+` tells you more about the format of the manual configuration (if needed). More information on the X11 development can be found on the project's home page at link:https://www.x.org[].
+
+Drivers are found in `+xf86-video-*+` packages, for example `+xf86-video-ati+`. Many of the drivers delivered with these packages are described in detail in the related manual page. For example, if you use the `+ati+` driver, find more information about this driver in `+man 4 ati+`.
+
+Information about third-party drivers is available in `+/usr/share/doc/packages/<package_name>+`. For example, the documentation of `+x11-video-nvidiaG03+` is available in `+/usr/share/doc/packages/x11-video-nvidiaG04+` after the package was installed.
+
+Install the package `+xrdp+` on a server and use RDP client software to access the server via the remote desktop protocol.
+
+include::partial$x11-fonts.adoc[]
+
+[#sec-gui-desktop-gnome]
+== {gnome} configuration for administrators
+
+[#sec-gui-desktop-gnome-dconf]
+=== The `+dconf+` system
+
+Configuration of the {gnome} desktop is managed with `+dconf+`. It is a hierarchically structured database or registry that allows users to modify their personal settings, and system administrators to set default or mandatory values for all users. `+dconf+` replaces the `+gconf+` system of {gnome} 2.
+
+Use `+dconf-editor+` to view the `+dconf+` options with a graphical user interface. Use `+dconf+` to access and modify configuration options with the command line.
+
+The {gnome} `+Tweaks+` tool provides an easy-to-use user interface for additional configuration options beyond the normal {gnome} configuration. The tool can be started from the {gnome} application menu or from the command line with `+gnome-tweak-tool+`.
+
+[#sec-gui-desktop-gnome-global]
+=== System-wide configuration
+
+Global `+dconf+` configuration parameters can be set in the `+/etc/dconf/db/+` directory. This includes the configuration for GDM or locking certain configuration options for users.
+
+Use the following procedure as an example to create a system-wide configuration:
+
+. Create a new directory that ends with a `+.d+` in `+/etc/dconf/db/+`. This directory can contain an arbitrary amount of text files with configuration options. For this example, create the file `+/etc/dconf/db/network.d/00-proxy+` with the following content:
++
+----
+# This is a comment
+[system/proxy/http]
+host='10.0.0.1'
+enabled=true
+----
+. Parse the new configuration directives into the dconf database format:
++
+----
+> sudo dconf update
+----
+. Add the new `+network+` configuration database to the default user profile, by creating the file `+/etc/dconf/profile/user+`. Then add the following content:
++
+----
+system-db:network
+----
++
+The file `+/etc/dconf/profile/user+` is a {gnome} default. Other profiles can be defined in the environment variable `+DCONF_PROFILE+`.
+. Optional: to lock the proxy configuration for users, create the file `+/etc/dconf/db/network/locks/proxy+`. Then add a line to this file with the keys that may not be changed:
++
+----
+/system/proxy/http/host
+/system/proxy/http/enabled
+----
+
+You can use the graphical `+dconf-editor+` to create a profile with one user and then use `+dconf dump /+` to list all configuration options. The configuration options can then be stored in a global profile.
+
+A detailed description of the global configuration is available at link:https://wiki.gnome.org/Projects/dconf/SystemAdministrators[].
+
+ifdef::os-sled[]
+[#sec-gui-desktop-gnome-gtile]
+=== Managing tiling windows on Wayland
+
+If you are running the {gnome} desktop on Wayland and want to have your windows arranged next to each other, we recommend using the _gTile_ {gnome} extension. gTile lets you re-arrange windows based on a configurable grid scheme. For example, you can launch six terminals and have them arranged in 3 rows and 2 columns so that they use the whole desktop area.
+
+==== Installing gTile
+
+[IMPORTANT]
+====
+To use the gTile {gnome} extension, you need to be running the {gnome} desktop and have the `+chrome-gnome-shell+` (for {productnameshort} 15 SP4 and older) or `+gnome-browser-connector+` (for {productnameshort} 15 SP5 and newer) package installed.
+====
+
+. Point your browser to the gTile extension web page link:https://extensions.gnome.org/extension/28/gtile/[]. If you see a warning about a missing browser extension, click the link and follow your Web browser's instruction on how to install and enable the {gnome} Shell extension.
++
+.Warning about a missing {gnome} Shell extension
+image::gtile-browser-warning.png["Warning about a missing GNOME Shell extension",width=75%]
+. After the {gnome} Shell extension is installed in your Web browser, you can see an *OFF* button on the top right of the gTile Web page. To activate the gTile extension, switch it to *ON* by clicking it.
++
+.{gnome} gTile extension activated
+image::gtile-extension-on.png["GNOME gTile extension activated",width=75%]
+. A gTile tray icon appears in the {gnome} tray in the right side of the {gnome} panel. You can use it to activate gTile window layouts.
++
+.gTile tray icon
+image::gtile-tray-icon.png["gTile tray icon",width=75%]
+
+==== Working with the gTile extension
+
+.Arranging the windows
+. To open gTile for the currently focused window, press kbd:[Meta+Enter].
+. To set the number of columns in which the windows will be arranged, press a number key.
+. To automatically tile the windows according to the *Autotile Main window sizes* setting, press the kbd:[M] key. By default, the first time you press the kbd:[M] key, it will make the current window use half the screen, and all other windows to be tiled in a column on the other half of the screen. You can press kbd:[M] repeatedly, to cycle between variants. This is helpful to keep a big main window, and several smaller secondary windows.
+. To move the current window to within the predefined tiling of the screen, use arrow keys.
++
+To shrink or grow the number of tiles that the window occupies, use kbd:[Shift] and an arrow key.
+. To snap a window to the edges of the neighboring windows and the desktop, press kbd:[Ctrl+Alt+S].
+. To close the gTile window, press kbd:[Esc].
+
+.Advanced configuration
+. To open the gTile settings, run the following command: `+gnome-extensions-app+`.
+. Select gTile and click *Settings*.
+. Define a preset and a key combination to easily switch between frequently used window layouts.
++
+For more details on how to configure the gTile extension, refer to link:https://github.com/gTile/gTile[].
+endif::[]
+
+[#sec-gui-desktop-gnome-more-info]
+=== More information
+
+For more information, see link:https://help.gnome.org/system-admin-guide/[].
+
+[#sec-gui-desktop-suse-prime]
+== Switching between Intel and NVIDIA Optimus GPUs with {suse} Prime
+
+{suse} Prime is a tool for switching between onboard Intel graphical processing units (GPUs) and NVIDIA GPUs equipped with NVIDIA's switchable graphics Optimus technology. Optimus provides a mechanism for easily switching between an onboard Intel GPU and a discrete NVIDIA GPU. This is designed for running a laptop in a power-saving mode or at maximum performance: use the Intel GPU to save power, and the NVIDIA GPU for 3D applications.
+
+ifdef::os-sled[]
+{suse} Prime is included in the {slewe} for {sle} {productnumber}.
+endif::[]
+
+{suse} Prime works only on systems running X11, not Wayland. If your system runs Wayland, you must disable it and fall back to X11 to use {suse} Prime (see <<sec-gui-desktop-suse-prime-prereqs,Prerequisites>>).
+
+[#sec-gui-desktop-suse-prime-prereqs]
+=== Prerequisites
+
+ifdef::os-osuse[]
+You must have a configured and working NVIDIA Optimus GPU using the NVIDIA proprietary drivers from the {opensuse} community repository (see <<sec-gui-desktop-install-nvidia,Installing NVIDIA drivers>>), and an onboard Intel GPU. Bumblebee, the older switching tool for NVIDIA Optimus, must not be installed.
+endif::[]
+
+ifdef::os-sle,os-sled[]
+You must have a configured and working NVIDIA Optimus GPU using the NVIDIA drivers included in {sle} {productnumber} (see <<sec-gui-desktop-install-nvidia,Installing NVIDIA drivers>>), and an onboard Intel GPU. Bumblebee, the older switching tool for NVIDIA Optimus, must not be installed.
+endif::[]
+
+There must not be a `+/etc/X11/xorg.conf+` file, and no configuration files with active `+ServerLayout+`, `+Device+`, or `+Screen+` sections in the `+/etc/X11/xorg.conf.d+` directory.
+
+{suse} Prime works only with X11. Use the `+loginctl+` command to see if your system is using X11 or Wayland:
+
+[subs="attributes+"]
+----
+> loginctl
+   SESSION        UID USER             SEAT             TTY
+         2       1000 {exampleuser_plain}             seat0
+> loginctl show-session 2|grep Type
+Type=x11
+----
+
+If your system uses Wayland, disable it by editing `+/etc/gdm/custom.conf+` and un-commenting `+WaylandEnable=false+`. Then reboot.
+
+[#sec-gui-desktop-suse-prime-install]
+=== Installing and using {suse} Prime
+
+Your NVIDIA graphics card should already be installed and working. If it is not, see <<sec-gui-desktop-install-nvidia,Installing NVIDIA drivers>>.
+
+Install the `+suse-prime+` package:
+
+----
+> sudo zypper install suse-prime
+----
+
+To switch your GPU run one of the following commands, then log out and log back in:
+
+----
+> sudo prime-select intel
+> sudo prime-select intel2
+> sudo prime-select nvidia
+----
+
+Use the `+intel+` driver when it is the modesetting driver. `+intel2+` is for systems that use the `+xf86-video-intel+` driver. You can get this information by installing and running `+inxi+`:
+
+----
+> inxi -G
+Graphics: Device-1: Intel Xeon E3-1200 v3/4th Gen Core Processor Integrated Graphics Controller
+          Display Server: x11(X.org 1.20.1 ) drivers: modesetting (unloaded: fbdev, vesa)
+          Resolution: 1920x1080@60.00hz
+          OpenGL: renderer: Mesa DRI Intel Haswell Desktop version: 4.5 Mesa 18.2.8
+      
+----
+
+Which GPU is currently active?
+
+----
+> sudo /usr/sbin/prime-select get-current
+Driver configured: intel
+----
+
+[#sec-gui-desktop-install-nvidia]
+=== Installing NVIDIA drivers
+
+If you need to identify your NVIDIA card so you know which driver to use, run the following command:
+
+----
+>  /sbin/lspci | grep -i nvidia
+----
+
+ifdef::os-osuse[]
+Follow these steps to install the drivers with Zypper. First install the community repository for your distribution. For {opensuse} Tumbleweed:
+endif::[]
+
+ifdef::os-sles,os-sled[]
+Follow these steps to install the drivers with Zypper.
+endif::[]
+
+ifdef::os-osuse[]
+----
+> sudo zypper addrepo --refresh https://download.nvidia.com/opensuse/tumbleweed nvidia
+----
+endif::[]
+
+ifdef::os-osuse[]
+For {opensuse} 15.7:
+endif::[]
+
+ifdef::os-osuse[]
+----
+> sudo zypper addrepo --refresh https://download.nvidia.com/opensuse/leap/15.7 nvidia
+----
+endif::[]
+
+List the available driver packages:
+
+----
+> sudo zypper se nvidia
+----
+
+Then install the drivers for your NVIDIA graphics card:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo zypper se __packagename__
+----

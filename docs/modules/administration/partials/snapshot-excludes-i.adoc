@@ -1,0 +1,16 @@
+// Converted from xml/snapshot_excludes_i.xml
+
+`+/boot/grub2/i386-pc+`, `+/boot/grub2/x86_64-efi+`, `+/boot/grub2/powerpc-ieee1275+`, `+/boot/grub2/s390x-emu+`::
+A rollback of the boot loader configuration is not supported. The directories listed above are architecture-specific. The first two directories are present on AMD64/Intel 64 machines, the latter two on IBM {power} and on {zseries}, respectively.
+`+/home+`::
+If `+/home+` does not reside on a separate partition, it is excluded to avoid data loss on rollbacks.
+`+/opt+`::
+Third-party products usually get installed to `+/opt+`. It is excluded to avoid uninstalling these applications on rollbacks.
+`+/srv+`::
+Contains data for Web and FTP servers. It is excluded to avoid data loss on rollbacks.
+`+/tmp+`::
+All directories containing temporary files and caches are excluded from snapshots.
+`+/usr/local+`::
+This directory is used when manually installing software. It is excluded to avoid uninstalling these installations on rollbacks.
+`+/var+`::
+This directory contains many variable files, including logs, temporary caches, third party products in `+/var/opt+`, and is the default location for virtual machine images and databases. Therefore this subvolume is created to exclude all of this variable data from snapshots and has Copy-On-Write disabled.

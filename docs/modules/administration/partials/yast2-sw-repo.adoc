@@ -1,0 +1,75 @@
+// Converted from xml/yast2_sw_repo.xml
+
+[#sec-yast-software-instsource]
+== Managing software repositories and services
+
+To install third-party software, add software repositories to your system. By default, product repositories such as {productname}-DVD {productnumber} and a matching update repository are automatically configured
+ifdef::os-sles,os-sled[ when you register your system. For more information about registration, see xref:deployment:deployment-yast-installer.adoc#sec-yast-install-scc-registration[Registration] or xref:upgrade:sle-update-offline.adoc#sec-update-registersystem[Registering your system]]
+{empty}. Depending on the initially selected product, an additional repository containing translations, dictionaries, etc. might also be configured.
+
+To manage repositories, start {yast} and select menu:Software[Software Repositories]. The *Configured Software Repositories* dialog opens. Here, you can also manage subscriptions to *Services* by changing the *View* at the right corner of the dialog to *All Services*. A Service in this context is a *Repository Index Service* (RIS) that can offer one or more software repositories. Such a Service can be changed dynamically by its administrator or vendor.
+
+Each repository provides files describing repository content (package names, versions, etc.). {yast} downloads these repository description files to a local cache. To ensure their integrity, software repositories can be signed with the {gpg} Key of the repository maintainer. Whenever you add a new repository, {yast} offers the ability to import its key.
+
+[WARNING]
+.Trusting external software sources
+====
+Before adding external software repositories to your list of repositories, make sure this repository can be trusted. {suse} is not responsible for any problems arising from software installed from third-party software repositories.
+====
+
+[#sec-yast-software-instsource-add]
+=== Adding software repositories
+
+You can either add repositories from DVD/CD, a {usbflashdrive}, a local directory, an ISO image, or a network source.
+
+To add repositories from the *Configured Software Repositories* dialog in {yast} proceed as follows:
+
+. Click *Add*.
+. Select one of the options listed in the dialog:
++
+[#fig-y2-sw-repo-new]
+.Adding a software repository
+image::yast2_addon_new.png["",width=65%]
++
+--
+* To scan your network for installation servers announcing their services via SLP, select *Scan Using SLP* and click *Next*.
+* To add a repository from a removable medium, choose the relevant option and insert the medium or connect the USB device to the machine, respectively. Click *Next* to start the installation.
+* For the majority of repositories, you will be asked to specify the path (or URL) to the media after selecting the respective option and clicking *Next*. Specifying a *Repository Name* is optional. If none is specified, {yast} will use the product name or the URL as repository name.
+--
++
+The option *Download Repository Description Files* is activated by default. If you deactivate the option, {yast} will automatically download the files later, if needed.
+. Depending on the repository you add, you may be prompted to import the repository's {gpg} key or asked to agree to a license.
++
+After confirming, {yast} will download and parse the metadata. It will add the repository to the list of *Configured Repositories*.
+. If needed, adjust the repository *Properties* as described in <<sec-yast-software-instsource-manage,Managing repository properties>>.
+. Confirm your changes with *OK* to close the configuration dialog.
+. After having successfully added the repository, the software manager starts and you can install packages from this repository. For details, refer to <<cha-yast-software,Installing or removing software>>.
+
+[#sec-yast-software-instsource-manage]
+=== Managing repository properties
+
+The *Configured Software Repositories* overview of the *Software Repositories* lets you change the following repository properties:
+
+Status::
+The repository status can either be *Enabled* or *Disabled*. You can only install packages from repositories that are enabled. To turn a repository off temporarily, select it and deactivate *Enable*. You can also double-click a repository name to toggle its status. To remove a repository completely, click *Delete*.
+Refresh::
+When refreshing a repository, its content description (package names, versions, etc.) is downloaded to a local cache that is used by {yast}. It is sufficient to do this once for static repositories such as CDs or DVDs, whereas repositories whose content changes often should be refreshed frequently. The easiest way to keep a repository's cache up to date is to choose *Automatically Refresh*. To do a manual refresh click *Refresh* and select one of the options.
+*Keep Downloaded Packages*::
+Packages from remote repositories are downloaded before being installed. By default, they are deleted upon successful installation. Activating *Keep Downloaded Packages* prevents the deletion of downloaded packages. The download location is configured in `+/etc/zypp/zypp.conf+`, by default it is `+/var/cache/zypp/packages+`.
+*Priority*::
+The *Priority* of a repository is a value between `+1+` and `+200+`, with `+1+` being the highest priority and `+200+` the lowest priority. Any new repositories that are added with {yast} get a priority of `+99+` by default. If you do not care about a priority value for a certain repository, you can also set the value to `+0+` to apply the default priority to that repository (`+99+`). If a package is available in more than one repository, then the repository with the highest priority takes precedence. This is useful to avoid downloading packages unnecessarily from the Internet by giving a local repository (for example, a DVD) a higher priority.
++
+[IMPORTANT]
+.Priority compared to version
+====
+The repository with the highest priority takes precedence in any case. Therefore, make sure that the update repository always has the highest priority, otherwise you might install an outdated version that will not be updated until the next online update.
+====
+Name and URL::
+To change a repository name or its URL, select it from the list with a single-click and then click *Edit*.
+
+[#sec-yast-software-repo-gpg-keys]
+=== Managing repository keys
+
+To ensure their integrity, software repositories can be signed with the {gpg} Key of the repository maintainer. Whenever you add a new repository, {yast} offers to import its key. Verify it as you would do with any other {gpg} key and make sure it does not change. If you detect a key change, something might be wrong with the repository. Disable the repository as an installation source until you know the cause of the key change.
+
+To manage all imported keys, click *GPG Keys* in the *Configured Software Repositories* dialog. Select an entry with the mouse to show the key properties at the bottom of the window. *Add*, *Edit*, or *Delete* keys with a click on the respective buttons.

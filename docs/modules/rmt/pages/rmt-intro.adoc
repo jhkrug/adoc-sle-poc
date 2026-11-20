@@ -1,0 +1,15 @@
+// Converted from xml/rmt_intro.xml
+[#rmt-preface]
+= Preface
+:description: Access documentation, browse or download formats online, search the SUSE Knowledgebase for known solutions, and report any issues you encounter
+:revdate: 2026-01-16
+
+include::ROOT:partial$common-intro-available-doc.adoc[]
+
+include::ROOT:partial$common-intro-feedback.adoc[]
+
+include::ROOT:partial$common-intro-convention.adoc[]
+
+ifdef::os-sles,os-sled[]
+include::ROOT:partial$common-intro-support.adoc[]
+endif::[]

@@ -1,0 +1,8 @@
+// Converted from xml/common_legal.xml
+= GNU licenses
+:description: Learn about the GNU Free Documentation License terms and conditions for copying, modifying, and distributing documentation
+:revdate: 2026-01-16
+
+This appendix contains the GNU Free Documentation License version 1.2.
+
+include::ROOT:partial$common-license-gfdl1.2.adoc[]

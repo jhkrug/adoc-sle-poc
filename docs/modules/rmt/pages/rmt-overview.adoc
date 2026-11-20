@@ -1,0 +1,21 @@
+// Converted from xml/rmt_overview.xml
+[#rmt-overview]
+= Overview
+:description: Manage software updates and subscription entitlements centrally with Repository Mirroring Tool, establishing a proxy system for secure update management
+:revdate: 2026-01-16
+
+The {rmtool} ({rmt}) for {sle} {productnumber} allows enterprise customers to optimize the management of {sle} software updates and subscription entitlements. It establishes a proxy system for {sccreg} with repositories and registration targets. This helps you to centrally manage software updates within a firewall on a per-system basis, while maintaining your corporate security policies and regulatory compliance.
+
+{rmt} allows you to provision updates for all your devices running a product based on {sle}. By downloading these updates once and distributing them throughout the enterprise, you can set more restrictive firewall policies. This also reduces bandwidth usage, as there is no need to download the same updates for each device. {rmt} is fully supported and available as a download for customers with an active {sle} product subscription.
+
+{rmtool} provides functionality that can be useful in many situations, including the following:
+
+* You want to update {sle} servers.
+* Not all machines in your environment can be connected to {scc} to register and retrieve updates for bandwidth or security reasons.
+* There are {sle} hosts that are restricted and difficult to update without putting in place a custom update management solution.
+* You need to integrate additional external or internal repositories.
+
+.{rmt}
+image::rmt_schema.png["",width=70%]
+
+{rmt} replaces {smt} ({smtool}) which was used for {slea} 11 and {slea} 12. For a feature comparison between {rmt} and SMT, see xref:rmt-migrate-from-smt.adoc#sec-rmt-migrate-notes-features[Feature comparison].

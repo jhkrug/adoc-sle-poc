@@ -1,0 +1,124 @@
+// Converted from xml/kernel_modules.xml
+[#cha-mod]
+= Managing kernel modules
+:description: Learn about managing Linux kernel modules with lsmod, modinfo, and modprobe commands for loading, removing, and configuring module dependencies
+:revdate: 2026-01-16
+
+Although Linux is a monolithic kernel, it can be extended using kernel modules. These are special objects that can be inserted into the kernel and removed on demand. In practical terms, kernel modules make it possible to add and remove drivers and interfaces that are not included in the kernel itself. Linux provides several commands for managing kernel modules.
+
+[#sec-mod-lsmod]
+== Listing loaded modules with lsmod and modinfo
+
+Use the `+lsmod+` command to view what kernel modules are currently loaded. The output of the command may look as follows:
+
+----
+> lsmod
+Module                  Size  Used by
+snd_usb_audio         188416  2
+snd_usbmidi_lib        36864  1 snd_usb_audio
+hid_plantronics        16384  0
+snd_rawmidi            36864  1 snd_usbmidi_lib
+snd_seq_device         16384  1 snd_rawmidi
+fuse                  106496  3
+nfsv3                  45056  1
+nfs_acl                16384  1 nfsv3
+----
+
+The output is divided into three columns. The `+Module+` column lists the names of the loaded modules, while the `+Size+` column displays the size of each module. The `+Used by+` column shows the number of referring modules and their names. This list may be incomplete.
+
+To view detailed information about a specific kernel module, use the `modinfo _MODULE_NAME_` command, where _MODULE_NAME_ is the name of the desired kernel module. The `+modinfo+` binary resides in the `+/sbin+` directory that is not in the user's PATH environment variable. This means that you must specify the full path to the binary when running `+modinfo+` command as a regular user:
+
+[subs="attributes+"]
+----
+> /sbin/modinfo kvm
+filename:       /lib/modules/{kernel-version}-default/kernel/arch/x86/kvm/kvm.ko.zst
+license:        GPL
+author:         Qumranet
+suserelease:    {slea}{product-ga}-SP7
+srcversion:     9DACE73AC65F98D556DAD60
+depends:        irqbypass
+supported:      yes
+retpoline:      Y
+intree:         Y
+name:           kvm
+vermagic:       {kernel-version}-default SMP mod_unload modversions
+      
+----
+
+[#sec-mod-modprobe]
+== Adding and removing kernel modules
+
+While it is possible to use `+insmod+` and `+rmmod+` to add and remove kernel modules, it is recommended to use the `+modprobe+` tool instead. `+modprobe+` offers several important advantages, including automatic dependency resolution and blacklisting.
+
+When used without any parameters, the `+modprobe+` command installs a specified kernel module. `+modprobe+` must be run with root privileges:
+
+----
+> sudo modprobe acpi
+----
+
+To remove a kernel module, use the `+-r+` parameter:
+
+----
+> sudo modprobe -r acpi
+----
+
+[#sec-mod-modprobe-d]
+=== Loading kernel modules automatically on boot
+
+Instead of loading kernel modules manually, you can load them automatically during the boot process using the `+systemd-modules-load.service+` service. To enable a kernel module, add a `+.conf+` file to the `+/etc/modules-load.d/+` directory. It is good practice to give the configuration file the same name as the module, for example:
+
+----
+/etc/modules-load.d/rt2800usb.conf
+----
+
+The configuration file must contain the name of the desired kernel module (for example, `+rt2800usb+`).
+
+The described technique allows you to load kernel modules without any parameters. If you need to load a kernel module with specific options, add a configuration file to the `+/etc/modprobe.d/+` directory instead. The file must have the `+.conf+` extension. The name of the file should adhere to the following naming convention: `+priority-modulename.conf+`, for example: `+50-thinkfan.conf+`. The configuration file must contain the name of the kernel module and the desired parameters. You can use the example command below to create a configuration file containing the name of the kernel module and its parameters:
+
+----
+> echo "options thinkpad_acpi fan_control=1" | sudo tee /etc/modprobe.d/thinkfan.conf
+----
+
+[NOTE]
+.Loading kernel modules
+====
+Most kernel modules are loaded by the system automatically when a device is detected or user space requests specific functionality. Thus, adding modules manually to `+/etc/modules-load.d/+` is rarely required.
+====
+
+[#sec-mod-modprobe-blacklist]
+=== Blacklisting kernel modules with modprobe
+
+Blacklisting a kernel module prevents it from loading during the boot process. This can be useful when you want to disable a module that you suspect is causing problems on your system. You can still load blacklisted kernel modules manually using the `+insmod+` or `+modprobe+` tools.
+
+To blacklist a module, create a file `/etc/modprobe.d/60-blacklist-_MODULE_NAME_.conf` with the following content:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+blacklist __MODULE{underscore}NAME__
+----
+
+Run the `+dracut+` command as root to generate a new `+initrd+` image, then reboot your machine (replace _NAME_ with the name of the current initrd and _KERNELVERSION_ with the currently running kernel):
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> su
+echo "blacklist nouveau" >> /etc/modprobe.d/60-blacklist-nouveau.conf
+/usr/bin/dracut --logfile /var/log/YaST2/mkinitrd.log --force /boot/$initrd-__NAME__ $__KERNELVERSION__
+reboot
+----
+
+To disable a kernel module temporarily only, blacklist it on-the-fly during the boot. To do this, press the kbd:[E] key when you see the boot screen. This drops you into a minimal editor that allows you to modify boot parameters. Locate the line that looks as follows:
+
+----
+linux /boot/vmlinuz...splash= silent quiet showopts
+----
+
+Add the `modprobe.blacklist=_MODULE_NAME_` command to the end of the line. For example:
+
+----
+linux /boot/vmlinuz...splash= silent quiet showopts modprobe.blacklist=nouveau
+----
+
+Press kbd:[F10] or kbd:[Ctrl+X] to boot with the specified configuration.
+
+To blacklist a kernel module permanently via GRUB, open the `+/etc/default/grub+` file for editing, and add the `modprobe.blacklist=_MODULE_NAME_` option to the `+GRUB_CMDLINE_LINUX+` command. Then run the `+sudo grub2-mkconfig -o /boot/grub2/grub.cfg+` command to enable the changes.

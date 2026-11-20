@@ -1,0 +1,554 @@
+[
+ {
+  "op": "insert",
+  "context": "GNOME User Guide",
+  "docbook": "",
+  "antora": "This guide introduces the GNOME desktop of SUSE Linux Enterprise Server."
+ },
+ {
+  "op": "delete",
+  "context": "possible errors or the consequences thereof.",
+  "docbook": "This guide introduces the GNOME desktop of SUSE Linux Enterprise Server.",
+  "antora": ""
+ },
+ {
+  "op": "delete",
+  "context": "see the release notes at https://www.suse.com/releasenotes.",
+  "docbook": "Introduction",
+  "antora": ""
+ },
+ {
+  "op": "replace",
+  "context": "Management module. For more information, refer",
+  "docbook": "to.",
+  "antora": "to Managing users with YaST."
+ },
+ {
+  "op": "delete",
+  "context": "password when you start the system.",
+  "docbook": "Default GNOME login screen",
+  "antora": ""
+ },
+ {
+  "op": "replace",
+  "context": "screen The default GNOME login screen",
+  "docbook": "The default",
+  "antora": "Default"
+ },
+ {
+  "op": "delete",
+  "context": "lower right corner. A menu appears.",
+  "docbook": "Default GNOME login screen—session type",
+  "antora": ""
+ },
+ {
+  "op": "replace",
+  "context": "in the default GNOME login screen",
+  "docbook": "Selecting session types in the default",
+  "antora": "Default"
+ },
+ {
+  "op": "replace",
+  "context": "types in the default GNOME login",
+  "docbook": "screen",
+  "antora": "screen—session type"
+ },
+ {
+  "op": "delete",
+  "context": "take a screenshot, or log out.",
+  "docbook": "GNOME desktop with activities overview",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "Activities overview in the GNOME desktop",
+  "docbook": "",
+  "antora": "GNOME desktop with activities overview"
+ },
+ {
+  "op": "delete",
+  "context": "select Files from the hit list.",
+  "docbook": "File manager",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "and contents of the GNOME file",
+  "docbook": "",
+  "antora": "manager File"
+ },
+ {
+  "op": "replace",
+  "context": "Internet connections with NetworkManager as described",
+  "docbook": "in.",
+  "antora": "in Configuring network connections."
+ },
+ {
+  "op": "replace",
+  "context": "(either NetworkManager or wicked). For details,",
+  "docbook": "see.",
+  "antora": "see Configuring global networking options."
+ },
+ {
+  "op": "delete",
+  "context": "networks and applications, including Microsoft* Exchange.",
+  "docbook": "Evolution",
+  "antora": ""
+ },
+ {
+  "op": "delete",
+  "context": "the archive in Archive Manager. Archive",
+  "docbook": "manager Archive",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "create, open and extract compressed archives",
+  "docbook": "",
+  "antora": "Archive manager"
+ },
+ {
+  "op": "delete",
+  "context": "may not work on Linux. Document",
+  "docbook": "viewer Document",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "sidebar, toolbar controls and reading pane",
+  "docbook": "",
+  "antora": "Document viewer"
+ },
+ {
+  "op": "replace",
+  "context": "chapter about installing and removing software",
+  "docbook": "in.",
+  "antora": "in The GNOME package updater."
+ },
+ {
+  "op": "replace",
+  "context": "integrated YaST help texts or to",
+  "docbook": "the.",
+  "antora": "the deployment:index.adoc."
+ },
+ {
+  "op": "delete",
+  "context": "the desktop and choose Change Background.",
+  "docbook": "GNOME Background settings",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "customize desktop and lock screen appearances",
+  "docbook": "",
+  "antora": "GNOME Background settings"
+ },
+ {
+  "op": "replace",
+  "context": "fast input source (keyboard layout) switching",
+  "docbook": "( Configuring",
+  "antora": "(Configuring"
+ },
+ {
+  "op": "delete",
+  "context": "Key and select your command key:",
+  "docbook": "Enabling the compose key in Tweaks",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "Ctrl key for typing special characters",
+  "docbook": "",
+  "antora": "Enabling the compose key in Tweaks"
+ },
+ {
+  "op": "delete",
+  "context": "Mouse & Touchpad. Mouse and Touchpad",
+  "docbook": "settings dialog Mouse and Touchpad",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "mouse speed and natural scrolling toggle",
+  "docbook": "",
+  "antora": "Mouse and Touchpad settings dialog"
+ },
+ {
+  "op": "delete",
+  "context": "monitor setup Single monitor settings dialog",
+  "docbook": "Single monitor settings dialog",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "scale adjustments and Night Light scheduling",
+  "docbook": "",
+  "antora": "Single monitor settings dialog"
+ },
+ {
+  "op": "delete",
+  "context": "and choose Settings. Now choose Sound.",
+  "docbook": "Configuring sound settings",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "balance and volume controls and alert",
+  "docbook": "",
+  "antora": "sound settings Configuring"
+ },
+ {
+  "op": "delete",
+  "context": "Now choose Default Apps. Default Apps",
+  "docbook": "Default Apps",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "e-mail, calendar, music, videos and photos",
+  "docbook": "",
+  "antora": "Default Apps"
+ },
+ {
+  "op": "delete",
+  "context": "next have the opportunity to type.",
+  "docbook": "On-screen keyboard",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "with numbers, symbols and layout controls",
+  "docbook": "",
+  "antora": "On-screen keyboard"
+ },
+ {
+  "op": "delete",
+  "context": "Color options to adjust color effects.",
+  "docbook": "Connectivity, files and resources",
+  "antora": ""
+ },
+ {
+  "op": "replace",
+  "context": "more about connecting to a network,",
+  "docbook": "see.",
+  "antora": "see Using NetworkManager."
+ },
+ {
+  "op": "delete",
+  "context": "a directory and select Sharing Options.",
+  "docbook": "Sharing a folder in GNOME Files",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "for guest access and file permissions",
+  "docbook": "",
+  "antora": "Sharing a folder in GNOME Files"
+ },
+ {
+  "op": "delete",
+  "context": "and search for back. GNOME Backups",
+  "docbook": "application GNOME Backups",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "options for Home, Trash and Downloads",
+  "docbook": "",
+  "antora": "GNOME Backups application"
+ },
+ {
+  "op": "delete",
+  "context": "search for pass. Passwords and Keys",
+  "docbook": "main window Passwords and Keys",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "GnuPG keys, OpenSSH keys and certificates",
+  "docbook": "",
+  "antora": "Passwords and Keys main window"
+ },
+ {
+  "op": "delete",
+  "context": "previous dialog. Press Sync to finish.",
+  "docbook": "LibreOffice",
+  "antora": ""
+ },
+ {
+  "op": "replace",
+  "context": "see the alternate encryption methods described",
+  "docbook": "in.",
+  "antora": "in security:security-cryptofs.adoc."
+ },
+ {
+  "op": "delete",
+  "context": "open LibreOffice module, select Tools Customize.",
+  "docbook": "Customization dialog in Writer",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "File menu commands on the right",
+  "docbook": "",
+  "antora": "Customization dialog in Writer"
+ },
+ {
+  "op": "delete",
+  "context": "display categories of settings. The Options",
+  "docbook": "window The Options",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "fields and OpenPGP document encryption options",
+  "docbook": "",
+  "antora": "The Options window"
+ },
+ {
+  "op": "insert",
+  "context": "in the Value column. Repeat from",
+  "docbook": "",
+  "antora": "this step"
+ },
+ {
+  "op": "delete",
+  "context": "the side bar, or press F11.",
+  "docbook": "LibreOffice Styles panel",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "Heading and other text formatting presets",
+  "docbook": "",
+  "antora": "LibreOffice Styles panel"
+ },
+ {
+  "op": "delete",
+  "context": "the database, then click Save. LibreOffice",
+  "docbook": "Database Wizard LibreOffice",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "connect to an external database server",
+  "docbook": "",
+  "antora": "LibreOffice Database Wizard"
+ },
+ {
+  "op": "delete",
+  "context": "in Mathematical formula in LibreOffice Math:",
+  "docbook": "Mathematical formula in LibreOffice Math",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "panel and the binomial theorem formula",
+  "docbook": "",
+  "antora": "Mathematical formula in LibreOffice Math"
+ },
+ {
+  "op": "delete",
+  "context": "inserted at the current cursor position.",
+  "docbook": "Internet and communication",
+  "antora": ""
+ },
+ {
+  "op": "delete",
+  "context": "Help menu in the menu bar.",
+  "docbook": "The browser window of Firefox",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "recognition by Gartner for container management",
+  "docbook": "",
+  "antora": "The browser window of Firefox"
+ },
+ {
+  "op": "delete",
+  "context": "select an engine from the list.",
+  "docbook": "Firefox—manage search engines",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "default search engine and search suggestions",
+  "docbook": "",
+  "antora": "Firefox—manage search engines"
+ },
+ {
+  "op": "delete",
+  "context": "It resembles The Firefox bookmark library.",
+  "docbook": "The Firefox bookmark library",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "Bookmarks with no items currently saved",
+  "docbook": "",
+  "antora": "The Firefox bookmark library"
+ },
+ {
+  "op": "delete",
+  "context": "cookies and installation permissions. Firefox Page",
+  "docbook": "Info—Permissions tab Firefox Page",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "Permissions tab, showing customizable access settings",
+  "docbook": "",
+  "antora": "Firefox Page Info—Permissions tab"
+ },
+ {
+  "op": "delete",
+  "context": "question mark icon in the dialog.",
+  "docbook": "Firefox preferences in General settings",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "startup, importing data and tab behavior",
+  "docbook": "",
+  "antora": "Firefox preferences in General settings"
+ },
+ {
+  "op": "delete",
+  "context": "add-on by clicking Add to Firefox.",
+  "docbook": "Installing Firefox extensions",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "the browser with extensions and themes",
+  "docbook": "",
+  "antora": "Installing Firefox extensions"
+ },
+ {
+  "op": "insert",
+  "context": "parts of the user interface. Evolution",
+  "docbook": "",
+  "antora": "mail"
+ },
+ {
+  "op": "delete",
+  "context": "the user interface. Evolution window Evolution",
+  "docbook": "mail",
+  "antora": ""
+ },
+ {
+  "op": "delete",
+  "context": "Find information about it at https://www.voip-info.org/wiki-Asterisk.",
+  "docbook": "Graphics and multimedia",
+  "antora": ""
+ },
+ {
+  "op": "delete",
+  "context": "dropping it there. The GIMP Toolbox",
+  "docbook": "in GNOME The GIMP Toolbox",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "set of tools for image editing",
+  "docbook": "",
+  "antora": "The GIMP Toolbox in GNOME"
+ },
+ {
+  "op": "delete",
+  "context": "color is shown in Old. The",
+  "docbook": "basic color selector dialog The",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "using, HTML notation and color sliders",
+  "docbook": "",
+  "antora": "The basic color selector dialog"
+ },
+ {
+  "op": "delete",
+  "context": "Setup and Image Settings tabs. The",
+  "docbook": "print dialog The",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "a live print preview panel included",
+  "docbook": "",
+  "antora": "The print dialog"
+ },
+ {
+  "op": "delete",
+  "context": "following window is displayed. GNOME Videos",
+  "docbook": "start-up window GNOME Videos",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "containing Videos and Channels navigation tabs",
+  "docbook": "",
+  "antora": "GNOME Videos start-up window"
+ },
+ {
+  "op": "delete",
+  "context": "select Preferences. General preferences GNOME Videos",
+  "docbook": "general preferences GNOME Videos",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "chapter configuration options in dark mode",
+  "docbook": "",
+  "antora": "GNOME Videos general preferences"
+ },
+ {
+  "op": "delete",
+  "context": "or Hue. GNOME Videos display preferences",
+  "docbook": "GNOME Videos display preferences",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "for brightness, contrast, saturation and hue",
+  "docbook": "",
+  "antora": "GNOME Videos display preferences"
+ },
+ {
+  "op": "delete",
+  "context": "output type. GNOME Videos audio preferences",
+  "docbook": "GNOME Videos audio preferences",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "preferences showing audio output configuration options",
+  "docbook": "",
+  "antora": "GNOME Videos audio preferences"
+ },
+ {
+  "op": "replace",
+  "context": "your system. Find more detailed information",
+  "docbook": "in.",
+  "antora": "in Documentation directory."
+ },
+ {
+  "op": "replace",
+  "context": "and info pages. Read more in",
+  "docbook": "and.",
+  "antora": "Man pages and Info pages."
+ },
+ {
+  "op": "delete",
+  "context": "menu by clicking Applications Favorites Help.",
+  "docbook": "Main window of Help",
+  "antora": ""
+ },
+ {
+  "op": "insert",
+  "context": "application launching, networking and multimedia options",
+  "docbook": "",
+  "antora": "Main window of Help"
+ }
+]

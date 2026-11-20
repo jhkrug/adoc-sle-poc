@@ -1,0 +1,239 @@
+// Converted from xml/rmt_migrate_from_smt.xml
+[#cha-rmt-migrate]
+= Migrate from {smt} to {rmt}
+:description: Learn how to migrate from SMT on SLES 11 or 12 to RMT on SLES 15 and use its enhanced system registration and repository management features
+:revdate: 2026-01-16
+
+This chapter describes the migration from {smt} on {slsa} 11 or 12 to {rmt} on {slsa} 15.
+
+[#sec-rmt-migrate-notes]
+== Important notes
+
+[WARNING]
+.Read this section carefully
+====
+Carefully read this section. It contains vital information about the migration process.
+====
+
+Use a new host::
+We recommend that you install {rmt} on a newly installed {slsa} 15 host. {rmt} is not a complete replacement for {smt}. It has a different workflow than {smt} and only supports registering {sls} 12 systems and newer.
+Repository metadata and settings::
+The settings of staged repositories are _not_ exported from {smt}. Repositories that have been marked to be mirrored are exported.
+Custom repositories::
+It is only possible to export repositories that are marked for mirroring.
+Expired subscriptions::
+Products no longer available on the organization subscriptions will not be available on {rmt}.
+Client information::
+Systems and their activated products are exported. {smt} client jobs and patch status are not exported from {smt}.
+
+[#sec-rmt-migrate-notes-features]
+.Feature comparison
+[cols="40,30,30",options="header"]
+|===
+a|Feature
+a|{smt}
+a|{rmt}
+
+a|Available on {slsa} 11
+a|yes
+a|no
+a|Available on {slsa} 12
+a|yes
+a|no
+a|Available on {slsa} 15
+a|no
+a|yes
+a|Synchronize products with {scc}
+a|yes
+a|yes
+a|Mirror RPMs from repositories
+a|yes
+a|yes
+a|Selective mirroring (specifying products to mirror)
+a|yes
+a|yes
+a|Serve RPMs via HTTP
+a|yes
+a|yes
+a|Registration of {slea} 15 systems
+a|yes
+a|yes
+a|Registration of {slea} 12 systems
+a|yes
+a|yes
+a|Registration of {slea} 11 systems
+a|yes
+a|no
+a|{redhat} 6 and earlier support
+a|yes ^1^
+a|no
+a|{redhat} 7{plus} support
+a|yes ^1^
+a|yes ^1^
+a|Support for migrating {slea} 12 to 15
+a|yes ^2^
+a|yes
+a|Support for migrating {slea} 15 SPx to 15 SPx{plus}1
+a|yes ^2^
+a|yes
+a|Staging repositories
+a|yes
+a|no ^3^
+a|Offline mirroring
+a|yes
+a|yes
+a|NTLM Proxy support
+a|yes
+a|yes
+a|Custom repositories
+a|yes
+a|yes
+a|{yast} installation wizard
+a|yes
+a|yes
+a|{yast} management wizard
+a|yes
+a|no
+a|Client management
+a|yes
+a|no
+a|Files deduplication
+a|yes
+a|yes
+a|Data transfer from {smt} to {rmt}
+a|n/a
+a|yes
+a|Transfer registration data to {scc}
+a|yes
+a|yes
+a|Reporting
+a|yes
+a|no
+a|Custom TLS certificates for Web server
+a|yes
+a|yes
+a|Clean up data from repositories that are not used any longer
+a|yes
+a|yes
+a|Bash completion
+a|no
+a|yes
+a|Available on link:https://github.com/SUSE/rmt/blob/master/docs/installation.md#installation-on-opensuse-leap-15[openSUSE Leap 15]
+a|no
+a|yes ^4^
+a|Easy development setup + link:https://github.com/SUSE/rmt/blob/master/docs/CONTRIBUTING.md[contribution guide]
+a|no
+a|yes
+a|100% test link:https://coveralls.io/github/SUSE/rmt?branch=master[coverage]
+a|no
+a|yes
+a|link:https://github.com/SUSE/rmt/blob/master/docs/PLUGINS.md[Plugin functionality]
+a|no
+a|yes
+a|Web server
+a|Apache2
+a|Nginx
+a|Platform
+a|Perl
+a|Ruby
+a|Clean up data from repositories that are no longer used
+a|yes
+a|yes
+a|Bash completion
+a|no
+a|yes
+a|Option to deploy on {kube}
+a|no
+a|yes ^5^
+|===
+
+. Support via {sliberty}—find more details in link:https://www.suse.com/products/suse-liberty-linux/[].
+. {smt} only partially supports migrating systems to {slea} 15. {slea} 15 is composed of multiple modules and extensions. Some modules are not required, as they provide additional functionality. {rmt} fully supports migrations into and within {slea} 15, therefore it only adds the minimum of required modules. {smt} does not fully support these migrations, and it enables all available modules on the system.
+. Functionality is offered by link:https://documentation.suse.com/multi-linux-manager/[{smlm}].
+. Only available with link:https://www.suse.com/support/self-support/[self-support].
+. Find more details in xref:rmt-install.adoc#sec-rmt-deploy-kubernetes[Deploying {rmt} on top of the {kube} cluster].
+
+[#sec-rmt-migrate-smt-export]
+== Exporting {smt} data
+
+.Export {smt} data
+. Update your SMT server installation by running `+zypper up+`.
+. To export your SSL certificates along with the rest of the data, run `+smt-data-export+`. Remember to keep your certificates in a safe place.
++
+If you do not want to export the SSL certificates from {smt}, run `+smt-data-export --no-ssl-export+`.
+. The exported configuration is now saved to `smt-data-export._TIMESTAMP_.tar.gz`. Copy the file to a location that the new {rmt} server can access.
+
+[#sec-rmt-migrate-rmt-import]
+== Importing {smt} data to {rmt}
+
+. To make sure your {rmt} installation is up to date, run `+zypper up+`.
+. Copy the exported `+.tar.gz+` file to an empty directory and unpack it. Then enter the new directory:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> mkdir __EMPTY{underscore}DIR__
+> cd __EMPTY{underscore}DIR__
+> tar xf __/PATH/TO/__smt-data-export.__TIMESTAMP__.tar.gz
+> cd smt-data-export
+----
+. If you chose to export the SSL certificates from {smt}, copy the CA private key and certificate to `+/etc/rmt/ssl/+`:
++
+----
+> sudo cp ssl/cacert.key /etc/rmt/ssl/rmt-ca.key
+> sudo cp ssl/cacert.pem /etc/rmt/ssl/rmt-ca.crt
+----
+. Run the {yast} {rmt} configuration module as described in xref:rmt-install.adoc#sec-rmt-installation-yast-configuration[{rmt} configuration with {yast}]. If you imported the {smt} CA certificate, add the domain of the {smt} server to the common names of the new SSL certificate.
+. Run the {rmt} synchronization to get the products and repositories data from {scc}.
++
+----
+> sudo rmt-cli sync
+----
+. Import the data from the {smt} server.
++
+----
+> sudo rmt-data-import -d ./
+----
+. Optional: if the URL of the {rmt} server changed, change the URL parameter of clients in `+/etc/SUSEConnect+` to point to the new {rmt} server. Alternatively, change the DNS records to re-assign the host name to the {rmt} server.
+. Optional: move the mirrored repository data from {smt} to {rmt}, and adjust the ownership of the copied data.
++
+----
+> sudo cp -r /var/www/htdocs/repo/* /usr/share/rmt/public/repo/
+> sudo chown -R _rmt:nginx /usr/share/rmt/public/repo
+----
++
+[TIP]
+====
+The path for storing custom repository data on the {rmt} server is different from that of {smt}. With {rmt}, it replicates the directory structure of the source server's URL into a top level directory structure of the source server's URL into a top-level
+
+[subs="attributes+"]
+----
+http://download.opensuse.org/debug/distribution/leap/{productnumber-leaprepo}/repo/oss 
+----
+
+its path on the {rmt} server corresponds to
+
+[subs="attributes+"]
+----
+/usr/share/rmt/public/repo/debug/distribution/leap/{productnumber-leaprepo}/repo/oss
+----
+====
+. Custom repositories on the {smt} server are disabled by default. If you want to mirror them to the {rmt}, enable them before mirroring.
++
+.. Check for custom repositories by running:
++
+----
+> sudo rmt-cli repos custom list
+----
++
+The command shows the table of all custom repositories. The first column contains the `+ID+` of each repository and the `+Mirror?+` column shows `+false+`.
+.. Enable each custom repository you want to mirror by running:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo rmt-cli repos custom enable __ID__
+----
+. Update the packages in the repositories by starting the mirroring process:
++
+----
+> sudo rmt-cli mirror
+----

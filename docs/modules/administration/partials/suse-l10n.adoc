@@ -1,0 +1,136 @@
+// Converted from xml/suse_l10n.xml
+
+[#sec-suse-l10n]
+== Language and country-specific settings
+
+The system is, to a very large extent, internationalized and can be modified for local needs. Internationalization (_I18N_) allows specific localization (_L10N_). The abbreviations I18N and L10N are derived from the first and last letters of the words and, in between, the number of letters omitted.
+
+Settings are made with `+LC_+` variables defined in the file `+/etc/sysconfig/language+`. This refers not only to _native language support_, but also to the categories _Messages_ (Language), _Character Set_, _Sort Order_, _Time and Date_, _Numbers_ and _Money_. Each of these categories can be defined directly with its own variable or indirectly with a master variable in the file `+language+` (see the `+locale+` man page).
+
+[#vl-suse-l10n-variables]
+.List of variables
+`+RC_LC_MESSAGES+`, `+RC_LC_CTYPE+`, `+RC_LC_COLLATE+`, `+RC_LC_TIME+`, `+RC_LC_NUMERIC+`, `+RC_LC_MONETARY+`::
+These variables are passed to the shell without the `+RC_+` prefix and represent the listed categories. The shell profiles concerned are listed below. The current setting can be shown with the command `+locale+`.
+`+RC_LC_ALL+`::
+This variable, if set, overwrites the values of the variables already mentioned.
+`+RC_LANG+`::
+If none of the previous variables are set, this is the fallback. By default, only `+RC_LANG+` is set. This makes it easier for users to enter their own values.
+`+ROOT_USES_LANG+`::
+This variable can be set to `+yes+` or `+ctype+` (default). If set to `+yes+`, `+root+` uses language and country-specific settings, otherwise the system administrator always works in a POSIX environment.
+
+The variables can be set with the {yast} sysconfig editor. The value of such a variable contains the language code, country code, encoding and modifier. The individual components are joined by special characters:
+
+----
+LANG=<language>[[_<COUNTRY>].<Encoding>[@<Modifier>]]
+----
+
+[#sec-suse-l10n-settings]
+=== System-wide locale settings
+
+`+systemd+` reads `+/etc/locale.conf+` at early boot. The locale settings configured in this file are inherited by every service or user, unless there are individual settings.
+
+[NOTE]
+.Behavior of older configuration files under {productname}
+====
+Earlier versions of {productname} read locale settings from `+/etc/sysconfig/language+`, `+/etc/sysconfig/keyboard+`, and `+/etc/sysconfig/console+`. Starting with {productname} 
+ifdef::os-sles,os-sled[15 GA]
+ifdef::os-osuse[15.0]
+, these files are considered obsolete. `+systemd+` does not read settings from these files anymore. Instead, `+systemd+` reads `+/etc/locale.conf+`.
+
+However, variables defined in `+/etc/sysconfig/language+` will still be used: They override the system-wide locale and can be used to define different locale settings for user shells (see <<sec-suse-l10n-examples,Some examples>>).
+====
+
+To set the system-wide locale, you can either:
+
+* Write your settings in `+/etc/locale.conf+`. Each line is a environment-like variable assignment (see `+man 5 locale.conf+` for a list of variables):
++
+----
+LANG=de_DE.UTF-8
+----
++
+To fine-tune the settings, you can add additional variables, one variable per line.
+* Use the command `+localectl+`:
++
+----
+# localectl set-locale LANG=de_DE.UTF-8
+----
++
+Same here, you can also specify additional variables after the `+localectl set-locale+` command.
+
+To keep backward compatibility with old systems during the update of the systemd package, all variables mentioned will be migrated from sysconfig to their final destinations if they are not already defined there.
+
+[#sec-suse-l10n-examples]
+=== Some examples
+
+// REMARK: toms 2019-05-21: This section should be restructured as it not completely deals with generating locales. Postponed to a later point.
+
+You should always set the language and country codes together. Language settings follow the standard ISO 639 available at link:https://www.evertype.com/standards/iso639/iso639-en.html[] and link:https://www.loc.gov/standards/iso639-2/[]. Country codes are listed in ISO 3166, see link:https://en.wikipedia.org/wiki/ISO_3166[].
+
+It only makes sense to set values for which usable description files can be found in `+/usr/lib/locale+`. Additional description files can be created from the files in `+/usr/share/i18n+` using the command `+localedef+`. The description files are part of the `+glibc-i18ndata+` package. A description file for `+en_US.UTF-8+` (for English and United States) can be created with:
+
+// REMARK: Change the description file in the previous para and the following screen to something appropriate for your language.
+
+----
+localedef -i en_US -f UTF-8 en_US.UTF-8
+----
+
+`+LANG=en_US.UTF-8+`::
+This is the default setting if American English is selected during installation. If you selected another language, that language is enabled but still with UTF-8 as the character encoding.
+`+LANG=en_US.ISO-8859-1+`::
+This sets the language to English, country to United States and the character set to `+ISO-8859-1+`. This character set does not support the Euro sign, but it can be useful sometimes for programs that have not been updated to support `+UTF-8+`. The string defining the charset (`+ISO-8859-1+` in this case) is then evaluated by programs like Emacs.
+`+LANG=en_IE@euro+`::
+The above example explicitly includes the Euro sign in a language setting. This setting is obsolete now, as UTF-8 also covers the Euro symbol. It is only useful if an application supports ISO-8859-15 and not UTF-8.
+
+Changes to `+/etc/sysconfig/language+` are activated by the following process chain:
+
+* For the Bash: `+/etc/profile+` reads `+/etc/profile.d/lang.sh+` which, in turn, analyzes `+/etc/sysconfig/language+`.
+* For tcsh: At login, `+/etc/csh.login+` reads `+/etc/profile.d/lang.csh+` which, in turn, analyzes `+/etc/sysconfig/language+`.
+
+This ensures that any changes to `+/etc/sysconfig/language+` are available at the next login to the respective shell, without having to manually activate them.
+
+Users can override the system defaults by editing their `+~/.bashrc+` accordingly. For example, if you do not want to use the system-wide `+en_US+` for program messages, include `+LC_MESSAGES=es_ES+` so that messages are displayed in Spanish instead.
+
+[#sec-suse-l10n-dot-i18n]
+=== Locale settings in `+~/.i18n+`
+
+If you are not satisfied with locale system defaults, change the settings in `+~/.i18n+` according to the Bash scripting syntax. Entries in `+~/.i18n+` override system defaults from `+/etc/sysconfig/language+`. Use the same variable names but without the `+RC_+` namespace prefixes. For example, use `+LANG+` instead of `+RC_LANG+`:
+
+----
+LANG=cs_CZ.UTF-8
+LC_COLLATE=C
+----
+
+[#sec-suse-l10n-fallback]
+=== Settings for language support
+
+Files in the category _Messages_ are, as a rule, only stored in the corresponding language directory (like `+en+`) to have a fallback. If you set `+LANG+` to `+en_US+` and the message file in `+/usr/share/locale/en_US/LC_MESSAGES+` does not exist, it falls back to `+/usr/share/locale/en/LC_MESSAGES+`.
+
+A fallback chain can also be defined, for example, for Breton to French or for Galician to Spanish to Portuguese:
+
+`+LANGUAGE="br_FR:fr_FR"+`
+
+`+LANGUAGE="gl_ES:es_ES:pt_PT"+`
+
+If desired, use the Norwegian variants Nynorsk and Bokmål instead (with additional fallback to `+no+`):
+
+`+LANG="nn_NO"+`
+
+`+LANGUAGE="nn_NO:nb_NO:no"+`
+
+or
+
+`+LANG="nb_NO"+`
+
+`+LANGUAGE="nb_NO:nn_NO:no"+`
+
+In Norwegian, `+LC_TIME+` is also treated differently.
+
+// REMARK: The following example does not make sense for 'en'; that's why I use 'de' as an example here. -ke-
+
+One problem that can arise is a separator used to delimit groups of digits not being recognized properly. This occurs if `+LANG+` is set to only a two-letter language code like `+de+`, but the definition file glibc uses is located in `+/usr/share/lib/de_DE/LC_NUMERIC+`. Thus `+LC_NUMERIC+` must be set to `+de_DE+` to make the separator definition visible to the system.
+
+[#sec-suse-l10n-info]
+=== More information
+
+* _The GNU C Library Reference Manual_, Chapter “Locales and Internationalization”. It is included in the package `+glibc-info+`.
+* Markus Kuhn, _UTF-8 and Unicode FAQ for Unix/Linux_, currently at link:https://www.cl.cam.ac.uk/~mgk25/unicode.html[].

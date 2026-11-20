@@ -1,0 +1,388 @@
+// Converted from xml/yast2_userman.xml
+[#cha-yast-userman]
+= Managing users with {yast}
+:description: Learn how to manage local and network users, groups and authentication settings using YaST's powerful User and Group Management module
+:revdate: 2026-01-16
+
+During installation, you may have created a local user for your system. With the {yast} module *User and Group Management* you can add users or edit existing ones. It also lets you configure your system to authenticate users with a network server.
+
+[#sec-yast-userman-main]
+== User and group administration dialog
+
+To administer users or groups, start {yast} and click menu:Security and Users[User and Group Management]. Alternatively, start the *User and Group Administration* dialog directly by running `+sudo yast2 users &+` from a command line.
+
+[#fig-y2-userman-main]
+.{yast} user and group administration
+image::yast2_users_main_qt.png["",width=70%]
+
+Every user is assigned a system-wide user ID (UID). Apart from the users that can log in to your machine, there are also several _system users_ for internal use only. Each user is assigned to one or more groups. Similar to _system users_, there are also _system groups_ for internal use.
+
+The main window shows several tabs, depending on the set of users (local users, network users, system users) you choose to view and modify. The tabs allow you to perform the following tasks:
+
+Managing user accounts::
+From the *Users* tab create, modify, delete or temporarily disable user accounts as described in <<sec-yast-userman-users,Managing user accounts>>. Learn about advanced options like enforcing password policies, using encrypted home directories, or managing disk quotas in <<sec-yast-userman-adv,Additional options for user accounts>>.
+Changing default settings::
+Local user accounts are created according to the settings defined on the *Defaults for New Users* tab. Learn how to change the default group assignment, or the default path and access permissions for home directories in <<sec-yast-userman-defaults,Changing default settings for local users>>.
+Assigning users to groups::
+Learn how to change the group assignment for individual users in <<sec-yast-userman-assign,Assigning users to groups>>.
+Managing groups::
+From the *Groups* tab, you can add, modify or delete existing groups. Refer to <<sec-yast-userman-groups,Managing groups>> for information on how to do this.
+Changing user authentication method::
+When your machine is connected to a network that provides user authentication methods like NIS or LDAP, you can choose between several authentication methods on the *Authentication Settings* tab. For more information, refer to <<sec-yast-userman-authent,Changing the user authentication method>>.
+
+For user and group management, the dialog provides similar functionality. You can easily switch between the user and group administration view by choosing the appropriate tab at the top of the dialog.
+
+Filter options allow you to define the set of users or groups you want to modify: on the *Users* or *Group* tab, click *Set Filter* to view and edit users or groups. They are listed according to certain categories, such as *Local Users* or *LDAP Users*, if applicable. With menu:Set Filter[Customize Filter] you can also set up and use a custom filter.
+
+Depending on the filter you choose, not all the following options and functions may be available from the dialog.
+
+[#sec-yast-userman-users]
+== Managing user accounts
+
+{yast} allows you to create, modify, delete or temporarily disable user accounts. Do not modify user accounts unless you are an experienced user or administrator.
+
+[NOTE]
+.Changing user IDs of existing users
+====
+File ownership is bound to the user ID, not to the user name. After a user ID change, the files in the user's home directory are automatically adjusted to reflect this change. However, after an ID change, the user no longer owns the files they created elsewhere in the file system unless the file ownership for those files is manually modified.
+====
+
+The following instructions demonstrate how to set up default user accounts. For further options, refer to <<sec-yast-userman-adv,Additional options for user accounts>>.
+
+.Adding or modifying user accounts
+. Open the {yast} *User and Group Administration* dialog and click the *Users* tab.
+. With *Set Filter* define the set of users you want to manage. The dialog lists users in the system and the groups the users belong to.
+. To modify options for an existing user, select an entry and click *Edit*.
++
+To create a new user account, click *Add*.
+. Enter the appropriate user data on the first tab, such as *Username* (which is used for login) and *Password*. This data is sufficient to create a new user. If you click *OK* now, the system automatically assigns a user ID and sets all other values as default.
+. Activate *Receive System Mail* if you want system notifications to be delivered to this user's mailbox. This creates a mail alias for `+root+` and the user can read the system mail without having to first log in as `+root+`.
++
+The mails sent by system services are stored in the local mailbox `+/var/spool/mail/+`{empty}__USERNAME__, where _USERNAME_ is the login name of the selected user. To read e-mails, you can use the `+mail+` command.
+. To adjust further details such as the user ID or the path to the user's home directory, do so on the *Details* tab.
++
+If you need to relocate the home directory of an existing user, enter the path to the new home directory there and move the contents of the current home directory with *Move to New Location*. Otherwise, a new home directory is created without any of the existing data.
+. To force users to regularly change their password or set other password options, switch to *Password Settings* and adjust the options. For more details, refer to <<sec-yast-userman-adv-passw,Enforcing password policies>>.
+. If all options are set according to your wishes, click *OK*.
+. Click *OK* to close the administration dialog and to save the changes. A newly added user can now log in to the system using the login name and password you created.
++
+Alternatively, to save all changes without exiting the *User and Group Administration* dialog, click menu:Expert Options[Write Changes Now].
+
+[WARNING]
+.Do not rename the `+root+` account
+====
+While it is technically possible to rename the `+root+` account, certain applications, scripts or third-party products may rely on the existence of a user called `+root+`. While such a configuration always targets individual environments, necessary adjustments could be overwritten by vendor updates, so this becomes an ongoing task rather than a one-time setting. This is especially true in complex setups involving third-party applications, where it needs to be verified with every vendor involved whether a rename of the `+root+` account is supported.
+
+As the implications for renaming the `+root+` account cannot be foreseen, {suse} does not support renaming the `+root+` account.
+
+Usually, the idea behind renaming the `+root+` account is to hide it or make it unpredictable. However, `+/etc/passwd+` requires `+644+` permissions for regular users, so any user of the system can retrieve the login name for the user ID 0. 
+ifdef::os-sles,os-sled,os-osuse[For better ways to secure the `+root+` account, refer to xref:security:user-management.adoc#sec-sec-prot-restrict-root[Restricting `+root+` logins] and xref:security:user-management.adoc#sec-sec-prot-restrict-root-ssh[Restricting SSH logins].]
+====
+
+[TIP]
+.Matching user IDs
+====
+It is useful to match the (local) user ID to the ID in the network. For example, a new (local) user on a laptop should be integrated into a network environment with the same user ID. This ensures that the file ownership of the files the user creates “offline” is the same as if they had created them directly on the network.
+====
+
+.Disabling or deleting user accounts
+. Open the {yast} *User and Group Administration* dialog and click the *Users* tab.
+. To temporarily disable a user account without deleting it, select the user from the list and click *Edit*. Activate *Disable User Login*. The user cannot log in to your machine until you enable the account again.
+. To delete a user account, select the user from the list and click *Delete*. Choose if you also want to delete the user's home directory or to retain the data.
+
+[#sec-yast-userman-adv]
+== Additional options for user accounts
+
+Besides the settings for a default user account, {productnamereg} offers further options. For example, options to enforce password policies, use encrypted home directories or define disk quotas for users and groups.
+
+[#sec-yast-userman-adv-login]
+=== Automatic login and passwordless login
+
+If you use the {gnome} desktop environment you can configure _Auto Login_ for a certain user and _Passwordless Login_ for all users. Auto login causes a user to become automatically logged in to the desktop environment on boot. This functionality can only be activated for one user at a time. Login without password allows all users to log in to the system after they have entered their user name in the login manager.
+
+[WARNING]
+.Security risk
+====
+Enabling _Auto Login_ or _Passwordless Login_ on a machine that can be accessed by more than one person is a security risk. Without the need to authenticate, any user can gain access to your system and your data. If your system contains confidential data, do not use this functionality.
+====
+
+To activate auto login or login without password, access these functions in the {yast} *User and Group Administration* with menu:Expert Options[Login Settings].
+
+[#sec-yast-userman-adv-passw]
+=== Enforcing password policies
+
+On any system with multiple users, it is a good idea to enforce at least basic password security policies. Users should change their passwords regularly and use strong passwords that cannot easily be exploited. For local users, proceed as follows:
+
+.Configuring password settings
+. Open the {yast} *User and Group Administration* dialog and select the *Users* tab.
+. Select user and click *Edit*.
+. Switch to the *Password Settings* tab. The user's last password change is displayed on the tab.
+. To make the user change their password at next login, activate *Force Password Change*.
+. To enforce password rotation, set a *Maximum Number of Days for the Same Password* and a *Minimum Number of Days for the Same Password*.
+. To remind the user to change their password before it expires, set the number of *Days before Password Expiration to Issue Warning*.
+. To restrict the period of time the user can log in after their password has expired, change the value in *Days after Password Expires with Usable Login*.
+. You can also specify a certain expiration date for the complete account. Enter the *Expiration Date* in _YYYY-MM-DD_ format. This setting is not password-related but rather applies to the account itself.
+. For more information about options and default values, click *Help*.
+. Apply your changes with *OK*.
+
+[#sec-yast-userman-adv-quota]
+=== Managing quotas
+
+To prevent system capacities from being exhausted without notification, system administrators can set up quotas for users or groups. Quotas can be defined for one or more file systems and restrict the amount of disk space that can be used and the number of inodes (index nodes) that can be created there. Inodes are data structures on a file system that store basic information about a regular file, directory or other file system object. They store all attributes of a file system object (like user and group ownership, read, write or execute permissions), except file name and contents.
+
+{productname} allows usage of `+soft+` and `+hard+` quotas. Additionally, grace intervals can be defined that allow users or groups to temporarily exceed their quotas by certain amounts.
+
+Soft quota::
+Defines a warning level at which users are informed that they are nearing their limit. Administrators may urge the users to clean up and reduce their data on the partition. The soft quota limit is normally lower than the hard quota limit.
+Hard quota::
+Defines the limit at which write requests are denied. When the hard quota is reached, no more data can be stored and applications may crash.
+Grace period::
+Defines the time between the overflow of the soft quota and a warning being issued. Normally set to a rather low value of one or several hours.
+
+.Enabling quota support for a partition
+To configure quotas for certain users and groups, you need to enable quota support for the respective partition in the {yast} Expert Partitioner first.
+
+ifdef::os-sles[]
+[NOTE]
+.Quotas for Btrfs partitions
+====
+Quotas for Btrfs partitions are handled differently. For more information, see xref:storage:storage-filesystems.adoc#sec-filesystems-major-btrfs-quota[Btrfs quota support for subvolumes].
+====
+endif::[]
+
+. In {yast}, select menu:System[Partitioner] and click *Yes* to proceed.
+. In the *Expert Partitioner*, select the partition for which to enable quotas and click *Edit*.
+. Click *Fstab Options* and activate *Enable Quota Support*. If the `+quota+` package is not already installed, it will be installed when you confirm the respective message with *Yes*.
+. Confirm your changes and leave the *Expert Partitioner*.
+. Make sure the service `+quotaon+` is running by entering the following command:
++
+----
+> sudo systemctl status quotaon.service
+----
++
+It should be marked as being `+active+`. If this is not the case, start it with the command `+systemctl start quotaon.service+`.
+
+.Setting up quotas for users or groups
+Now you can define soft or hard quotas for specific users or groups and set time periods as grace intervals.
+
+. In the {yast} *User and Group Administration*, select the user or the group you want to set the quotas for and click *Edit*.
+. On the *Plug-Ins* tab, select the *Manage User Quota* entry and click *Launch* to open the *Quota Configuration* dialog.
+. From *File System*, select the partition to which the quota should apply.
++
+ifdef::os-sles,os-sled[]
+image::yast2_users_quota_qt.png["",width=70%]
+endif::[]
+. Below *Size Limits*, restrict the amount of disk space. Enter the number of 1 KB blocks the user or group may have on this partition. Specify a *Soft Limit* and a *Hard Limit* value.
+. Additionally, you can restrict the number of inodes the user or group may have on the partition. Below *Inodes Limits*, enter a *Soft Limit* and *Hard Limit*.
+. You can only define grace intervals if the user or group has already exceeded the soft limit specified for size or inodes. Otherwise, the time-related text boxes are not activated. Specify the time period for which the user or group is allowed to exceed the limits set above.
+. Confirm your settings with *OK*.
+. Click *OK* to close the administration dialog and save the changes.
++
+Alternatively, to save all changes without exiting the *User and Group Administration* dialog, click menu:Expert Options[Write Changes Now].
+
+{productname} also ships command line tools like `+repquota+` or `+warnquota+`. System administrators can use these tools to control the disk usage or send e-mail notifications to users exceeding their quota. Using `+quota_nld+`, administrators can also forward kernel messages about exceeded quotas to D-BUS. For more information, refer to the `+repquota+`, the `+warnquota+` and the `+quota_nld+` man page.
+
+[#sec-yast-userman-defaults]
+== Changing default settings for local users
+
+When creating new local users, several default settings are used by {yast}. These include, for example, the group the user belongs to, or the access permissions of the user's home directory. You can change these default settings to meet your requirements:
+
+. Open the {yast} *User and Group Administration* dialog and select the *Defaults for New Users* tab.
+. To change the group the new users should automatically belong to, select another group from *Default Group*.
+. If you do not want to use `/home/_USERNAME_` as the default path for new users' home directories, modify the *Path Prefix for Home Directory*.
+. To change the default permission modes for newly created home directories, adjust the umask value in *Umask for Home Directory*. For more information about umask, refer to xref:security:security-acls.adoc[] and to the `+umask+` man page.
+. For information about the individual options, click *Help*.
+. Apply your changes with *OK*.
+
+[#sec-yast-userman-assign]
+== Assigning users to groups
+
+Local users are assigned to several groups according to the default settings, which you can access from the *User and Group Administration* dialog on the *Defaults for New Users* tab. In the following, learn how to modify an individual user's group assignment. If you need to change the default group assignments for new users, refer to <<sec-yast-userman-defaults,Changing default settings for local users>>.
+
+.Changing a user's group assignment
+. Open the {yast} *User and Group Administration* dialog and click the *Users* tab. It lists users and the groups the users belong to.
+. Click *Edit* and switch to the *Details* tab.
+. To change the group the user belongs to, click *Default Group* and select the group from the list.
+. To assign the user additional secondary groups, activate the corresponding check boxes in the *Additional Groups* list.
+. Click *OK* to apply your changes.
+. Click *OK* to close the administration dialog and save the changes.
++
+Alternatively, to save all changes without exiting the *User and Group Administration* dialog, click menu:Expert Options[Write Changes Now].
+
+[#sec-yast-userman-groups]
+== Managing groups
+
+With {yast} you can also easily add, modify or delete groups.
+
+.Creating and modifying groups
+. Open the {yast} *User and Group Management* dialog and click the *Groups* tab.
+. With *Set Filter* define the set of groups you want to manage. The dialog lists groups in the system.
+. To create a new group, click *Add*.
+. To modify an existing group, select the group and click *Edit*.
+. In the following dialog, enter or change the data. The list on the right shows an overview of all available users and system users which can be members of the group.
++
+image::yast2_groups_edit_qt.png["",width=75%]
+. To add existing users to a new group select them from the list of possible *Group Members* by checking the corresponding box. To remove them from the group deactivate the box.
+. Click *OK* to apply your changes.
+. Click *OK* to close the administration dialog and save the changes.
++
+Alternatively, to save all changes without exiting the *User and Group Administration* dialog, click menu:Expert Options[Write Changes Now].
+
+To delete a group, it must not contain any group members. To delete a group, select it from the list and click *Delete*. Click *OK* to close the administration dialog and save the changes. Alternatively, to save all changes without exiting the *User and Group Administration* dialog, click menu:Expert Options[Write Changes Now].
+
+[#sec-yast-userman-authent]
+== Changing the user authentication method
+
+When your machine is connected to a network, you can change the authentication method. The following options are available:
+
+NIS::
+Users are administered centrally on a NIS server for all systems in the network. For details, see xref:security:security-nis.adoc[].
+SSSD::
+The _System Security Services Daemon_ (SSSD) can locally cache user data and then allow users to use the data, even if the real directory service is (temporarily) unreachable. For details, see xref:security:security-auth.adoc#sec-security-auth-sssd[SSSD].
+Samba::
+SMB authentication is often used in mixed Linux and Windows networks. For details, see 
+ifdef::os-sles[xref:storage:net-samba.adoc[]]
+ifdef::os-sled,os-osuse[xref:security:security-ad-support.adoc[]]
+{empty}.
+
+To change the authentication method, proceed as follows:
+
+. Open the *User and Group Administration* dialog in {yast}.
+. Click the *Authentication Settings* tab to show an overview of the available authentication methods and the current settings.
+. To change the authentication method, click *Configure* and select the authentication method you want to modify. This takes you directly to the client configuration modules in {yast}. For information about the configuration of the appropriate client, refer to the following sections:
++
+.NIS:
+xref:security:security-nis.adoc#sec-nis-client[Configuring NIS clients]
++
+.LDAP:
+xref:security:security-auth.adoc#sec-security-auth-yast-client[Configuring an authentication client with {yast}]
++
+--
+ifdef::os-sles[]
+.Samba:
+xref:storage:net-samba.adoc#sec-samba-client-inst-yast[Configuring a Samba client with {yast}]
+endif::[]
+--
++
+.SSSD:
+xref:security:security-auth.adoc#sec-security-auth-sssd[SSSD]
+. After accepting the configuration, return to the *User and Group Administration* overview.
+. Click *OK* to close the administration dialog.
+
+[#sec-yast-userman-defaultsystemusers]
+== Default system users
+
+By default, {productname} creates user names, which cannot be deleted. These users are typically defined in the Linux Standard Base (see link:https://refspecs.linuxfoundation.org/lsb.shtml[]). The following list provides the common user names and their purpose:
+
+.Common user names installed by default
+`+bin+`, `+daemon+`::
+Legacy user, included for compatibility with legacy applications. New applications should no longer use this user name.
+`+gdm+`::
+Used by GNOME Display Manager (GDM) to provide graphical logins and manage local and remote displays.
+`+lp+`::
+Used by the Printer daemon for Common Unix Printing System (CUPS).
+`+mail+`::
+User reserved for mailer programs like `+sendmail+` or `+postfix+`.
+`+man+`::
+Used by man to access man pages.
+`+messagebus+`::
+Used to access D-Bus (desktop bus), a software bus for inter-process communication. Daemon is `+dbus-daemon+`.
+`+nobody+`::
+User that owns no files and is in no privileged groups. Nowadays, its use is limited as it is recommended by Linux Standard Base to provide a separate user account for each daemon.
+`+nscd+`::
+Used by the Name Service Caching Daemon. This daemon is a lookup service to improve performance with NIS and LDAP. Daemon is `+nscd+`.
+`+polkitd+`::
+Used by the PolicyKit Authorization Framework, which defines and handles authorization requests for unprivileged processes. Daemon is `+polkitd+`.
+`+postfix+`::
+Used by the Postfix mailer.
+`+pulse+`::
+Used by the Pulseaudio sound server.
+`+root+`::
+Used by the system administrator, providing all appropriate privileges.
+`+rpc+`::
+Used by the `+rpcbind+` command, an RPC port mapper.
+`+rtkit+`::
+Used by the `+rtkit+` package providing a D-Bus system service for real time scheduling mode.
+`+salt+`::
+User for parallel remote execution provided by Salt. Daemon is named `+salt-master+`.
+`+scard+`::
+User for communication with smart cards and readers. Daemon is named `+pcscd+`.
+`+srvGeoClue+`::
+Used by the GeoClue D-Bus service to provide location information.
+`+sshd+`::
+Used by the Secure Shell daemon (SSH) to ensure secured and encrypted communication over an insecure network.
+`+statd+`::
+Used by the Network Status Monitor protocol (NSM), implemented in the `+rpc.statd+` daemon, to listen for reboot notifications.
+`+systemd-coredump+`::
+Used by the `+/usr/lib/systemd/systemd-coredump+` command to acquire, save and process core dumps.
+ifdef::os-osuse[]
+`+systemd-network+`::
+Used by the `+/usr/lib/systemd/systemd-networkd+` command to manage networks.
+endif::[]
+`+systemd-timesync+`::
+Used by the `+/usr/lib/systemd/systemd-timesyncd+` command to synchronize the local system clock with a remote Network Time Protocol (NTP) server.
+
+[#default-system-groups]
+== Default system groups
+
+By default, {slea} creates multiple user groups that are used by system services. The following list describes examples of required and common optional groups.
+
+`+root+`::
+Administrative group with all privileges.
+`+bin+`::
+Included for compatibility with legacy applications. New applications should not use this group.
+`+daemon+`::
+Previously used to limit daemons' access to the system. Daemons should run under their own UID/GID now to separate daemons from one another.
+`+audio+`::
+Privileges for audio devices.
+`+gdm+`::
+Privileges for the {gnome} Display Manager.
+`+chrony+`::
+Privileges for the time synchronization service.
+`+kvm+`::
+Privileges for the {qemu} machine emulator toolkit.
+`+libvirt+`::
+Privileges for virtualization stack.
+`+lp+`::
+Privileges for printer operation.
+`+mail+`::
+Privileges for mail services.
+`+man+`::
+Privileges specific to manual pages and the `+man+` command.
+`+sshd+`::
+Privileges for SSH communication protocol daemon.
+
+[#reserved-uids]
+== Reserved user and group IDs
+
+When a user creates a file, they automatically become the owner of that file. Additionally, the file is associated with a group, and the creating user's primary group typically becomes the group owner. Files are assigned separate `+read+`, `+write+` and `+execute+` permissions. The root user can change the file owner. Both the root user and the file owner can change access permissions to the file. A regular user can change the group ownership of a file they own only if they are a member of that group.
+
+Every user has a UID (unique user ID), which is a numerical identification number. Additionally, each group is associated with a GID (group ID). Users belonging to a group share the same `+read+`, `+write+` and `+execute+` permissions for any files owned by that group. {productname} reserves the following user and group IDs:
+
+* `+0+`: reserved for `+root+` user
+* `+1-999+`: reserved for system users
+* `+1000-60000+`: reserved for regular users
+* `+60001-60513+`: reserved for `+systemd homed+`
+* `+60514-60577+`: reserved for `+systemd nspawn+` user mapping
+* `+60578-61183+`: unused
+* `+61184-65519+`: reserved for `+systemd dynamic+` service users
+* `+65520-65533+`: unused
+* `+65534-65534+`: reserved for `+nobody+` user
+* `+65535-65535+`: reserved for `+16 bit-1+`
+* `+65536-524287+`: unused
+* `+524288-1879048191+`: reserved for `+systemd nspawn+` containers
+* `+1879048192-2147483647+`: unused
+* `+2147483648-4294967295+`: do not use
+
+For more information on UIDs and GIDs, see:
+
+* link:https://systemd.io/UIDS-GIDS/[]
+* link:https://kanidm.github.io/kanidm/stable/accounts/posix_accounts_and_groups.html#gid-number-generation[]
+
+[IMPORTANT]
+====
+A new IPA deployment can use the following UID ranges:
+
+* `+65536-524287+`: unused
+* `+1879048192-2147483647+`: unused
+====

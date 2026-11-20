@@ -1,0 +1,23 @@
+// Converted from xml/suse_emacs.xml
+
+[#sec-suse-emacs]
+=== Settings for GNU Emacs
+
+GNU Emacs is a complex work environment. The following sections cover the configuration files processed when GNU Emacs is started. More information is available at link:https://www.gnu.org/software/emacs/[].
+
+On start-up, Emacs reads several files containing the settings of the user, system administrator and distributor for customization or preconfiguration. The initialization file `+~/.emacs+` is installed to the home directories of the individual users from `+/etc/skel+`. `+.emacs+`, in turn, reads the file `+/etc/skel/.gnu-emacs+`. To customize the program, copy `+.gnu-emacs+` to the home directory (with `+cp /etc/skel/.gnu-emacs ~/.gnu-emacs+`) and make the desired settings there.
+
+`+.gnu-emacs+` defines the file `+~/.gnu-emacs-custom+` as `+custom-file+`. If users make settings with the `+customize+` options in Emacs, the settings are saved to `+~/.gnu-emacs-custom+`.
+
+With {productname}, the `+emacs+` package installs the file `+site-start.el+` in the directory `+/usr/share/emacs/site-lisp+`. The file `+site-start.el+` is loaded before the initialization file `+~/.emacs+`. Among other things, `+site-start.el+` ensures that special configuration files distributed with Emacs add-on packages, such as `+psgml+`, are loaded automatically. Configuration files of this type are located in `+/usr/share/emacs/site-lisp+`, too, and always begin with `+suse-start-+`. The local system administrator can specify systemwide settings in `+default.el+`.
+
+More information about these files is available in the Emacs info file under _Init File_: `+info:/emacs/InitFile+`. Information about how to disable the loading of these files (if necessary) is also provided at this location.
+
+The components of Emacs are divided into several packages:
+
+* The base package `+emacs+`.
+* `+emacs-x11+` (usually installed): the program _with_ X11 support.
+* `+emacs-nox+`: the program _without_ X11 support.
+* `+emacs-info+`: online documentation in info format.
+* `+emacs-el+`: the uncompiled library files in Emacs Lisp. These are not required at runtime.
+* Numerous add-on packages can be installed if needed: `+emacs-auctex+` (LaTeX), `+psgml+` (SGML and XML), `+gnuserv+` (client and server operation) and others.

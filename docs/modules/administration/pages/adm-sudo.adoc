@@ -1,0 +1,428 @@
+// Converted from xml/adm_sudo.xml
+[#cha-adm-sudo]
+= `+sudo+` basics
+:description: Configure sudo settings to manage user permissions and secure access to elevated commands in your Linux system
+:revdate: 2026-01-16
+
+Running certain commands requires root privileges. However, for security reasons and to avoid mistakes, it is not recommended to log in as `+root+`. A safer approach is to log in as a regular user, and then use `+sudo+` to run commands with elevated privileges.
+
+On {productname}, `+sudo+` is configured to work similarly to `+su+`. However, `+sudo+` provides a flexible mechanism that allows users to run commands with privileges of any other user. This can be used to assign roles with specific privileges to certain users and groups. For example, it is possible to allow members of the group `+users+` to run a command with the privileges of user `{exampleuserii_plain}`. Access to the command can be further restricted by disallowing any command options. While su always requires the `+root+` password for authentication with PAM, `+sudo+` can be configured to authenticate with your own credentials. This means that the users do not need to share the `+root+` password, which improves security.
+
+[#sec-adm-sudo-usage]
+== Basic `+sudo+` usage
+
+The following chapter provides an introduction to basic usage of `+sudo+`.
+
+[#sec-adm-sudo-usage-cmd]
+=== Running a single command
+
+As a regular user, you can run any command as `+root+` by adding `+sudo+` before it. This prompts you to provide the root password. If authenticated successfully, this runs the command as `+root+`:
+
+----
+> id -un <1>
+tux
+> sudo id -un
+root's password: <2>
+root
+> id -un
+tux <3>
+> sudo id -un
+ <4>
+root
+----
+
+<1> The `+id -un+` command prints the login name of the current user.
+<2> The password is not shown during input, neither as clear text nor as masking characters.
+<3> Only commands that start with `+sudo+` run with elevated privileges.
+<4> The elevated privileges persist for a certain period of time, so you do not need to provide the `+root+` password again.
+
+[TIP]
+.I/O redirection
+====
+When using `+sudo+`, I/O redirection does not work:
+
+----
+> sudo echo s > /proc/sysrq-trigger
+bash: /proc/sysrq-trigger: Permission denied
+> sudo cat < /proc/1/maps
+bash: /proc/1/maps: Permission denied
+----
+
+In the example above, only the `+echo+` and `+cat+` commands run with elevated privileges. The redirection is done by the user's shell with user privileges. To perform redirection with elevated privileges, either start a shell as in <<sec-sudo-shell,Starting a shell>> or use the `+dd+` utility:
+
+----
+echo s | sudo dd of=/proc/sysrq-trigger
+sudo dd if=/proc/1/maps | cat 
+----
+====
+
+[#sec-sudo-shell]
+=== Starting a shell
+
+Using `+sudo+` every time to run a command with elevated privileges is not always practical. While you can use the `+sudo bash+` command, it is recommended to use one of the built-in mechanisms to start a shell:
+
+`+sudo -s (<command>)+`::
+Starts a shell specified by the `+SHELL+` environment variable or the target user's default shell. If a command is specified, it is passed to the shell (with the `+-c+` option). Otherwise the shell runs in interactive mode.
++
+[subs="attributes+"]
+----
+{exampleuser_plain}:~ > sudo -s
+root's password:
+root:/home/tux # exit
+{exampleuser_plain}:~ > 
+----
+`+sudo -i (<command>)+`::
+Similar to `+-s+`, but starts the shell as a login shell. This means that the shell's start-up files (`+.profile+` etc.) are processed, and the current working directory is set to the target user's home directory.
++
+[subs="attributes+"]
+----
+{exampleuser_plain}:~ > sudo -i
+root's password:
+root:~ # exit
+{exampleuser_plain}:~ > 
+            
+----
+
+[TIP]
+.Environment variables
+====
+By default, `+sudo+` does not propagate environment variables. This behavior can be changed using the `+env_reset+` option (see <<tab-adm-sudo-options,Useful flags and options>>).
+====
+
+[#sec-sudo-conf]
+== Configuring `+sudo+`
+
+`+sudo+` provides a wide range on configurable options.
+
+[NOTE]
+.Locked yourself out of sudo
+====
+If you accidentally locked yourself out of `+sudo+`, use `+su -+` and the `+root+` password to start a root shell. To fix the error, run `+visudo+`.
+====
+
+[WARNING]
+.Example configurations are for demonstration purposes only
+====
+The example rules outlined below are purely for demonstration purposes. Use them to understand the general syntax of `+sudo+` configuration files. Do not use them in real-world setups, because they do not reflect the complexity of these environments.
+====
+
+[#sudo-creating-custom-configuration-bp]
+=== `+sudo+` configuration best practices
+
+Before you start, here are a few ground rules for maintaining `+sudo+` configurations:
+
+Always use `+visudo+` to edit `+sudo+` configuration files::
+Any changes to the `+sudo+` configuration should be done using the `+visudo+` command. `+visudo+` is a tailor-made tool that allows you to edit the `+sudo+` configuration files and runs basic syntax checks, making sure that the configuration remains intact and functional. A faulty `+sudo+` configuration can result in a user being locked out of their own system.
+Always create custom configurations under `+/etc/sudoers.d/+`::
+Custom configurations must reside under `+/etc/sudoers.d/+` to be pulled in by `+sudo+`. Settings in the custom configuration files take precedence over the ones in the default configuration in `+/etc/sudoers+`.
+Always mind the order in which configurations are read::
+To make sure the custom configurations are read in the correct order, prefix them with numbers. Use leading zeroes to establish the order in which the files are read. For example, `+01_myfirstconfig+` is parsed before `+10_myotherconfig+`. If a directive has been set in a file that is read before another file that contains conflicting information, the last-read directive is applied.
+Always use descriptive file names::
+Use file names that hint at what the configuration file does. This helps you keep track of what your `+sudo+` setup is supposed to do.
+
+[#sudo-creating-custom-config-single-user]
+=== Create a user-specific configuration file
+
+Create a `+sudo+` configuration file that allows a normal user (`{exampleuser_plain}`) to use the `+useradd+` command with their own password instead of the `+root+` password.
+
+[#ex-sudo-custom-config-user]
+.Create a user-specific configuration file
+====
+. As system administrator (`+root+`), create a custom configuration file that holds the new user-specific directives by starting `+visudo+`. Use both numbering and a descriptive name:
++
+----
+  # visudo -f /etc/sudoers.d/02_usermanagement
+            
+----
+. Create a rule that allows `{exampleuser_plain}` to execute the `+/usr/sbin/useradd+` binary in the entire environment that this `+sudo+` configuration is applied to:
++
+[subs="attributes+"]
+----
+  {exampleuser_plain} ALL = /usr/sbin/useradd <1> <2> <3>
+            
+----
++
+<1> Specify the user or group. List users by name or `+#UID+`, and groups by `+%GROUPNAME+`. Separate multiple items with commas. To negate entries, use `+!+`.
+<2> Specify one or several (separated by commas) hosts. Use (fully qualified) host names or IP addresses. Add `+ALL+` to enforce this setting globally across all hosts. Use `+!+` for negations.
+<3> Specify one or several executables (separated by commas). When specifying them, make sure to mind the following rules:
++
+--
+`+/usr/sbin/useradd+`::
+Without any additional options added, this allows the execution of every possible `+useradd+` command.
+`+/usr/sbin/useradd -c+`::
+If you explicitly specify an option, then that option is the only one that is allowed. Nothing else would be available to the user you specified above.
+`+/usr/sbin/useradd ""+`::
+This would just let the user invoke a mere `+useradd+` without any option at all.
+--
++
+In the example above, you would want to either allow all options and subcommands or limit them to a few for security reasons, but forbidding a user from specifying any option at all would be pointless in this context.
+. To let the user use their own password instead of the `+root+` password, add the following line:
++
+[subs="attributes+"]
+----
+Defaults:{exampleuser_plain} !targetpw
+            
+----
++
+When active, this flag requires the user to enter the password of the target user, that is, `+root+`. This flag is enabled by default on any {productname} system. Negate it using `+!+` to require the user to just enter their own password instead of the `+root+` password.
+. Save the configuration, leave the editor and open a second shell to test whether `+sudo+` honors your new configuration.
+====
+
+[#sudo-creating-custom-config-group]
+=== Create custom configurations by grouping items
+
+Modify the configuration from <<ex-sudo-custom-config-user,Create a user-specific configuration file>> so that a group of named users can run the `+useradd+` command without the need for the `+root+` password. Also, add the `+usermod+` and `+userdel+` to the list of commands available to this group.
+
+[#ex-sudo-custom-config-group]
+.Create custom configurations by grouping items
+====
+. To modify the example configuration, open it as system administrator with `+visudo+`:
++
+----
+# visudo /etc/sudoers.d/02_usermanagement
+            
+----
+. Add more users to the rule in a comma-separated list:
++
+[subs="attributes+"]
+----
+{exampleuser_plain}, {exampleuserii_plain} ALL = /usr/sbin/useradd
+            
+----
+. To allow the listed users to execute a list of commands, specify the commands as a comma-separated list:
++
+[subs="attributes+"]
+----
+{exampleuser_plain}, {exampleuserii_plain} ALL = /usr/sbin/useradd, /usr/sbin/usermod, /usr/sbin/userdel
+            
+----
+. To let the listed users use their own password instead of the `+root+` password, add the following line:
++
+[subs="attributes+"]
+----
+Defaults:{exampleuser_plain}, {exampleuserii_plain} !targetpw
+            
+----
++
+When active, this flag requires the listed users to enter the password of the target user, that is, `+root+`. This flag is enabled by default on any {productname} system. Negate it using `+!+` to require the listed users to just enter their own password instead of the `+root+` password.
+. Save the configuration, leave the editor and open a second shell to test whether `+sudo+` honors your new configuration.
+====
+
+[#sudo-creating-custom-config-aliases]
+=== Simplify configurations by applying aliases
+
+Use aliases to simplify your custom configuration from <<ex-sudo-custom-config-group,Create custom configurations by grouping items>> even further. Grouping items helps to a certain extent, but using global aliases for users, commands and hosts is the most efficient way to keep a clean and lean `+sudo+` configuration.
+
+Using aliases and groups instead of lists is a much better way to address changes in your setup. Should a user leave, just remove them from the global `+User_Alias+` declaration in your alias declaration file instead of scouring all the separate custom configuration files. The same procedure applies for any other type of alias (`+Host_Alias+`, `+Cmnd_Alias+` and `+Runas_Alias+`).
+
+[#ex-sudo-custom-config-alias]
+.Simplify configurations by applying aliases
+====
+. Create a new file to hold your global alias definitions:
++
+----
+# visudo /etc/sudoers.d/01_aliases
+  
+----
+. Add the following line to create the `+TEAMLEADERS+` alias:
++
+[subs="attributes+"]
+----
+User_Alias    TEAMLEADERS = {exampleuser_plain}, {exampleuserii_plain}
+            
+----
+. Add the following line to create the `+USERMANAGEMENT+` alias:
++
+----
+Cmnd_Alias    USERMANAGEMENT = /usr/sbin/useradd, /usr/sbin/usermod, /usr/sbin/userdel
+            
+----
+. Save your changes and exit `+visudo+`.
+. As system administrator, start `+visudo+` to edit the example configuration file:
++
+----
+# visudo -f /etc/sudoers.d/02_usermanagement
+            
+----
+. Delete the previous rule and replace it with the following rule that uses the aliases you have just defined above:
++
+----
+TEAMLEADERS ALL = USERMANAGEMENT
+            
+----
+. To let all the users defined by `+User_Alias+` use their own password instead of the `+root+` password, add the following line:
++
+----
+Defaults:TEAMLEADERS !targetpw
+----
+. Save the configuration, leave the editor and open a second shell to test whether `+sudo+` honors your new configuration.
+====
+
+[#sec-sudo-conf-syntax]
+=== Basic sudoers configuration syntax
+
+The sudoers configuration files contain two types of options: strings and flags. While strings can contain any value, flags can be turned either ON or OFF. The most important syntax constructs for sudoers configuration files are as follows:
+
+[subs="attributes+"]
+----
+# Everything on a line after # is ignored <1>
+Defaults !insults # Disable the insults flag <2>
+Defaults env_keep += "DISPLAY HOME" # Add DISPLAY and HOME to env_keep
+{exampleuser_plain} ALL = NOPASSWD: /usr/bin/frobnicate, PASSWD: /usr/bin/journalctl <3>
+----
+
+<1> There are two exceptions: `+#include+` and `+#includedir+` are regular commands.
+<2> Remove the `+!+` character to set the desired flag to ON.
+<3> See <<sec-sudo-conf-rule,Basic sudoers rules>>.
+
+[#tab-adm-sudo-options]
+.Useful flags and options
+`+targetpw+`::
+This flag controls whether the invoking user is required to enter the password of the target user (ON) (for example `+root+`) or the invoking user (OFF).
++
+----
+Defaults targetpw # Turn targetpw flag ON
+----
+`+rootpw+`::
+If set, `+sudo+` prompts for the `+root+` password. The default is OFF.
++
+----
+Defaults !rootpw # Turn rootpw flag OFF
+----
+`+env_reset+`::
+If set, `+sudo+` constructs a minimal environment with `+TERM+`, `+PATH+`, `+HOME+`, `+MAIL+`, `+SHELL+`, `+LOGNAME+`, `+USER+`, `+USERNAME+`, and `+SUDO_*+`. Additionally, variables listed in `+env_keep+` are imported from the calling environment. The default is ON.
++
+----
+Defaults env_reset # Turn env_reset flag ON
+----
+`+env_keep+`::
+List of environment variables to keep when the `+env_reset+` flag is ON.
++
+----
+# Set env_keep to contain EDITOR and PROMPT
+Defaults env_keep = "EDITOR PROMPT"
+Defaults env_keep += "JRE_HOME" # Add JRE_HOME
+Defaults env_keep -= "JRE_HOME" # Remove JRE_HOME
+----
+`+env_delete+`::
+List of environment variables to remove when the `+env_reset+` flag is OFF.
++
+----
+# Set env_delete to contain EDITOR and PROMPT
+Defaults env_delete = "EDITOR PROMPT"
+Defaults env_delete += "JRE_HOME" # Add JRE_HOME
+Defaults env_delete -= "JRE_HOME" # Remove JRE_HOME
+----
+
+The `+Defaults+` token can also be used to create aliases for a collection of users, hosts, and commands. Furthermore, it is possible to apply an option only to a specific set of users.
+
+For detailed information about the sudoers configuration files, consult `+man 5 sudoers+`.
+
+[#sec-sudo-conf-rule]
+=== Basic sudoers rules
+
+Each rule follows the following scheme (`+[]+` marks optional parts):
+
+----
+#Who      Where         As whom      Tag                What
+User_List Host_List = [(User_List)] [NOPASSWD:|PASSWD:] Cmnd_List
+----
+
+.sudoers rule syntax
+`+User_List+`::
+One or several (separated by comma) identifiers: either a user name, a group in the format `+%GROUPNAME+`, or a user ID in the format `+#UID+`. Negation can be specified with the `+!+` prefix.
+`+Host_List+`::
+One or several (separated by comma) identifiers: either a (fully qualified) host name or an IP address. Negation can be specified with the `+!+` prefix. `+ALL+` is a common choice for `+Host_List+`.
+`+NOPASSWD:|PASSWD:+`::
+The user is not prompted for a password when running commands matching `+Cmd_List+` after `+NOPASSWD:+`.
++
+`+PASSWD+` is the default. It only needs to be specified when both `+PASSWD+` and `+NOPASSWD+` are on the same line:
++
+[subs="attributes+"]
+----
+{exampleuser_plain} ALL = PASSWD: /usr/bin/foo, NOPASSWD: /usr/bin/bar
+----
+`+Cmnd_List+`::
+One or several (separated by comma) specifiers: a path to an executable, followed by an optional allowed argument.
++
+----
+/usr/bin/foo     # Anything allowed
+/usr/bin/foo bar # Only "/usr/bin/foo bar" allowed
+/usr/bin/foo ""  # No arguments allowed
+----
+
+`+ALL+` can be used as `+User_List+`, `+Host_List+`, and `+Cmnd_List+`.
+
+A rule that allows `{exampleuser_plain}` to run all commands as root without entering a password:
+
+[subs="attributes+"]
+----
+{exampleuser_plain} ALL = NOPASSWD: ALL
+----
+
+A rule that allows `{exampleuser_plain}` to run `+systemctl restart apache2+`:
+
+[subs="attributes+"]
+----
+{exampleuser_plain} ALL = /usr/bin/systemctl restart apache2
+----
+
+A rule that allows `{exampleuser_plain}` to run `+wall+` as `+admin+` with no arguments:
+
+[subs="attributes+"]
+----
+{exampleuser_plain} ALL = (admin) /usr/bin/wall ""
+----
+
+[WARNING]
+.Unsafe rules
+====
+_Do not_ use rules like `+ALL ALL = ALL+` without `+Defaults targetpw+`. Otherwise anyone can run commands as `+root+`.
+====
+
+[IMPORTANT]
+.Winbind and sudo
+====
+When specifying the group name in the `+sudoers+` file, make sure that you use the NetBIOS domain name instead of the realm, for example:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+__%DOMAIN__{backslash}{backslash}__GROUP{underscore}NAME__ ALL = (ALL) ALL
+----
+
+Keep in mind that when using winbindd, the format also depends on the `+winbind separator+` option in the `+smb.conf+` file. By default, it is `+\+`. If it is changed, for example, to `{plus}`, then the account format in the `+sudoers+` file must be `DOMAIN{plus}GROUP_NAME`.
+====
+
+[#sec-sudo-usecases-xorg]
+== Using `+sudo+` with {xvendor} applications
+
+Starting graphical applications with `+sudo+` normally results in the following error:
+
+----
+> sudo xterm
+xterm: Xt error: Can't open display: %s
+xterm: DISPLAY is not set
+----
+
+A simple workaround is to use xhost to temporarily allow the root user to access the local user's X session. This is done using the following command:
+
+----
+xhost si:localuser:root
+----
+
+The command below removes the granted access:
+
+----
+xhost -si:localuser:root
+----
+
+[WARNING]
+.Potential security issue
+====
+Running graphical applications with root privileges has security implications. It is recommended to enable root access for a graphical application only as an exception. It is also recommended to revoke the granted root access as soon as the graphical application is closed.
+====
+
+[#sec-adm-sudo-moreinfo]
+== More information
+
+The `+sudo --help+` command offers a brief overview of the available command line options, while the `+man sudoers+` command provides detailed information about `+sudoers+` and its configuration.

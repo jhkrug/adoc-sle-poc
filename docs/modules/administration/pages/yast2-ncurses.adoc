@@ -1,0 +1,1265 @@
+// Converted from xml/yast2_ncurses.xml
+[#cha-yast-text]
+= {yast} in text mode
+:description: Navigate and manage systems without an X server using the ncurses-based YaST interface over SSH or a local terminal
+:revdate: 2026-01-16
+
+The ncurses-based pseudo-graphical {yast} interface is designed primarily to help system administrators to manage systems without an X server. The interface offers several advantages compared to the conventional GUI. You can navigate the ncurses interface using the keyboard, and there are keyboard shortcuts for practically all interface elements. The ncurses interface is light on resources, and runs fast even on modest hardware. You can run the ncurses-based version of {yast} via an SSH connection, so you can administer remote systems. Keep in mind that the minimum supported size of the terminal emulator in which to run {yast} is 80x25 characters.
+
+[#fig-yast2-ncurses]
+.Main window of {yast} in text mode
+image::yast2_ncurses_main.png["",width=75%]
+
+To launch the ncurses-based version of YaST, open the terminal and run the `+sudo yast2+` command. Use the kbd:[Tab] or arrow keys to navigate between interface elements like menu items, fields and buttons. All menu items and buttons in {yast} can be accessed using the appropriate function keys or keyboard shortcuts. For example, you can cancel the current operation by pressing kbd:[F9], while the kbd:[F10] key can be used to accept the changes. Each menu item and button in {yast}'s ncurses-based interface has a highlighted letter in its label. This letter is part of the keyboard shortcut assigned to the interface element. For example, the letter `+Q+` is highlighted in the *Quit* button. This means that you can activate the button by pressing kbd:[Alt,Alt{plus}Q].
+
+[TIP]
+.Refreshing {yast} dialogs
+====
+If a {yast} dialog gets corrupted or distorted, for example, while resizing the window, press kbd:[Ctrl+L] to refresh and restore its contents.
+====
+
+[#sec-yast-cli-navigate]
+== Navigation in modules
+
+The following description of the control elements in the {yast} modules assumes that all function keys and kbd:[Alt] key combinations work and are not assigned to different global functions. Read <<sec-yast-cli-restricted-keys,Restriction of key combinations>> for information about possible exceptions.
+
+Moving between buttons and selection lists::
+Use kbd:[Tab] to move between the buttons and frames containing selection lists. To navigate in the opposite direction, use kbd:[Alt+Tab] or kbd:[Shift+Tab] combinations.
+Navigating in selection lists::
+Use the arrow keys (kbd:[up] and kbd:[down]) to move through the individual elements in an active frame containing a selection list. If individual entries are longer than the frame's width, use kbd:[Shift+right] or kbd:[Shift+left] to scroll horizontally. If the arrow key causes the selection to move to another frame, use kbd:[Ctrl+E] or kbd:[Ctrl+A] instead.
+Working with buttons, radio buttons, and check boxes::
+To select items with empty square brackets (check boxes) or empty parentheses (radio buttons), press kbd:[Space] or kbd:[Enter]. Alternatively, radio buttons and check boxes can be selected directly with kbd:[Alt+highlighted_letter]. In this case, you do not need to confirm with kbd:[Enter]. If you navigate to an item with kbd:[Tab], press kbd:[Enter] to execute the selected action or activate the respective menu item.
+Function keys::
+The function keys (from kbd:[F1] to kbd:[F12]) enable quick access to the specific buttons. Available function key combinations (`F__X__`) are shown in the bottom line of the {yast} screen. Which function keys are really mapped to which buttons depend on the active {yast} module, because the different modules offer different buttons (*Details*, *Info*, *Add*, *Delete*, etc.). Use kbd:[F10] for *Accept*, *OK*, *Next*, and *Finish*. Press kbd:[F1] to access the {yast} help.
+Using the navigation tree::
+Certain {yast} modules use a navigation tree in the left part of the window to select configuration dialogs. Use the arrow keys (kbd:[up] and kbd:[down]) to navigate in the tree. Use kbd:[Space] to open or close tree items. In the ncurses mode, kbd:[Enter] must be pressed after a selection in the navigation tree to show the selected dialog. This is an intentional behavior to save time-consuming redraws when browsing through the navigation tree.
+Selecting software in the software installation module::
+Use the filters on the left side to list packages matching the specified string. Installed packages are marked with the letter `+i+`. To change the status of a package, press kbd:[Space] or kbd:[Enter]. Alternatively, use the *Actions* menu to select the needed status change (install, delete, update, taboo or lock).
+
+[#fig-yast2-ncurses-inst]
+.The software installation module
+image::yast2_ncurses_inst.png["",width=75%]
+
+[#sec-yast-cli-key-combination]
+== Advanced key combinations
+
+The ncurses-based version of {yast} offers several advanced key combinations.
+
+kbd:[Shift+F1]::
+List advanced hotkeys.
+kbd:[Shift+F4]::
+Change color schema.
+kbd:[Ctrl+Q]::
+Quit the application.
+kbd:[Ctrl+L]::
+Refresh screen.
+kbd:[Ctrl+D]kbd:[F1]::
+List advanced hotkeys.
+kbd:[Ctrl+D]kbd:[Shift+D]::
+Dump dialog to the log file as a screenshot.
+kbd:[Ctrl+D]kbd:[Shift+Y]::
+Open YDialogSpy to see the widget hierarchy.
+
+[#sec-yast-cli-restricted-keys]
+== Restriction of key combinations
+
+If your window manager uses global kbd:[Alt] combinations, the kbd:[Alt] combinations in {yast} may not work. Keys like kbd:[Alt] or kbd:[Shift] can also be occupied by the settings of the terminal.
+
+Using kbd:[Alt] instead of kbd:[Esc]::
+kbd:[Alt] shortcuts can be executed with kbd:[Esc] instead of kbd:[Alt]. For example, kbd:[Esc+H] replaces kbd:[Alt+H]. (Press kbd:[Esc], _then_ press kbd:[H].)
+Backward and forward navigation with kbd:[Ctrl+F] and kbd:[Ctrl+B]::
+If the kbd:[Alt] and kbd:[Shift] combinations are taken over by the window manager or the terminal, use the combinations kbd:[Ctrl+F] (forward) and kbd:[Ctrl+B] (backward) instead.
+Restriction of function keys::
+The function keys (kbd:[F1] \... kbd:[F12]) are also used for functions. Certain function keys may be taken over by the terminal and may not be available for {yast}. However, the kbd:[Alt] key combinations and function keys should always be fully available on a text-only console.
+
+[#sec-yast-cli-options]
+== {yast} command line options
+
+Besides the text mode interface, {yast} provides a command line interface. To get a list of {yast} command line options, use the following command:
+
+----
+> sudo yast -h
+----
+
+[#sec-yast-cli-options-install]
+=== Installing packages from the command line
+
+If you know the package name, and the package is provided by an active installation repository, you can use the command line option `+-i+` to install the package:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo yast __-i package{underscore}name__
+----
+
+or
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo yast --install __-i package{underscore}name__
+----
+
+_package_name_ can be a single short package name, for example, `+gvim+`, installed with dependency checking, or the full path to an RPM package, which is installed without dependency checking.
+
+While {yast} offers basic functionality for managing software from the command line, consider using Zypper for more advanced package management tasks. Find more information on using Zypper in xref:sw-managing-commandline.adoc#sec-zypper[Using Zypper].
+
+[#sec-yast-cli-options-modules]
+=== Working with individual modules
+
+To save time, you can start individual {yast} modules using the following command:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo yast __module{underscore}name__
+----
+
+View a list of all modules available on your system with `+yast -l+` or `+yast --list+`.
+
+[#sec-yast-cli-options-module-params]
+=== Command line parameters of {yast} modules
+
+To use {yast} functionality in scripts, {yast} provides command line support for individual modules. However, not all modules have command line support. To display the available options of a module, use the following command:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo yast __module{underscore}name__ help
+----
+
+If a module does not provide command line support, it is started in a text mode with the following message:
+
+[subs="attributes+"]
+----
+This {yast} module does not support the command line interface.
+----
+
+The following sections describe all {yast} modules with command line support, along with a brief explanation of all their commands and available options.
+
+==== Common {yast} module commands
+
+All {yast} modules support the following commands:
+
+help::
+Lists all the module's supported commands with their description:
++
+----
+> sudo yast lan help
+----
+longhelp::
+Same as `+help+`, but adds a detailed list of all command's options and their descriptions:
++
+----
+> sudo yast lan longhelp
+----
+xmlhelp::
+Same as `+longhelp+`, but the output is structured as an XML document and redirected to a file:
++
+----
+> sudo yast lan xmlhelp xmlfile=/tmp/yast_lan.xml
+----
+interactive::
+Enters the _interactive_ mode. This lets you run the module's commands without prefixing them with `+sudo yast+`. Use `+exit+` to leave the interactive mode.
+
+==== yast add-on
+
+Adds a new add-on product from the specified path:
+
+----
+ > sudo yast add-on http://server.name/directory/Lang-AddOn-CD1/
+----
+
+You can use the following protocols to specify the source path: http:// ftp:// nfs:// disk:// cd:// or dvd://.
+
+==== yast audit-laf
+
+Displays and configures the Linux Audit Framework. Refer to the xref:security:index.adoc#part-audit[{auditguide}] for more details. `+yast audit-laf+` accepts the following commands:
+
+set::
+Sets an option:
++
+----
+> sudo yast audit-laf set log_file=/tmp/audit.log
+----
++
+For a complete list of options, run `+yast audit-laf set help+`.
+show::
+Displays settings of an option:
++
+----
+> sudo yast audit-laf show diskspace
+space_left: 75
+space_left_action: SYSLOG
+admin_space_left: 50
+admin_space_left_action: SUSPEND
+action_mail_acct: root
+disk_full_action: SUSPEND
+disk_error_action: SUSPEND
+----
++
+For a complete list of options, run `+yast audit-laf show help+`.
+
+==== yast dhcp-server
+
+Manages the DHCP server and configures its settings. `+yast dhcp-server+` accepts the following commands:
+
+disable::
+Disables the DHCP server service.
+enable::
+Enables the DHCP server service.
+host::
+Configures settings for individual hosts.
+interface::
+Specifies to which network interface to listen to:
++
+----
+> sudo yast dhcp-server interface current
+Selected Interfaces: eth0
+Other Interfaces: bond0, pbu, eth1
+----
++
+For a complete list of options, run `+yast dhcp-server interface help+`.
+options::
+Manages global DHCP options. For a complete list of options, run `+yast dhcp-server options help+`.
+status::
+Prints the status of the DHCP service.
+subnet::
+Manages the DHCP subnet options. For a complete list of options, run `+yast dhcp-server subnet help+`.
+
+==== yast dns-server
+
+Manages the DNS server configuration. `+yast dns-server+` accepts the following commands:
+
+acls::
+Displays access control list settings:
++
+----
+ > sudo yast dns-server acls show
+ ACLs:
+ -----
+  Name       Type        Value
+  ----------------------------
+  any        Predefined
+  localips   Predefined
+  localnets  Predefined
+  none       Predefined
+----
+dnsrecord::
+Configures zone resource records:
++
+----
+> sudo yast dnsrecord add zone=example.org query=office.example.org type=NS value=ns3
+----
++
+For a complete list of options, run `+yast dns-server dnsrecord help+`.
+forwarders::
+Configures DNS forwarders:
++
+------
+> sudo yast dns-server forwarders add ip=10.0.0.100
+> sudo yast dns-server forwarders show
+[...]
+Forwarder IP
+------------
+10.0.0.100
+------
++
+For a complete list of options, run `+yast dns-server forwarders help+`.
+host::
+Handles “A” and its related “PTR” record at once:
++
+----
+> sudo yast dns-server host show zone=example.org
+----
++
+For a complete list of options, run `+yast dns-server host help+`.
+logging::
+Configures logging settings:
++
+----
+> sudo yast dns-server logging set updates=no transfers=yes
+----
++
+For a complete list of options, run `+yast dns-server logging help+`.
+mailserver::
+Configures zone mail servers:
++
+----
+> sudo yast dns-server mailserver add zone=example.org mx=mx1 priority=100
+----
++
+For a complete list of options, run `+yast dns-server mailserver help+`.
+nameserver::
+Configures zone name servers:
++
+----
+> sudo yast dns-server nameserver add zone=example.com ns=ns1
+----
++
+For a complete list of options, run `+yast dns-server nameserver help+`.
+soa::
+Configures the start of authority (SOA) record:
++
+----
+> sudo yast dns-server soa set zone=example.org serial=2006081623 ttl=2D3H20S
+----
++
+For a complete list of options, run `+yast dns-server soa help+`.
+startup::
+Manages the DNS server service:
++
+----
+> sudo yast dns-server startup atboot
+----
++
+For a complete list of options, run `+yast dns-server startup help+`.
+transport::
+Configures zone transport rules. For a complete list of options, run `+yast dns-server transport help+`.
+zones::
+Manages DNS zones:
++
+----
+> sudo yast dns-server zones add name=example.org zonetype=master
+----
++
+For a complete list of options, run `+yast dns-server zones help+`.
+
+==== yast disk
+
+Prints information about all disks or partitions. The only supported command is `+list+` followed by either of the following options:
+
+disks::
+Lists all configured disks in the system:
++
+------
+> sudo yast disk list disks
+Device   | Size       | FS Type | Mount Point | Label | Model
+---------+------------+---------+-------------+-------+-------------
+/dev/sda | 119.24 GiB |         |             |       | SSD 840
+/dev/sdb |  60.84 GiB |         |             |       | WD1003FBYX-0
+------
+partitions::
+Lists all partitions in the system:
++
+------
+> sudo yast disk list partitions
+Device         | Size       | FS Type | Mount Point | Label | Model
+---------------+------------+---------+-------------+-------+------
+/dev/sda1      |   1.00 GiB | Ext2    | /boot       |       |
+/dev/sdb1      |   1.00 GiB | Swap    | swap        |       |
+/dev/sdc1      | 698.64 GiB | XFS     | /mnt/extra  |       |
+/dev/vg00/home | 580.50 GiB | Ext3    | /home       |       |
+/dev/vg00/root | 100.00 GiB | Ext3    | /           |       |
+[...]
+------
+
+[#sec-yast-ftp-server]
+==== yast ftp-server
+
+Configures FTP server settings. `+yast ftp-server+` accepts the following options:
+
+SSL, TLS::
+Controls secure connections via SSL and TLS. SSL options are valid for the `+vsftpd+` only.
++
+----
+> sudo yast ftp-server SSL enable
+> sudo yast ftp-server TLS disable
+----
+access::
+Configures access permissions:
++
+----
+> sudo yast ftp-server access authen_only
+----
++
+For a complete list of options, run `+yast ftp-server access help+`.
+anon_access::
+Configures access permissions for anonymous users:
++
+----
+> sudo yast ftp-server anon_access can_upload
+----
++
+For a complete list of options, run `+yast ftp-server anon_access help+`.
+anon_dir::
+Specifies the directory for anonymous users. The directory must already exist on the server:
++
+----
+> sudo yast ftp-server anon_dir set_anon_dir=/srv/ftp
+----
++
+For a complete list of options, run `+yast ftp-server anon_dir help+`.
+chroot::
+Controls _change root_ environment (chroot):
++
+----
+> sudo yast ftp-server chroot enable
+> sudo yast ftp-server chroot disable
+----
+idle-time::
+Sets the maximum idle time in minutes before FTP server terminates the current connection:
++
+----
+> sudo yast ftp-server idle-time set_idle_time=15
+----
+logging::
+Determines whether to save the log messages into a log file:
++
+----
+> sudo yast ftp-server logging enable
+> sudo yast ftp-server logging disable
+----
+max_clients::
+Specifies the maximum number of concurrently connected clients:
++
+----
+> sudo yast ftp-server max_clients set_max_clients=1500
+----
+max_clients_ip::
+Specifies the maximum number of concurrently connected clients via IP:
++
+----
+> sudo yast ftp-server max_clients_ip set_max_clients=20
+----
+max_rate_anon::
+Specifies the maximum data transfer rate permitted for anonymous clients (KB/s):
++
+----
+> sudo yast ftp-server max_rate_anon set_max_rate=10000
+----
+max_rate_authen::
+Specifies the maximum data transfer rate permitted for locally authenticated users (KB/s):
++
+----
+> sudo yast ftp-server max_rate_authen set_max_rate=10000
+----
+port_range::
+Specifies the port range for passive connection replies:
++
+----
+> sudo yast ftp-server port_range set_min_port=20000 set_max_port=30000
+----
++
+For a complete list of options, run `+yast ftp-server port_range help+`.
+show::
+Displays FTP server settings.
+startup::
+Controls the FTP start-up method:
++
+----
+> sudo yast ftp-server startup atboot
+----
++
+For a complete list of options, run `+yast ftp-server startup help+`.
+umask::
+Specifies the file umask for `+authenticated:anonymous+` users:
++
+----
+> sudo yast ftp-server umask set_umask=177:077
+----
+welcome_message::
+Specifies the text to display when someone connects to the FTP server:
++
+----
+> sudo yast ftp-server welcome_message set_message="hello everybody"
+----
+
+==== yast http-server
+
+Configures the HTTP server (Apache2). `+yast http-server+` accepts the following commands:
+
+configure::
+Configures the HTTP server host settings:
++
+----
+> sudo yast http-server configure host=main servername=www.example.com \
+ serveradmin=admin@example.com
+----
++
+For a complete list of options, run `+yast http-server configure help+`.
+
+hosts::
+Configures virtual hosts:
++
+----
+> sudo yast http-server hosts create servername=www.example.com \
+ serveradmin=admin@example.com documentroot=/var/www
+----
++
+For a complete list of options, run `+yast http-server hosts help+`.
+
+listen::
+Specifies the ports and network addresses where the HTTP server should listen:
++
+----
+> sudo yast http-server listen add=81
+> sudo yast http-server listen list
+Listen Statements:
+==================
+:80
+:81
+> sudo yast http-server delete=80
+----
++
+For a complete list of options, run `+yast http-server listen help+`.
+
+mode::
+Enables or disables the wizard mode:
++
+----
+> sudo yast http-server mode wizard=on
+----
+
+modules::
+Controls the Apache2 server modules:
++
+----
+> sudo yast http-server modules enable=php5,rewrite
+> sudo yast http-server modules disable=ssl
+> sudo http-server modules list
+[...]
+Enabled rewrite
+Disabled ssl
+Enabled php5
+[...]
+----
+
+==== yast kdump
+
+Configures `+kdump+` settings. For more information on `+kdump+`, refer to the xref:tuning:tuning-kexec.adoc#cha-tuning-kdump-basic[Basic {kdump} configuration]. `+yast kdump+` accepts the following commands:
+
+copykernel::
+Copies the kernel into the dump directory.
+customkernel::
+Specifies the _kernel_string_ part of the name of the custom kernel. The naming scheme is `/boot/vmlinu[zx]-_kernel_string_[.gz]`.
++
+----
+> sudo yast kdump customkernel kernel=kdump
+----
++
+For a complete list of options, run `+yast kdump customkernel help+`.
+dumpformat::
+Specifies the (compression) format of the dump kernel image. Available formats are “none”, “ELF”, “compressed” or “lzo”:
++
+----
+> sudo yast kdump dumpformat dump_format=ELF
+----
+dumplevel::
+Specifies the dump level number in the range from 0 to 31:
++
+----
+> sudo yast kdump dumplevel dump_level=24
+----
+dumptarget::
+Specifies the destination for saving dump images:
++
+----
+> sudo kdump dumptarget target=ssh server=name_server port=22 \
+ dir=/var/log/dump user=user_name
+----
++
+For a complete list of options, run `+yast kdump dumptarget help+`.
+immediatereboot::
+Controls whether the system should reboot immediately after saving the core in the Kdump kernel:
++
+----
+> sudo yast kdump immediatereboot enable
+> sudo yast kdump immediatereboot disable
+----
+keepolddumps::
+Specifies how many old dump images are kept. Specify zero to keep them all:
++
+----
+> sudo yast kdump keepolddumps no=5
+----
+kernelcommandline::
+Specifies the command line that needs to be passed off to the Kdump kernel:
++
+----
+> sudo yast kdump kernelcommandline command="ro root=LABEL=/"
+----
+kernelcommandlineappend::
+Specifies the command line that you need to _append_ to the default command line string:
++
+----
+> sudo yast kdump kernelcommandlineappend command="ro root=LABEL=/"
+----
+notificationcc::
+Specifies an e-mail address for sending copies of notification messages:
++
+----
+> sudo yast kdump notificationcc email="user1@example.com user2@example.com"
+----
+notificationto::
+Specifies an e-mail address for sending notification messages:
++
+----
+> sudo yast kdump notificationto email="user1@example.com user2@example.com"
+----
+show::
+Displays `+kdump+` settings:
++
+----
+> sudo yast kdump show
+Kdump is disabled
+Dump Level: 31
+Dump Format: compressed
+Dump Target Settings
+target: file
+file directory: /var/crash
+Kdump immediate reboots: Enabled
+Numbers of old dumps: 5
+----
+smtppass::
+Specifies the file with the plain text SMTP password used for sending notification messages:
++
+----
+> sudo yast kdump smtppass pass=/path/to/file
+----
+smtpserver::
+Specifies the SMTP server host name used for sending notification messages:
++
+----
+> sudo yast kdump smtpserver server=smtp.server.com
+----
+smtpuser::
+Specifies the SMTP user name used for sending notification messages:
++
+----
+> sudo yast kdump smtpuser user=smtp_user
+----
+startup::
+Enables or disables start-up options:
++
+----
+> sudo yast kdump startup enable alloc_mem=128,256
+> sudo yast kdump startup disable
+----
+
+==== yast keyboard
+
+Configures the system keyboard for virtual consoles. It does not affect the keyboard settings in graphical desktop environments, such as {gnome} or KDE. `+yast keyboard+` accepts the following commands:
+
+list::
+Lists all available keyboard layouts.
+set::
+Activates new keyboard layout setting:
++
+----
+> sudo yast keyboard set layout=czech
+----
+summary::
+Displays the current keyboard configuration.
+
+==== yast lan
+
+Configures network cards. `+yast lan+` accepts the following commands:
+
+add::
+Configures a new network card:
++
+----
+> sudo yast lan add name=vlan50 ethdevice=eth0 bootproto=dhcp
+----
++
+For a complete list of options, run `+yast lan add help+`.
+delete::
+Deletes an existing network card:
++
+----
+> sudo yast lan delete id=0
+----
+edit::
+Changes the configuration of an existing network card:
++
+----
+> sudo yast lan edit id=0 bootproto=dhcp
+----
+list::
+Displays a summary of network card configuration:
++
+----
+> sudo yast lan list
+id name,           bootproto
+0 Ethernet Card 0, NONE
+1 Network Bridge,  DHCP
+----
+
+==== yast language
+
+Configures system languages. `+yast language+` accepts the following commands:
+
+list::
+Lists all available languages.
+set::
+Specifies the main system languages and secondary languages:
++
+----
+> sudo yast language set lang=cs_CZ languages=en_US,es_ES no_packages
+----
+
+==== yast mail
+
+Displays the configuration of the mail system:
+
+----
+> sudo yast mail summary
+----
+
+==== yast nfs
+
+Controls the NFS client. `+yast nfs+` accepts the following commands:
+
+add::
+Adds a new NFS mount:
++
+----
+> sudo yast nfs add spec=remote_host:/path/to/nfs/share file=/local/mount/point
+----
++
+For a complete list of options, run `+yast nfs add help+`.
+delete::
+Deletes an existing NFS mount:
++
+----
+> sudo yast nfs delete spec=remote_host:/path/to/nfs/share file=/local/mount/point
+----
++
+For a complete list of options, run `+yast nfs delete help+`.
+edit::
+Changes an existing NFS mount:
++
+----
+> sudo yast nfs edit spec=remote_host:/path/to/nfs/share \
+ file=/local/mount/point type=nfs4
+----
++
+For a complete list of options, run `+yast nfs edit help+`.
+list::
+Lists existing NFS mounts:
++
+------
+> sudo yast nfs list
+Server            Remote File System    Mount Point    Options
+----------------------------------------------------------------
+nfs.example.com   /mnt                  /nfs/mnt       nfs
+nfs.example.com   /home/tux/nfs_share   /nfs/tux       nfs
+------
+
+==== yast nfs-server
+
+Configures the NFS server. `+yast nfs-server+` accepts the following commands:
+
+add::
+Adds a directory to export:
++
+----
+> sudo yast nfs-server add mountpoint=/nfs/export hosts=*.allowed_hosts.com
+----
++
+For a complete list of options, run `+yast nfs-server add help+`.
+delete::
+Deletes a directory from the NFS export:
++
+----
+ > sudo yast nfs-server delete mountpoint=/nfs/export
+----
+set::
+Specifies additional parameters for the NFS server:
++
+----
+> sudo yast nfs-server set enablev4=yes security=yes
+----
++
+For a complete list of options, run `+yast nfs-server set help+`.
+start::
+Starts the NFS server service:
++
+----
+> sudo yast nfs-server start
+----
+stop::
+Stops the NFS server service:
++
+----
+> sudo yast nfs-server stop
+----
+summary::
+Displays a summary of the NFS server configuration:
++
+----
+> sudo yast nfs-server summary
+NFS server is enabled
+NFS Exports
+* /mnt
+* /home
+
+NFSv4 support is enabled.
+The NFSv4 domain for idmapping is localdomain.
+NFS Security using GSS is enabled.
+----
+
+==== yast nis
+
+Configures the NIS client. `+yast nis+` accepts the following commands:
+
+configure::
+Changes global settings of a NIS client:
++
+----
+> sudo yast nis configure server=nis.example.com broadcast=yes
+----
++
+For a complete list of options, run `+yast nis configure help+`.
+disable::
+Disables the NIS client:
++
+----
+> sudo yast nis disable
+----
+enable::
+Enables your machine as NIS client:
++
+----
+> sudo yast nis enable server=nis.example.com broadcast=yes automounter=yes
+----
++
+For a complete list of options, run `+yast nis enable help+`.
+find::
+Shows available NIS servers for a given domain:
++
+----
+> sudo yast nis find domain=nisdomain.com
+----
+summary::
+Displays a configuration summary of a NIS client.
+
+==== yast nis-server
+
+Configures a NIS server. `+yast nis-server+` accepts the following commands:
+
+master::
+Configures a NIS master server:
++
+----
+> sudo yast nis-server master domain=nisdomain.com yppasswd=yes
+----
++
+For a complete list of options, run `+yast nis-server master help+`.
+slave::
+Configures a NIS worker server:
++
+----
+> sudo yast nis-server slave domain=nisdomain.com master_ip=10.100.51.65
+----
++
+For a complete list of options, run `+yast nis-server slave help+`.
+stop::
+Stops a NIS server:
++
+----
+> sudo yast nis-server stop
+----
+summary::
+Displays a configuration summary of a NIS server:
++
+----
+> sudo yast nis-server summary
+----
+
+==== yast proxy
+
+Configures proxy settings. `+yast proxy+` accepts the following commands:
+
+authentication::
+Specifies the authentication options for proxy:
++
+----
+> sudo yast proxy authentication username=tux password=secret
+----
++
+For a complete list of options, run `+yast proxy authentication help+`.
+enable, disable::
+Enables or disables proxy settings.
+set::
+Changes the current proxy settings:
++
+----
+> sudo yast proxy set https=proxy.example.com
+----
++
+For a complete list of options, run `+yast proxy set help+`.
+summary::
+Displays proxy settings.
+
+==== yast rdp
+
+Controls remote desktop settings. `+yast rdp+` accepts the following commands:
+
+allow::
+Allows remote access to the server's desktop:
++
+----
+> sudo yast rdp allow set=yes
+----
+list::
+Displays the remote desktop configuration summary.
+
+==== yast samba-client
+
+Configures the Samba client settings. `+yast samba-client+` accepts the following commands:
+
+configure::
+Changes global settings of Samba:
++
+----
+> sudo yast samba-client configure workgroup=FAMILY
+----
+isdomainmember::
+Checks whether the machine is a member of a domain:
++
+----
+> sudo yast samba-client isdomainmember domain=SMB_DOMAIN
+----
+joindomain::
+Makes the machine a member of a domain:
++
+----
+> sudo yast samba-client joindomain domain=SMB_DOMAIN user=username password=pwd
+----
+winbind::
+Enables or disables Winbind services (the `+winbindd+` daemon):
++
+----
+> sudo yast samba-client winbind enable
+> sudo yast samba-client winbind disable
+----
+
+==== yast samba-server
+
+Configures Samba server settings. `+yast samba-server+` accepts the following commands:
+
+backend::
+Specifies the back-end for storing user information:
++
+----
+> sudo yast samba-server backend smbpasswd
+----
++
+For a complete list of options, run `+yast samba-server backend help+`.
+configure::
+Configures global settings of the Samba server:
++
+----
+> sudo yast samba-server configure workgroup=FAMILY description='Home server'
+----
++
+For a complete list of options, run `+yast samba-server configure help+`.
+list::
+Displays a list of available shares:
++
+----
+> sudo yast samba-server list
+Status     Type Name
+==============================
+Disabled   Disk profiles
+Enabled    Disk print$
+Enabled    Disk homes
+Disabled   Disk groups
+Enabled    Disk movies
+Enabled    Printer printers
+----
+role::
+Specifies the role of the Samba server:
++
+----
+> sudo yast samba-server role standalone
+----
++
+For a complete list of options, run `+yast samba-server role help+`.
+service::
+Enables or disables the Samba services (`+smb+` and `+nmb+`):
++
+----
+> sudo yast samba-server service enable
+> sudo yast samba-server service disable
+----
+share::
+Manipulates a single Samba share:
++
+----
+> sudo yast samba-server share name=movies browseable=yes guest_ok=yes
+----
++
+For a complete list of options, run `+yast samba-server share help+`.
+
+==== yast security
+
+Controls the security level of the host. `+yast security+` accepts the following commands:
+
+level::
+Specifies the security level of the host:
++
+----
+> sudo yast security level server
+----
++
+For a complete list of options, run `+yast security level help+`.
+set::
+Sets the value of a specific option:
++
+----
+> sudo yast security set passwd=sha512 crack=yes
+----
++
+For a complete list of options, run `+yast security set help+`.
+summary::
+Displays a summary of the current security configuration:
++
+----
+sudoyast security summary
+----
+
+==== yast sound
+
+Configures sound card settings. `+yast sound+` accepts the following commands:
+
+add::
+Configures a new sound card. Without any parameters, the command adds the first detected card.
++
+----
+> sudo yast sound add card=0 volume=75
+----
++
+For a complete list of options, run `+yast sound add help+`.
+channels::
+Lists available volume channels of a sound card:
++
+----
+> sudo yast sound channels card=0
+Master 75
+PCM 100
+----
+modules::
+Lists all available sound kernel modules:
++
+----
+> sudo yast sound modules
+snd-atiixp ATI IXP AC97 controller (snd-atiixp)
+snd-atiixp-modem ATI IXP MC97 controller (snd-atiixp-modem)
+snd-virtuoso Asus Virtuoso driver (snd-virtuoso)
+[...]
+----
+playtest::
+Plays a test sound on a sound card:
++
+----
+> sudo yast sound playtest card=0
+----
+remove::
+Removes a configured sound card:
++
+----
+> sudo yast sound remove card=0
+> sudo yast sound remove all
+----
+set::
+Specifies new values for a sound card:
++
+----
+> sudo yast sound set card=0 volume=80
+----
+show::
+Displays detailed information about a sound card:
++
+----
+> sudo yast sound show card=0
+Parameters of card 'ThinkPad X240' (using module snd-hda-intel):
+
+align_buffer_size
+ Force buffer and period sizes to be multiple of 128 bytes.
+bdl_pos_adj
+ BDL position adjustment offset.
+beep_mode
+ Select HDA Beep registration mode (0=off, 1=on) (default=1).
+ Default Value: 0
+enable_msi
+ Enable Message Signaled Interrupt (MSI)
+[...]
+----
+summary::
+Prints a configuration summary for all sound cards on the system:
++
+----
+> sudo yast sound summary
+----
+volume::
+Specifies the volume level of a sound card:
++
+----
+sudoyast sound volume card=0 play
+----
+
+==== yast sysconfig
+
+Controls the variables in files under `+/etc/sysconfig+`. `+yast sysconfig+` accepts the following commands:
+
+clear::
+Sets empty value to a variable:
++
+----
+> sudo yast sysconfig clear=POSTFIX_LISTEN
+----
++
+[TIP]
+.Variable in multiple files
+====
+If the variable is available in several files, use the _VARIABLE_NAME_$_FILE_NAME_ syntax:
+
+----
+> sudo yast sysconfig clear=CONFIG_TYPE$/etc/sysconfig/mail
+----
+====
+details::
+Displays detailed information about a variable:
++
+----
+> sudo yast sysconfig details variable=POSTFIX_LISTEN
+Description:
+Value:
+File: /etc/sysconfig/postfix
+Possible Values: Any value
+Default Value:
+Configuration Script: postfix
+Description:
+ Comma separated list of IP's
+ NOTE: If not set, LISTEN on all interfaces
+----
+list::
+Displays summary of modified variables. Use `+all+` to list all variables and their values:
++
+----
+> sudo yast sysconfig list all
+AOU_AUTO_AGREE_WITH_LICENSES="false"
+AOU_ENABLE_CRONJOB="true"
+AOU_INCLUDE_RECOMMENDS="false"
+[...]
+----
+set::
+Sets a value for a variable:
++
+----
+> sudo yast sysconfig set DISPLAYMANAGER=gdm
+----
++
+[TIP]
+.Variable in multiple files
+====
+If the variable is available in several files, use the _VARIABLE_NAME_$_FILE_NAME_ syntax:
+
+----
+> sudo yast sysconfig set CONFIG_TYPE$/etc/sysconfig/mail=advanced
+----
+====
+
+==== yast tftp-server
+
+Configures a TFTP server. `+yast tftp-server+` accepts the following commands:
+
+directory::
+Specifies the directory of the TFTP server:
++
+----
+> sudo yast tftp-server directory path=/srv/tftp
+> sudo yast tftp-server directory list
+Directory Path: /srv/tftp
+----
+status::
+Controls the status of the TFTP server service:
++
+----
+> sudo yast tftp-server status disable
+> sudo yast tftp-server status show
+Service Status: false
+> sudo yast tftp-server status enable
+----
+
+==== yast timezone
+
+Configures the time zone. `+yast timezone+` accepts the following commands:
+
+list::
+Lists all available time zones grouped by region:
++
+----
+> sudo yast timezone list
+Region: Africa
+Africa/Abidjan (Abidjan)
+Africa/Accra (Accra)
+Africa/Addis_Ababa (Addis Ababa)
+[...]
+----
+set::
+Specifies new values for the time zone configuration:
++
+----
+> sudo yast timezone set timezone=Europe/Prague hwclock=local
+----
+summary::
+Displays the time zone configuration summary:
++
+----
+> sudo yast timezone summary
+Current Time Zone: Europe/Prague
+Hardware Clock Set To: Local time
+Current Time and Date: Mon 12. March 2018, 11:36:21 CET
+----
+
+==== yast users
+
+Manages user accounts. `+yast users+` accepts the following commands:
+
+add::
+Adds a new user:
++
+----
+> sudo yast users add username=user1 password=secret home=/home/user1
+----
++
+For a complete list of options, run `+yast users add help+`.
+delete::
+Deletes an existing user account:
++
+----
+> sudo yast users delete username=user1 delete_home
+----
++
+For a complete list of options, run `+yast users delete help+`.
+edit::
+Changes an existing user account:
++
+----
+> sudo yast users edit username=user1 password=new_secret
+----
++
+For a complete list of options, run `+yast users edit help+`.
+list::
+Lists existing users filtered by user type:
++
+----
+> sudo yast users list system
+----
++
+For a complete list of options, run `+yast users list help+`.
+show::
+Displays details about a user:
++
+----
+> sudo yast users show username=wwwrun
+Full Name: WWW daemon apache
+List of Groups: www
+Default Group: wwwrun
+Home Directory: /var/lib/wwwrun
+Login Shell: /sbin/nologin
+Login Name: wwwrun
+UID: 456
+----
++
+For a complete list of options, run `+yast users show help+`.

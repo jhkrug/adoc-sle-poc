@@ -1,0 +1,1054 @@
+// Converted from xml/apache2.xml
+[#cha-apache2]
+= The Apache HTTP server
+:description: Learn how to install, configure, and operate the popular Apache Web Server, which includes version 2.4
+:revdate: 2026-01-16
+
+[abstract]
+--
+According to the surveys from link:https://www.netcraft.com/[] and link:https://w3techs.com/[], the Apache HTTP Server (Apache) is one of the world's most popular Web servers. Developed by the Apache Software Foundation (link:https://www.apache.org/[]), it is available for most operating systems. {productnamereg} includes Apache version 2.4. This chapter describes how to install, configure and operate Apache. It also shows how to use additional modules, such as SSL, and how to troubleshoot Apache.
+--
+
+[#sec-apache2-quickstart]
+== Quick start
+
+This section helps you quickly configure and start Apache. You must be `+root+` to install and configure Apache.
+
+[#sec-apache-quickstart-requirements]
+=== Requirements
+
+Make sure the following requirements are met before trying to set up the Apache Web server:
+
+. The machine's network is configured properly. For more information about this topic, refer to xref:net-basic.adoc[].
+. The machine's exact system time is maintained by synchronizing with a time server. This is necessary because parts of the HTTP protocol depend on the correct time. See xref:chrony.adoc[] to learn more about this topic.
+. The latest security updates are installed. If in doubt, run a {yast} Online Update.
+. The default Web server port (`+80+`) is opened in the firewall. For this, configure `+firewalld+` to allow the service `+http+` in the public zone. See xref:security:security-firewall.adoc#sec-security-firewall-firewalld-cmd[Configuring the firewall on the command line] for details.
+
+[#sec-apache2-quickstart-installation]
+=== Installation
+
+Apache on {productname} is not installed by default. To install it with a standard, predefined configuration that runs “out of the box”, proceed as follows:
+
+.Installing Apache with the default configuration
+. Start {yast} and select menu:Software[Software Management].
+. Choose menu:Filter[Patterns] and select *Web and LAMP Server*.
+. Confirm the installation of the dependent packages to finish the installation process.
+
+[#sec-apache-quickstart-start]
+=== Start
+
+You can start Apache automatically at boot time or start it manually.
+
+To make sure that Apache is automatically started during boot in the targets `+multi-user.target+` and `+graphical.target+`, execute the following command:
+
+----
+> sudo systemctl enable apache2.service
+----
+
+For more information about the `+systemd+` targets in {productname} and a description of the {yast} *{ycc_runlevel}*, refer to xref:systemd.adoc#sec-boot-runlevel-edit[Managing services with {yast}].
+
+To manually start Apache using the shell, run `+systemctl start apache2.service+`.
+
+.Checking if Apache is running
+If you do not receive error messages when starting Apache, this usually indicates that the Web server is running. To test this:
+
+. Start a browser and open `+http://localhost/+`.
++
+If Apache is up and running, you get a test page stating “It works!”.
+. If you do not see this page, refer to <<sec-apache2-troubleeshooting,Troubleshooting>>.
+
+Now that the Web server is running, you can add your own documents, adjust the configuration according to your needs, or add functionality by installing modules.
+
+[#sec-apache2-configuration]
+== Configuring Apache
+
+{productname} offers two configuration options:
+
+* <<sec-apache2-configuration-manually,Configuring Apache manually>>
+* <<sec-apache2-configuration-yast,Configuring Apache with {yast}>>
+
+Manual configuration offers a higher level of detail, but lacks the convenience of the {yast} GUI.
+
+[IMPORTANT]
+.Reload or restart Apache after configuration changes
+====
+Most configuration changes require a reload or a restart of Apache to take effect. Manually reload Apache with `+systemctl reload apache2.service+` or use one of the restart options as described in <<sec-apache2-start-stop,Starting and stopping Apache>>.
+
+If you configure Apache with {yast}, this can be taken care of automatically if you set *HTTP Service* to *Enabled* as described in <<sec-apache2-configuration-yast-server-configuration,HTTP server configuration>>.
+====
+
+[#sec-apache2-configuration-manually-configfiles]
+=== Apache configuration files
+
+This section gives an overview of the Apache configuration files. If you use {yast} for configuration, you do not need to touch these files—however, the information might be useful for you to switch to manual configuration later on.
+
+Apache configuration files can be found in two different locations:
+
+* <<sec-apache2-configuration-manually-configfiles-etc-sysconfig-apache2,`+/etc/sysconfig/apache2+`>>
+* <<sec-apache2-configuration-manually-configfiles-etc-apache2,`+/etc/apache2/+`>>
+
+[#sec-apache2-configuration-manually-configfiles-etc-sysconfig-apache2]
+==== `+/etc/sysconfig/apache2+`
+
+`+/etc/sysconfig/apache2+` controls global Apache settings, like modules to load, additional configuration files to include, flags with which the server should be started, and flags that should be added to the command line. Every configuration option in this file is extensively documented and therefore not mentioned here. For a general-purpose Web server, the settings in `+/etc/sysconfig/apache2+` should be sufficient for any configuration needs.
+
+[#sec-apache2-configuration-manually-configfiles-etc-apache2]
+==== `+/etc/apache2/+`
+
+`+/etc/apache2/+` hosts all configuration files for Apache. In the following, the purpose of each file is explained. Each file includes several configuration options (also called _directives_). Every configuration option in these files is extensively documented and therefore not mentioned here.
+
+The Apache configuration files are organized as follows:
+
+----
+/etc/apache2/
+     |
+     |- charset.conv
+     |- conf.d/
+     |   |
+     |   |- *.conf
+     |
+     |- default-server.conf
+     |- errors.conf
+     |- global.conf
+     |- httpd.conf
+     |- listen.conf
+     |- loadmodule.conf
+     |- magic
+     |- mime.types
+     |- mod_*.conf
+     |- protocols.conf
+     |- server-tuning.conf
+     |- ssl-global.conf
+     |- ssl.*
+     |- sysconfig.d
+     |   |
+     |   |- global.conf
+     |   |- include.conf
+     |   |- loadmodule.conf . .
+     |
+     |- uid.conf
+     |- vhosts.d
+     |   |- *.conf
+----
+
+.Apache configuration files in /etc/apache2/
+`+charset.conv+`::
+Specifies which character sets to use for different languages. Do not edit this file.
+`+conf.d/*.conf+`::
+Configuration files added by other modules. These configuration files can be included into your virtual host configuration where needed. See `+vhosts.d/vhost.template+` for examples. By doing so, you can provide different module sets for different virtual hosts.
+`+default-server.conf+`::
+Global configuration for all virtual hosts with reasonable defaults. Instead of changing the values, overwrite them with a virtual host configuration.
+`+errors.conf+`::
+Defines how Apache responds to errors. To customize these messages for all virtual hosts, edit this file. Otherwise overwrite these directives in your virtual host configurations.
+`+global.conf+`::
+General configuration of the main Web server process, such as the access path, error logs, or the level of logging.
+`+httpd.conf+`::
+The main Apache server configuration file. Avoid changing this file. It primarily contains include statements and global settings. Overwrite global settings in the pertinent configuration files listed here. Change host-specific settings (such as document root) in your virtual host configuration.
+`+listen.conf+`::
+Binds Apache to specific IP addresses and ports. Name-based virtual hosting is also configured here. For details, see <<sec-apache2-configuration-manually-vhost-named-vhosts,Name-based virtual hosts>>.
+`+magic+`::
+Data for the mime_magic module that helps Apache automatically determine the MIME type of an unknown file. Do not change this file.
+`+mime.types+`::
+MIME types known by the system (this is a link to `+/etc/mime.types+`). Do not edit this file. If you need to add MIME types not listed here, add them to `+mod_mime-defaults.conf+`.
+`+mod_*.conf+`::
+Configuration files for the modules that are installed by default. Refer to <<sec-apache2-modules,Installing, activating and configuring modules>> for details. Configuration files for optional modules reside in the directory `+conf.d+`.
+`+protocols.conf+`::
+Configuration directives for serving pages over HTTP2 connection.
+`+server-tuning.conf+`::
+Contains configuration directives for the different MPMs (see <<sec-apache2-modules-mpm,Multiprocessing modules>>) and general configuration options that control Apache's performance. Properly test your Web server when making changes here.
+`+ssl-global.conf+` and `+ssl.*+`::
+Global SSL configuration and SSL certificate data. Refer to <<sec-apache2-ssl,Setting up a secure Web server with SSL>> for details.
+`+sysconfig.d/*.conf+`::
+Configuration files automatically generated from `+/etc/sysconfig/apache2+`. Do not change any of these files—edit `+/etc/sysconfig/apache2+` instead. Do not put other configuration files in this directory.
+`+uid.conf+`::
+Specifies under which user and group ID Apache runs. Do not change this file.
+`+vhosts.d/*.conf+`::
+Your virtual host configuration should be located here. The directory contains template files for virtual hosts with and without SSL. Every file in this directory ending with `+.conf+` is automatically included in the Apache configuration. Refer to <<sec-apache2-configuration-manually-vhost,Virtual host configuration>> for details.
+
+[#sec-apache2-configuration-manually]
+=== Configuring Apache manually
+
+Configuring Apache manually involves editing plain text configuration files as user `+root+`.
+
+[#sec-apache2-configuration-manually-vhost]
+==== Virtual host configuration
+
+The term _virtual host_ refers to Apache's ability to serve multiple universal resource identifiers (URIs) from the same physical machine. This means that several domains, such as {wwwname} and {wwwname1}, are run by a single Web server on one physical machine.
+
+It is common practice to use virtual hosts to save administrative effort (only a single Web server needs to be maintained) and hardware expenses (each domain does not require a dedicated server). Virtual hosts can be name based, IP based, or port based.
+
+To list all existing virtual hosts, use the command `+apache2ctl+` `+-S+`. This outputs a list showing the default server and all virtual hosts together with their IP addresses and listening ports. Furthermore, the list also contains an entry for each virtual host showing its location in the configuration files.
+
+Virtual hosts can be configured via {yast} as described in <<sec-apache2-configuration-yast-wizard-virtual-hosts,Virtual hosts>> or by manually editing a configuration file. By default, Apache in {productname} is prepared for one configuration file per virtual host in `+/etc/apache2/vhosts.d/+`. All files in this directory with the extension `+.conf+` are automatically included to the configuration. A basic template for a virtual host is provided in this directory (`+vhost.template+` or `+vhost-ssl.template+` for a virtual host with SSL support).
+
+[TIP]
+.Always create a virtual host configuration
+====
+It is recommended to always create a virtual host configuration file, even if your Web server only hosts one domain. By doing so, you not only have the domain-specific configuration in one file, but you can always fall back to a working basic configuration by simply moving, deleting or renaming the configuration file for the virtual host. For the same reason, you should also create separate configuration files for each virtual host.
+
+When using name-based virtual hosts, it is recommended to set up a default configuration that is used when a domain name does not match a virtual host configuration. The default virtual host is the one whose configuration is loaded first. Since the order of the configuration files is determined by file name, start the file name of the default virtual host configuration with an underscore character (`+_+`) to make sure it is loaded first (for example: `+_default_vhost.conf+`).
+====
+
+The `+<VirtualHost>+`{empty}``+</VirtualHost>+`` block holds the information that applies to a particular domain. When Apache receives a client request for a defined virtual host, it uses the directives enclosed in this section. Almost all directives can be used in a virtual host context. See link:https://httpd.apache.org/docs/2.4/mod/quickreference.html[] for further information about Apache's configuration directives.
+
+[#sec-apache2-configuration-manually-vhost-named-vhosts]
+===== Name-based virtual hosts
+
+With name-based virtual hosts, more than one Web site is served per IP address. Apache uses the host field in the HTTP header that is sent by the client to connect the request to a matching `+ServerName+` entry of one of the virtual host declarations. If no matching `+ServerName+` is found, the first specified virtual host is used as a default.
+
+The first step is to create a `+<VirtualHost>+` block for each different name-based host that you want to serve. Inside each `+<VirtualHost>+` block, you will need at minimum a `+ServerName+` directive to designate which host is served and a `+DocumentRoot+` directive to show where in the file system the content for that host resides.
+
+[#ex-apache2-virtual-hosts-name-based]
+.Basic examples of name-based `+VirtualHost+` entries
+====
+----
+<VirtualHost *:80>
+# This first-listed virtual host is also the default for *:80
+ServerName www.example.com
+ServerAlias example.com
+DocumentRoot /srv/www/htdocs/domain
+</VirtualHost>
+
+<VirtualHost *:80>
+ServerName other.example.com
+DocumentRoot /srv/www/htdocs/otherdomain
+</VirtualHost>
+----
+====
+
+The opening `+VirtualHost+` tag takes the IP address (or fully qualified domain name) as an argument in a name-based virtual host configuration. A port number directive is optional.
+
+The wild card _{asterisk}_ is also allowed as a substitute for the IP address. When using IPv6 addresses, the address must be included in square brackets.
+
+[#ex-apache-directives-virtualhost-name-based]
+.Name-based `+VirtualHost+` directives
+====
+[subs="attributes+"]
+----
+<VirtualHost {wwwip}:80>
+  ...
+</VirtualHost>
+
+<VirtualHost {wwwip}>
+  ...
+</VirtualHost>
+
+<VirtualHost *:80>
+  ...
+</VirtualHost>
+
+<VirtualHost *>
+  ...
+</VirtualHost>
+
+<VirtualHost [{wwwipv6}]>
+  ...
+</VirtualHost>
+----
+====
+
+[#sec-apache2-configuration-manually-vhost-ip-vhosts]
+===== IP-based virtual hosts
+
+This alternative virtual host configuration requires the setup of multiple IP addresses for a machine. One instance of Apache hosts several domains, each of which is assigned a different IP.
+
+The physical server must have one IP address for each IP-based virtual host. If the machine does not have multiple network cards, virtual network interfaces (IP aliasing) can also be used.
+
+The following example shows Apache running on a machine with the IP `{wwwip}`, hosting two domains on the additional IP addresses `{wwwip1}` and `{wwwip2}`. A separate `+VirtualHost+` block is needed for every virtual server.
+
+[#ex-apache-directives-virtualhost-ip-based]
+.IP-based `+VirtualHost+` directives
+====
+[subs="attributes+"]
+----
+<VirtualHost {wwwip1}>
+  ...
+</VirtualHost>
+
+<VirtualHost {wwwip2}>
+  ...
+</VirtualHost>
+----
+====
+
+Here, `+VirtualHost+` directives are only specified for interfaces other than `{wwwip}`. When a `+Listen+` directive is also configured for `{wwwip}`, a separate IP-based virtual host must be created to answer HTTP requests to that interface—otherwise the directives found in the default server configuration (`+/etc/apache2/default-server.conf+`) are applied.
+
+[#sec-apache2-configuration-manually-vhost-basic-configuration]
+===== Basic virtual host configuration
+
+At least the following directives should be in each virtual host configuration to set up a virtual host. See `+/etc/apache2/vhosts.d/vhost.template+` for more options.
+
+`+ServerName+`::
+The fully qualified domain name under which the host should be addressed.
+`+DocumentRoot+`::
+Path to the directory from which Apache should serve files for this host. For security reasons, access to the entire file system is forbidden by default, so you must explicitly unlock this directory within a `+Directory+` container.
+`+ServerAdmin+`::
+E-mail address of the server administrator. This address is, for example, shown on error pages Apache creates.
+`+ErrorLog+`::
+The error log file for this virtual host. Although it is not necessary to create separate error log files for each virtual host, it is common practice to do so, because it makes the debugging of errors much easier. `+/var/log/apache2/+` is the default directory for Apache's log files.
+`+CustomLog+`::
+The access log file for this virtual host. Although it is not necessary to create separate access log files for each virtual host, it is common practice to do so, because it allows the separate analysis of access statistics for each host. `+/var/log/apache2/+` is the default directory for Apache's log files.
+
+As mentioned above, access to the whole file system is forbidden by default for security reasons. Therefore, explicitly unlock the directories in which you have placed the files Apache should serve, for example, the `+DocumentRoot+`:
+
+[subs="attributes+"]
+----
+<Directory "/srv/www/{wwwname}/htdocs">
+  Require all granted
+</Directory>
+----
+
+[NOTE]
+.`+Require all granted+`
+====
+In previous versions of Apache, the statement `+Require all granted+` was expressed as:
+
+----
+Order allow,deny
+Allow from all
+----
+
+This old syntax is still supported by the `+mod_access_compat+` module.
+====
+
+The complete configuration file looks like this:
+
+[#ex-apache-directives-virtualhost-basic-configuration]
+.Basic `+VirtualHost+` configuration
+====
+[subs="attributes+"]
+----
+<VirtualHost {wwwip}>
+  ServerName {wwwname}
+  DocumentRoot /srv/www/{wwwname}/htdocs
+  ServerAdmin webmaster@{exampledomain}
+  ErrorLog /var/log/apache2/{wwwname}_log
+  CustomLog /var/log/apache2/{wwwname}-access_log common
+  <Directory "/srv/www/{wwwname}/htdocs">
+  Require all granted
+  </Directory>
+</VirtualHost>
+----
+====
+
+include::partial$apache2-yast-i.adoc[]
+
+[#sec-apache2-start-stop]
+== Starting and stopping Apache
+
+If configured with {yast} as described in <<sec-apache2-configuration-yast,Configuring Apache with {yast}>>, Apache is started at boot time in the `+multi-user.target+` and `+graphical.target+`. You can change this behavior using {yast}'s *{ycc_runlevel}* or with the `+systemctl+` command line tool (`+systemctl enable+` or `+systemctl disable+`).
+
+To start, stop or manipulate Apache on a running system, use either the `+systemctl+` or the `+apachectl+` commands as described below.
+
+For general information about `+systemctl+` commands, refer to xref:systemd.adoc#sec-boot-systemd-basics-services[Managing services in a running system].
+
+`+systemctl status apache2.service+`::
+Checks if Apache is started.
+`+systemctl start apache2.service+`::
+Starts Apache if it is not already running.
+`+systemctl stop apache2.service+`::
+Stops Apache by terminating the parent process.
+`+systemctl restart apache2.service+`::
+Stops and then restarts Apache. Starts the Web server if it was not running before.
+`+systemctl try-restart apache2.service+`::
+Stops then restarts Apache only if it is already running.
+`+systemctl reload apache2.service+`::
+Stops the Web server by advising all forked Apache processes to first finish their requests before shutting down. As each process dies, it is replaced by a newly started one, resulting in a complete “restart” of Apache.
++
+[TIP]
+.Restarting Apache in production environments
+====
+This command allows activating changes in the Apache configuration without causing connection break-offs.
+====
+`+systemctl stop apache2.service+`::
+Stops the Web server after a defined period of time configured with `+GracefulShutdownTimeout+` to ensure that existing requests can be finished.
+`+apachectl configtest+`::
+Checks the syntax of the configuration files without affecting a running Web server. Because this check is forced every time the server is started, reloaded or restarted, it is usually not necessary to run the test explicitly (if a configuration error is found, the Web server is not started, reloaded or restarted).
+`+apachectl status+` and `+apachectl fullstatus+`::
+Dumps a short or full status screen, respectively. Requires the module `+mod_status+` to be enabled and a text-based browser (such as `+links+` or `+w3m+`) to be installed. Besides that, `+STATUS+` must be added to `+APACHE_SERVER_FLAGS+` in the file `+/etc/sysconfig/apache2+`.
+
+[TIP]
+.Additional flags
+====
+If you specify additional flags to the commands, these are passed through to the Web server.
+====
+
+[#sec-apache2-modules]
+== Installing, activating and configuring modules
+
+The Apache software is built in a modular fashion: all functionality except certain core tasks are handled by modules. This has progressed so far that even HTTP is processed by a module (`+http_core+`).
+
+Apache modules can be compiled into the Apache binary at build time or be dynamically loaded at runtime. Refer to <<sec-apache2-modules-activating,Activation and deactivation>> for details of how to load modules dynamically.
+
+Apache modules are organized into the following categories:
+
+Base modules::
+Base modules are compiled into Apache by default. Apache in {productname} has only `+mod_so+` (needed to load other modules) and `+http_core+` compiled in. All others are available as shared objects: rather than being included in the server binary itself, they can be included at runtime.
+Extension modules::
+Modules labeled as extensions are included in the Apache software package, but are usually not compiled into the server statically. In {productname}, they are available as shared objects that can be loaded into Apache at runtime.
+External modules::
+Modules labeled external are not included in the official Apache distribution. However, {productname} provides several of them.
+Multiprocessing modules (MPMs)::
+MPMs are responsible for accepting and handling requests to the Web server, representing the core of the Web server software.
+
+[#sec-apache2-modules-installing]
+=== Module installation
+
+If you have done a default installation as described in <<sec-apache2-quickstart-installation,Installation>>, the following modules are already installed: all base and extension modules, the multiprocessing module Prefork MPM, and the external module `+mod_python+`.
+
+You can install additional external modules by starting {yast} and choosing menu:Software[Software Management]. Now choose menu:Filter[Search] and search for `+apache+`. Among other packages, the results list contains all available external Apache modules.
+
+[#sec-apache2-modules-activating]
+=== Activation and deactivation
+
+Activate or deactivate particular modules either manually or with {yast}. In {yast}, script language modules (PHP 8 and Python) need to be enabled or disabled with the module configuration described in <<sec-apache2-configuration-yast-wizard,HTTP server wizard>>. All other modules can be enabled or disabled as described in <<sec-apache2-configuration-yast-server-configuration-modules,Server modules>>.
+
+If you prefer to activate or deactivate the modules manually, use the commands `+a2enmod+` _MODULE_ or `+a2dismod+` _MODULE_, respectively. `+a2enmod -l+` outputs a list of all currently active modules.
+
+[IMPORTANT]
+.Including configuration files for external modules
+====
+If you have activated external modules manually, make sure to load their configuration files in all virtual host configurations. Configuration files for external modules are located under `+/etc/apache2/conf.d/+` and are loaded in `+/etc/apache2/default-server.conf+` by default. For more fine-grained control you can comment out the inclusion in `+/etc/apache2/default-server.conf+` and add it to specific virtual hosts only. See `+/etc/apache2/vhosts.d/vhost.template+` for examples.
+====
+
+[#sec-apache2-modules-base-extension]
+=== Base and extension modules
+
+All base and extension modules are described in detail in the Apache documentation. Only a brief description of the most important modules is available here. Refer to link:https://httpd.apache.org/docs/2.4/mod/[http://httpd.apache.org/docs/2.4/mod/] to learn details about each module.
+
+`+mod_actions+`::
+Provides methods to execute a script whenever a certain MIME type (such as `+application/pdf+`), a file with a specific extension (like `+.rpm+`), or a certain request method (such as `+GET+`) is requested. This module is enabled by default.
+`+mod_alias+`::
+Provides `+Alias+` and `+Redirect+` directives with which you can map a URL to a specific directory (`+Alias+`) or redirect a requested URL to another location. This module is enabled by default.
+`+mod_auth*+`::
+The authentication modules provide different authentication methods: basic authentication with `+mod_auth_basic+` or digest authentication with `+mod_auth_digest+`.
++
+`+mod_auth_basic+` and `+mod_auth_digest+` must be combined with an authentication provider module, `+mod_authn_*+` (for example, `+mod_authn_file+` for text file–based authentication) and with an authorization module `+mod_authz_*+` (for example, `+mod_authz_user+` for user authorization).
++
+More information about this topic is available in the _Authentication HOWTO_ at link:https://httpd.apache.org/docs/2.4/howto/auth.html[].
+`+mod_auth_openidc+`::
+`+mod_auth_openidc+` the only certified way to use OpenID Connect with the Apache HTTP server. (See link:https://openid.net/developers/certified-openid-connect-implementations/[].)
+`+mod_autoindex+`::
+Autoindex generates directory listings when no index file (for example, `+index.html+`) is present. The look and feel of these indexes is configurable. This module is enabled by default. However, directory listings are disabled by default via the `+Options+` directive—overwrite this setting in your virtual host configuration. The default configuration file for this module is located at `+/etc/apache2/mod_autoindex-defaults.conf+`.
+`+mod_cgi+`::
+`+mod_cgi+` is needed to execute CGI scripts. This module is enabled by default.
+`+mod_deflate+`::
+Using this module, Apache can be configured to compress given file types on the fly before delivering them.
+`+mod_dir+`::
+`+mod_dir+` provides the `+DirectoryIndex+` directive with which you can configure which files are automatically delivered when a directory is requested (`+index.html+` by default). It also provides an automatic redirect to the correct URL when a directory request does not contain a trailing slash. This module is enabled by default.
+`+mod_env+`::
+Controls the environment that is passed to CGI scripts or SSI pages. Environment variables can be set or unset or passed from the shell that invoked the `+httpd+` process. This module is enabled by default.
+`+mod_expires+`::
+With `+mod_expires+`, you can control how often proxy and browser caches refresh your documents by sending an `+Expires+` header. This module is enabled by default.
+`+mod_http2+`::
+With `+mod_http2+`, Apache gains support for the HTTP/2 protocol. It can be enabled by specifying `+Protocols h2 http/1.1+` in a `+VirtualHost+`.
+`+mod_include+`::
+`+mod_include+` lets you use Server Side Includes (SSI), which provide a basic functionality to generate HTML pages dynamically. This module is enabled by default.
+`+mod_info+`::
+Provides a comprehensive overview of the server configuration under `+http://localhost/server-info/+`. For security reasons, you should always limit access to this URL. By default only `+localhost+` is allowed to access this URL. `+mod_info+` is configured at `+/etc/apache2/mod_info.conf+`.
+`+mod_log_config+`::
+With this module, you can configure the look of the Apache log files. This module is enabled by default.
+`+mod_mime+`::
+The mime module ensures that a file is delivered with the correct MIME header based on the file name's extension (for example `+text/html+` for HTML documents). This module is enabled by default.
+`+mod_negotiation+`::
+Necessary for content negotiation. See link:https://httpd.apache.org/docs/2.4/content-negotiation.html[http://httpd.apache.org/docs/2.4/content-negotiation.html] for more information. This module is enabled by default.
+`+mod_rewrite+`::
+Provides the functionality of `+mod_alias+`, but offers more features and flexibility. With `+mod_rewrite+`, you can redirect URLs based on multiple rules, request headers, and more.
+`+mod_setenvif+`::
+Sets environment variables based on details of the client's request, such as the browser string the client sends, or the client's IP address. This module is enabled by default.
+`+mod_spelling+`::
+`+mod_spelling+` attempts to automatically correct typographical errors in URLs, such as capitalization errors.
+`+mod_ssl+`::
+Enables encrypted connections between Web server and clients. See <<sec-apache2-ssl,Setting up a secure Web server with SSL>> for details. This module is enabled by default.
+`+mod_status+`::
+Provides information on server activity and performance under `+http://localhost/server-status/+`. For security reasons, you should always limit access to this URL. By default, only `+localhost+` is allowed to access this URL. `+mod_status+` is configured at `+/etc/apache2/mod_status.conf+`.
+`+mod_suexec+`::
+`+mod_suexec+` lets you run CGI scripts under a different user and group. This module is enabled by default.
+`+mod_userdir+`::
+Enables user-specific directories available under `{tilde}__USER__/`. The `+UserDir+` directive must be specified in the configuration. This module is enabled by default.
+
+[#sec-apache2-modules-mpm]
+=== Multiprocessing modules
+
+{productname} provides two different multiprocessing modules (MPMs) for use with Apache:
+
+* <<sec-apache2-modules-mpm-prefork,Prefork MPM>>
+* <<sec-apache2-modules-mpm-worker,Worker MPM>>
+
+[#sec-apache2-modules-mpm-prefork]
+==== Prefork MPM
+
+The prefork MPM implements a non-threaded, preforking Web server. It makes the Web server behave similarly to Apache version 1.x. In this version it isolates each request and handles it by forking a separate child process. Thus problematic requests cannot affect others, avoiding a lockup of the Web server.
+
+While providing stability with this process-based approach, the prefork MPM consumes more system resources than its counterpart, the worker MPM. The prefork MPM is considered the default MPM for Unix-based operating systems.
+
+[IMPORTANT]
+.MPMs in this document
+====
+This document assumes Apache is used with the prefork MPM.
+====
+
+[#sec-apache2-modules-mpm-worker]
+==== Worker MPM
+
+The worker MPM provides a multi-threaded Web server. A thread is a “lighter” form of a process. The advantage of a thread over a process is its lower resource consumption. Instead of only forking child processes, the worker MPM serves requests by using threads with server processes. The preforked child processes are multi-threaded. This approach makes Apache perform better by consuming fewer system resources than the prefork MPM.
+
+One major disadvantage is the stability of the worker MPM: if a thread becomes corrupt, all threads of a process can be affected. In the worst case, this may result in a server crash. Especially when using the Common Gateway Interface (CGI) with Apache under heavy load, internal server errors might occur because of threads being unable to communicate with system resources. Another argument against using the worker MPM with Apache is that not all available Apache modules are thread-safe and thus cannot be used with the worker MPM.
+
+[WARNING]
+.Using PHP modules with MPMs
+====
+Not all available PHP modules are thread-safe. Using the worker MPM with `+mod_php+` is strongly discouraged.
+====
+
+[#sec-apache2-modules-external]
+=== External modules
+
+Find a list of all external modules shipped with {productname} here. Find the module's documentation in the listed directory.
+
+`+mod_apparmor+`::
+Adds support to Apache to provide AppArmor confinement to individual CGI scripts handled by modules like `+mod_php8+`.
++
+[none]
+* Package Name: `+apache2-mod_apparmor+`
+* More Information: xref:security:index.adoc#part-apparmor[Confining privileges with AppArmor]
+`+mod_php8+`::
+PHP is a server-side, cross-platform HTML embedded scripting language.
++
+[none]
+* Package Name: `+apache2-mod_php8+`
+* Configuration File: `+/etc/apache2/conf.d/php8.conf+`
+`+mod_python+`::
+`+mod_python+` allows embedding Python within the Apache HTTP server for a considerable boost in performance and added flexibility in designing Web-based applications.
++
+[none]
+* Package Name: `+apache2-mod_python+`
+* More Information: `+/usr/share/doc/packages/apache2-mod_python+`
+`+mod_security+`::
+`+mod_security+` provides a Web application firewall to protect Web applications from a range of attacks. It also enables HTTP traffic monitoring and real-time analysis.
++
+[none]
+* Package Name: `+apache2-mod_security2+`
+* Configuration File: `+/etc/apache2/conf.d/mod_security2.conf+`
+* More Information: `+/usr/share/doc/packages/apache2-mod_security2+`
+* Documentation: link:https://github.com/owasp-modsecurity/ModSecurity[]
+
+[#sec-apache2-modules-building-modules]
+=== Compilation
+
+Apache can be extended by advanced users by writing custom modules. To develop modules for Apache or compile third-party modules, the package `+apache2-devel+` is required along with the corresponding development tools. `+apache2-devel+` also contains the `+apxs2+` tools, which are necessary for compiling additional modules for Apache.
+
+`+apxs2+` enables the compilation and installation of modules from source code (including the required changes to the configuration files), which creates _dynamic shared objects_ (DSOs) that can be loaded into Apache at runtime.
+
+The `+apxs2+` binaries are located under `+/usr/sbin+`:
+
+* `+/usr/sbin/apxs2+`—suitable for building an extension module that works with any MPM. The installation location is `+/usr/lib64/apache2+`.
+* `+/usr/sbin/apxs2-prefork+`—suitable for prefork MPM modules. The installation location is `+/usr/lib64/apache2-prefork+`.
+* `+/usr/sbin/apxs2-worker+`—suitable for worker MPM modules. The installation location is `+/usr/lib64/apache2-worker+`.
+
+Install and activate a module from source code with the following commands:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo cd /path/to/module/source
+> sudo apxs2 -cia __MODULE__.c
+----
+
+where `+-c+` compiles the module, `+-i+` installs it, and `+-a+` activates it. Other options of `+apxs2+` are described in the `+apxs2(1)+` man page.
+
+[#sec-apache2-cgi]
+== Enabling CGI scripts
+
+Apache's Common Gateway Interface (CGI) lets you create dynamic content with programs or scripts (CGI scripts). CGI scripts can be written in any programming language.
+
+To enable Apache to deliver content created by CGI scripts, `+mod_cgi+` needs to be activated. `+mod_alias+` is also needed. Both modules are enabled by default. Refer to <<sec-apache2-modules-activating,Activation and deactivation>> for details on activating modules.
+
+[WARNING]
+.CGI security
+====
+Allowing the server to execute CGI scripts is a potential security hole. Refer to <<sec-apache2-security,Avoiding security problems>> for additional information.
+====
+
+[#sec-apache2-cgi-configuration]
+=== Apache configuration
+
+In {productname}, the execution of CGI scripts is only allowed in the directory `+/srv/www/cgi-bin/+`. This location is already configured to execute CGI scripts. If you have created a virtual host configuration (see <<sec-apache2-configuration-manually-vhost,Virtual host configuration>>) and want to place your scripts in a host-specific directory, you must unlock and configure this directory.
+
+[#ex-apache2-cgi-configuration]
+.VirtualHost CGI configuration
+====
+[subs="attributes+"]
+----
+ScriptAlias /cgi-bin/ "/srv/www/{wwwname}/cgi-bin/" <1>
+
+<Directory "/srv/www/{wwwname}/cgi-bin/">
+ Options +ExecCGI <2>
+ AddHandler cgi-script .cgi .pl <3>
+ Require all granted <4>
+</Directory>
+----
+
+<1> Tells Apache to handle all files within this directory as CGI scripts.
+<2> Enables CGI script execution
+<3> Tells the server to treat files with the extensions .pl and .cgi as CGI scripts. Adjust according to your needs.
+<4> The `+Require+` directive controls the default access state. In this case, access is granted to the specified directory without limitation. For more information on authentication and authorization, see link:https://httpd.apache.org/docs/2.4/howto/auth.html[].
+====
+
+[#sec-apache2-cgi-example-script]
+=== Running an example script
+
+CGI programming differs from “regular” programming in that the CGI programs and scripts must be preceded by a MIME-Type header such as `+Content-type: text/html+`. This header is sent to the client, so it understands what kind of content it receives. Secondly, the script's output must be something the client, usually a Web browser, understands—HTML or plain text or images, for example.
+
+A simple test script available under `+/usr/share/doc/packages/apache2/test-cgi+` is part of the Apache package. It outputs the content of certain environment variables as plain text. Copy this script to either `+/srv/www/cgi-bin/+` or the script directory of your virtual host (`/srv/www/{wwwname}/cgi-bin/`) and name it `+test.cgi+`. Edit the file to have `+#!/bin/sh+` as the first line.
+
+Files accessible by the Web server should be owned by the user `+root+`. For additional information see <<sec-apache2-security,Avoiding security problems>>. Because the Web server runs with a different user, the CGI scripts must be world-executable and world-readable. Change into the CGI directory and use the command `+chmod 755 test.cgi+` to apply the proper permissions.
+
+Now call `+http://localhost/cgi-bin/test.cgi+` or `http://{wwwname}/cgi-bin/test.cgi`. You should see the “CGI/1.0 test script report”.
+
+[#sec-apache2-cgi-troubleshooting]
+=== CGI troubleshooting
+
+If you do not see the output of the test program but an error message instead, check the following:
+
+.CGI troubleshooting
+* _Have you reloaded the server after having changed the configuration?_ If not, reload with `+systemctl reload apache2.service+`.
+* _If you have configured your custom CGI directory, is it configured properly?_ If in doubt, try the script within the default CGI directory `+/srv/www/cgi-bin/+` and call it with `+http://localhost/cgi-bin/test.cgi+`.
+* _Are the file permissions correct?_ Change into the CGI directory and execute `+ls -l test.cgi+`. The output should start with
++
+----
+-rwxr-xr-x  1 root root
+----
+* Make sure that the script does not contain programming errors. If you have not changed `+test.cgi+`, this should not be the case, but if you are using your own programs, always make sure that they do not contain programming errors.
+
+[#sec-apache2-ssl]
+== Setting up a secure Web server with SSL
+
+Whenever sensitive data, such as credit card information, is transferred between Web server and client, it is desirable to have a secure, encrypted connection with authentication. `+mod_ssl+` provides strong encryption using the secure sockets layer (SSL) and transport layer security (TLS) protocols for HTTP communication between a client and the Web server. Using TLS/SSL, a private connection between Web server and client is established. Data integrity is ensured and client and server can authenticate each other.
+
+For this purpose, the server sends an SSL certificate that holds information proving the server's valid identity before any request to a URL is answered. In turn, this guarantees that the server is the uniquely correct end point for the communication. Additionally, the certificate generates an encrypted connection between client and server that can transport information without the risk of exposing sensitive, plain-text content.
+
+`+mod_ssl+` does not implement the TLS/SSL protocols itself, but acts as an interface between Apache and an SSL library. In {productname}, the OpenSSL library is used. OpenSSL is automatically installed with Apache.
+
+The most visible effect of using `+mod_ssl+` with Apache is that URLs are prefixed with `+https://+` instead of `+http://+`.
+
+[#sec-apache2-ssl-certificate]
+=== Creating an SSL certificate
+
+To use TLS/SSL with the Web server, you need to create an SSL certificate. This certificate is needed for the authorization between Web server and client, so that each party can identify the other party. To ensure the integrity of the certificate, it must be signed by a party every user trusts.
+
+There are three types of certificates you can create: a “test” certificate for testing purposes only, a self-signed certificate for a defined circle of users that trust you, and a certificate signed by an independent, publicly known certificate authority (CA).
+
+Creating a certificate is a two step process. First, a private key for the certificate authority is generated then the server certificate is signed with this key.
+
+[TIP]
+.More information
+====
+To learn more about concepts and definitions of TLS/SSL, refer to link:https://httpd.apache.org/docs/2.4/ssl/ssl_intro.html[].
+====
+
+[#sec-apache2-ssl-certificate-test]
+==== Creating a “test” certificate
+
+To generate a test certificate, call the script `+/usr/bin/gensslcert+`. It creates or overwrites the files listed below. Use `+gensslcert+`{apos}s optional switches to fine-tune the certificate. Call `+/usr/bin/gensslcert+` `+-h+` for more information.
+
+* `+/etc/apache2/ssl.crt/ca.crt+`
+* `+/etc/apache2/ssl.crt/server.crt+`
+* `+/etc/apache2/ssl.key/server.key+`
+* `+/etc/apache2/ssl.csr/server.csr+`
+
+A copy of `+ca.crt+` is also placed at `+/srv/www/htdocs/CA.crt+` for download.
+
+[IMPORTANT]
+.For testing purposes only
+====
+A test certificate should never be used on a production system. Only use it for testing purposes.
+====
+
+[#sec-apache2-ssl-certificate-custom]
+==== Creating a self-signed certificate
+
+If you are setting up a secure Web server for an intranet or for a defined circle of users, it is sufficient to sign a certificate with your own certificate authority (CA). Visitors to such a site will see a warning like “this is an untrusted site”, as Web browsers do not recognize self-signed certificates.
+
+[IMPORTANT]
+.Self-signed certificates
+====
+Only use a self-signed certificate on a Web server that is accessed by people who know and trust you as a certificate authority. It is not recommended to use such a certificate for a public shop, for example.
+====
+
+First you need to generate a certificate signing request (CSR). You are going to use `+openssl+`, with `+PEM+` as the certificate format. During this step, you will be asked for a passphrase, and to answer several questions. Remember the passphrase you enter as you will need it in the future.
+
+------
+> sudo openssl req -new > new.cert.csr
+Generating a 1024 bit RSA private key
+..++++++
+.........++++++
+writing new private key to 'privkey.pem'
+Enter PEM pass phrase: <1>
+Verifying - Enter PEM pass phrase: <2>
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [AU]: <3>
+State or Province Name (full name) [Some-State]: <4>
+Locality Name (eg, city) []: <5>
+Organization Name (eg, company) [Internet Widgits Pty Ltd]: <6>
+Organizational Unit Name (eg, section) []: <7>
+Common Name (for example server FQDN, or YOUR name) []: <8>
+Email Address []: <9>
+
+Please enter the following 'extra' attributes
+to be sent with your certificate request
+A challenge password []: <10>
+An optional company name []: <11>
+------
+
+<1> Fill in your passphrase.
+<2> Fill it in once more (and remember it).
+<3> Fill in your 2 letter country code, such as `+GB+` or `+CZ+`.
+<4> Fill in the name of the state where you live.
+<5> Fill in the city name, such as `+Prague+`.
+<6> Fill in the name of the organization you work for.
+<7> Fill in your organization unit, or leave blank if you have none.
+<8> Fill in either the domain name of the server, or your first and last name.
+<9> Fill in your work e-mail address.
+<10> Leave the challenge password empty, otherwise you need to enter it every time you restart the Apache Web server.
+<11> Fill in the optional company name, or leave blank.
+
+Now you can generate the certificate. You are going to use `+openssl+` again, and the format of the certificate is the default `+PEM+`.
+
+.Generating the certificate
+. Export the private part of the key to `+new.cert.key+`. You will be prompted for the passphrase you entered when creating the certificate signing request (CSR).
++
+----
+> sudo openssl rsa -in privkey.pem -out new.cert.key
+----
+. Generate the public part of the certificate according to the information you filled out in the signing request. The `+-days+` option specifies the length of time before the certificate expires. You can revoke a certificate, or replace one before it expires.
++
+----
+> sudo openssl x509 -in new.cert.csr -out new.cert.cert -req \
+-signkey new.cert.key -days 365
+----
+. Copy the certificate files to the relevant directories, so that the Apache server can read them. Make sure that the private key `+/etc/apache2/ssl.key/server.key+` is not world-readable, while the public PEM certificate `+/etc/apache2/ssl.crt/server.crt+` is.
++
+----
+> sudo cp new.cert.cert /etc/apache2/ssl.crt/server.crt
+> sudo cp new.cert.key /etc/apache2/ssl.key/server.key
+----
+
+[TIP]
+.Public certificate location
+====
+The last step is to copy the public certificate file from `+/etc/apache2/ssl.crt/server.crt+` to a location where your users can access it to incorporate it into the list of known and trusted CAs in their Web browsers. Otherwise a browser complains that the certificate was issued by an unknown authority.
+====
+
+[#sec-apache2-ssl-certificate-official]
+==== Getting an officially signed certificate
+
+There are several official certificate authorities that sign your certificates. The certificate is signed by a trustworthy third party, so can be fully trusted. Publicly operating secure Web servers usually have an officially signed certificate. A list of the most used Certificate Authorities (CAs) is available at link:https://en.wikipedia.org/wiki/Certificate_authority#Providers[].
+
+When requesting an officially signed certificate, you do not send a certificate to the CA. Instead, issue a Certificate Signing Request (CSR). To create a CSR, run the following command:
+
+----
+> openssl req -new -newkey rsa:2048 -nodes -keyout newkey.pem -out newreq.pem
+----
+
+You are asked to enter a distinguished name. This requires you to answer a few questions, such as country name or organization name. Enter valid data—everything you enter here later shows up in the certificate and is checked. You do not need to answer every question. If one does not apply to you or you want to leave it blank, use “.”. Common name is the name of the CA itself—choose a significant name, such as _My company_ CA. Last, a challenge password and an alternative company name must be entered.
+
+Find the CSR in the directory from which you called the script. The file is named `+newreq.pem+`.
+
+[#sec-apache2-ssl-configuration]
+=== Configuring Apache with SSL
+
+The default port for TLS/SSL requests on the Web server side is 443. There is no conflict between a “regular” Apache listening on port 80 and an TLS/SSL-enabled Apache listening on port 443. In fact, HTTP and HTTPS can be run with the same Apache instance. Usually separate virtual hosts are used to dispatch requests to port 80 and port 443 to separate virtual servers.
+
+[IMPORTANT]
+.Firewall configuration
+====
+Do not forget to open the firewall for SSL-enabled Apache on port 443. This can be done with `+firewalld+` as described in xref:security:security-firewall.adoc#sec-security-firewall-firewalld-cmd[Configuring the firewall on the command line].
+====
+
+The SSL module is enabled by default in the global server configuration. In case it has been disabled on your host, activate it with the following command: `+a2enmod ssl+`. To finally enable SSL, the server needs to be started with the flag “SSL”. To do so, call `+a2enflag SSL+` (case-sensitive!). If you have chosen to encrypt your server certificate with a password, you should also increase the value for `+APACHE_TIMEOUT+` in `+/etc/sysconfig/apache2+`, so you have enough time to enter the passphrase when Apache starts. Restart the server to make these changes active. A reload is not sufficient.
+
+The virtual host configuration directory contains a template `+/etc/apache2/vhosts.d/vhost-ssl.template+` with SSL-specific directives that are extensively documented. Refer to <<sec-apache2-configuration-manually-vhost,Virtual host configuration>> for the general virtual host configuration.
+
+To get started, copy the template to `/etc/apache2/vhosts.d/_MYSSL-HOST_.conf` and edit it. Adjusting the values for the following directives should be sufficient:
+
+* `+DocumentRoot+`
+* `+ServerName+`
+* `+ServerAdmin+`
+* `+ErrorLog+`
+* `+TransferLog+`
+
+[#sec-apache2-ssl-configuration-name-based]
+==== Name-based virtual hosts and SSL
+
+By default it is not possible to run multiple SSL-enabled virtual hosts on a server with only one IP address. Name-based virtual hosting requires that Apache knows which server name has been requested. The problem with SSL connections is, that such a request can only be read after the SSL connection has already been established (by using the default virtual host). As a result, users will receive a warning message stating that the certificate does not match the server name.
+
+{productname} comes with an extension to the SSL protocol called Server Name Indication (SNI) addresses this issue by sending the name of the virtual domain as part of the SSL negotiation. This enables the server to “switch” to the correct virtual domain early and present the browser the correct certificate.
+
+SNI is enabled by default on {productname}. To enable Name-Based Virtual Hosts for SSL, configure the server as described in <<sec-apache2-configuration-manually-vhost-named-vhosts,Name-based virtual hosts>> (you need to use port `+443+` rather than port `+80+` with SSL).
+
+[IMPORTANT]
+.SNI browser support
+====
+SNI must also be supported on the client side. However, SNI is supported by most browsers, except for certain older browsers. For more information, see link:https://en.wikipedia.org/wiki/Server_Name_Indication#Support[].
+
+To configure handling of non-SNI capable browsers, use the directive `+SSLStrictSNIVHostCheck+`. When set to `+on+` in the server configuration, non-SNI capable browser will be rejected for all virtual hosts. When set to `+on+` within a `+VirtualHost+` directive, access to this particular host will be rejected.
+
+When set to `+off+` in the server configuration, the server will behave as if not having SNI support. SSL requests will be handled by the _first_ virtual host defined (for port 443).
+====
+
+[#sec-apache2-multiple-instances]
+== Running multiple Apache instances on the same server
+
+Running multiple Apache instances on the same server has several advantages over running multiple virtual hosts (see <<sec-apache2-configuration-manually-vhost,Virtual host configuration>>):
+
+* When a virtual host needs to be disabled for a period of time, you need to change the Web server configuration and restart it so that the change takes effect.
+* In case of problems with one virtual host, you need to restart them all.
+
+You can run the default Apache instance as usual:
+
+----
+> sudo systemctl start apache2.service
+----
+
+It reads the default `+/etc/sysconfig/apache2+` file. If the file is not present, or it is present but it does not set the `+APACHE_HTTPD_CONF+` variable, it reads `+/etc/apache2/httpd.conf+`.
+
+To activate another Apache instance, run:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo systemctl start apache2@__INSTANCE{underscore}NAME__
+----
+
+For example:
+
+----
+> sudo systemctl start apache2@example_web.org
+----
+
+By default, the instance uses `+/etc/apache2@example_web.org/httpd.conf+` as a main configuration file, which can be overwritten by setting `+APACHE_HTTPD_CONF+` in `+/etc/sysconfig/apache2@example_web.org+`.
+
+An example to set up an additional instance of Apache follows. You need to execute all the commands as `+root+`.
+
+.Configuring an additional Apache instance
+. Create a new configuration file based on `+/etc/sysconfig/apache2+`, for example `+/etc/sysconfig/apache2@example_web.org+`:
++
+----
+> sudo cp /etc/sysconfig/apache2 /etc/sysconfig/apache2@example_web.org
+----
+. Edit the file `+/etc/sysconfig/apache2@example_web.org+` and change the line containing
++
+----
+APACHE_HTTPD_CONF
+----
++
+to
++
+----
+APACHE_HTTPD_CONF="/etc/apache2/httpd@example_web.org.conf"
+----
+. Create the file `+/etc/apache2/httpd@example_web.org.conf+` based on `+/etc/apache2/httpd.conf+`.
++
+----
+> sudo cp /etc/apache2/httpd.conf /etc/apache2/httpd@example_web.org.conf
+----
+. Edit `+/etc/apache2/httpd@example_web.org.conf+` and change
++
+----
+Include /etc/apache2/listen.conf
+----
++
+to
++
+----
+Include /etc/apache2/listen@example_web.org.conf
+----
++
+Review all the directives and change them to fit your needs. You may want to change
++
+----
+Include /etc/apache2/global.conf
+----
++
+and create new `+global@example_web.org.conf+` for each instance. We suggest to change
++
+----
+ErrorLog /var/log/apache2/error_log
+----
++
+to
++
+----
+ErrorLog /var/log/apache2/error@example_web.org_log
+----
++
+to have separate logs for each instance.
+. Create `+/etc/apache2/listen@example_web.org.conf+` based on `+/etc/apache2/listen.conf+`.
++
+----
+> sudo cp /etc/apache2/listen.conf /etc/apache2/listen@example_web.org.conf
+----
+. Edit `+/etc/apache2/listen@example_web.org.conf+` and change
++
+----
+Listen 80
+----
++
+to the port number you want the new instance to run on, for example, 82:
++
+----
+Listen 82
+----
++
+To run the new Apache instance over a secured protocol (see <<sec-apache2-ssl,Setting up a secure Web server with SSL>>), change also the line
++
+----
+Listen 443
+----
++
+for example, to
++
+----
+Listen 445
+----
+. Start the new Apache instance:
++
+----
+> sudo systemctl start apache2@example_web.org
+----
+. Check if the server is running by pointing your Web browser at `+http://server_name:82+`. If you previously changed the name of the error log file for the new instance, you can check it:
++
+----
+> sudo tail -f /var/log/apache2/error@example_web.org_log
+----
+
+Here are several points to consider when setting up more Apache instances on the same server:
+
+* The file `/etc/sysconfig/apache2@_INSTANCE_NAME_` can include the same variables as `+/etc/sysconfig/apache2+`, including module loading and MPM setting.
+* The default Apache instance does not need to be running while other instances run.
+* The Apache helper utilities `+a2enmod+`, `+a2dismod+` and `+apachectl+` operate on the default Apache instance if not specified otherwise with the `+HTTPD_INSTANCE+` environment variable. The following example
++
+----
+> sudo export HTTPD_INSTANCE=example_web.org
+> sudo a2enmod access_compat
+> sudo a2enmod status
+> sudo apachectl start
+----
++
+will add `+access_compat+` and `+status+` modules to the `+APACHE_MODULES+` variable of `+/etc/sysconfig/apache2@example_web.org+`, and then start the `+example_web.org+` instance.
+
+[#sec-apache2-security]
+== Avoiding security problems
+
+A Web server exposed to the public Internet requires an ongoing administrative effort. It is inevitable that security issues appear, both related to the software and to accidental misconfiguration. Here are several tips for how to deal with them.
+
+[#sec-apache2-security-up-to-date]
+=== Up-to-date software
+
+If there are vulnerabilities found in the Apache software, a security advisory will be issued by {suse}. It contains instructions for fixing the vulnerabilities, which in turn should be applied when possible. The {suse} security announcements are available from the following locations:
+
+* {empty}
++
+.Web page
+link:https://www.suse.com/support/security/[]
+* {empty}
++
+.Mailing list archive
+link:https://lists.opensuse.org/archives/list/security-announce@lists.opensuse.org/[]
+* {empty}
++
+.List of security announcements
+link:https://www.suse.com/support/update/[]
+
+[#sec-apache2-security-permissions]
+=== DocumentRoot permissions
+
+By default in {productname}, the `+DocumentRoot+` directory `+/srv/www/htdocs+` and the CGI directory `+/srv/www/cgi-bin+` belong to the user and group `+root+`. You should not change these permissions. If the directories are writable for all, any user can place files into them. These files might then be executed by Apache with the permissions of `+wwwrun+`, which may give the user unintended access to file system resources. Use subdirectories of `+/srv/www+` to place the `+DocumentRoot+` and CGI directories for your virtual hosts and make sure that directories and files belong to user and group `+root+`.
+
+[#sec-apache2-security-filesystem]
+=== File system access
+
+By default, access to the whole file system is denied in `+/etc/apache2/httpd.conf+`. You should never overwrite these directives, but specifically enable access to all directories Apache should be able to read. For details, see <<sec-apache2-configuration-manually-vhost-basic-configuration,Basic virtual host configuration>>. In doing so, ensure that no critical files, such as password or system configuration files, can be read from the outside.
+
+[#sec-apache2-security-cgi]
+=== CGI scripts
+
+Interactive scripts in PHP, SSI or any other programming language can run arbitrary commands and therefore present a general security issue. Scripts that will be executed from the server should only be installed from sources the server administrator trusts—allowing users to run their own scripts is generally not a good idea. It is also recommended to do security audits for all scripts.
+
+To make the administration of scripts as easy as possible, it is common practice to limit the execution of CGI scripts to specific directories instead of globally allowing them. The directives `+ScriptAlias+` and `+Option ExecCGI+` are used for configuration. The {productname} default configuration does not allow execution of CGI scripts from everywhere.
+
+All CGI scripts run as the same user, so different scripts can potentially conflict with each other. The module suEXEC lets you run CGI scripts under a different user and group.
+
+[#sec-apache2-security-users]
+=== User directories
+
+When enabling user directories (with `+mod_userdir+` or `+mod_rewrite+`) you should strongly consider not allowing `+.htaccess+` files, which would allow users to overwrite security settings. At least you should limit the user's engagement by using the directive `+AllowOverRide+`. In {productname}, `+.htaccess+` files are enabled by default, but the user is not allowed to overwrite any `+Option+` directives when using `+mod_userdir+` (see the `+/etc/apache2/mod_userdir.conf+` configuration file).
+
+[#sec-apache2-troubleeshooting]
+== Troubleshooting
+
+If Apache does not start, the Web page is not accessible, or users cannot connect to the Web server, it is important to find the cause of the problem. Here are typical places to look for error explanations and important things to check:
+
+Output of the `+apache2.service+` subcommand:::
+Instead of starting and stopping the Web server with the binary `+/usr/sbin/apache2ctl+`, rather use the `+systemctl+` commands instead (described in <<sec-apache2-start-stop,Starting and stopping Apache>>). `+systemctl status apache2.service+` is verbose about errors, and it even provides tips and hints for fixing configuration errors.
+Log files and verbosity::
+In case of both fatal and nonfatal errors, check the Apache log files for causes, mainly the error log file located at `+/var/log/apache2/error_log+` by default. Additionally, you can control the verbosity of the logged messages with the `+LogLevel+` directive if more detail is needed in the log files.
++
+[TIP]
+.A simple test
+====
+Watch the Apache log messages with the command `tail -F /var/log/apache2/_MY_ERROR_LOG_`. Then run `+systemctl restart apache2.service+`. Now, try to connect with a browser and check the output.
+====
+Firewall and ports::
+A common mistake is to not open the ports for Apache in the firewall configuration of the server. If you configure Apache with {yast}, there is a separate option available to take care of this specific issue (see <<sec-apache2-configuration-yast,Configuring Apache with {yast}>>). If you are configuring Apache manually, open firewall ports for HTTP and HTTPS via {yast}'s firewall module.
+
+If the error cannot be tracked down with any of these, check the online Apache bug database at link:https://httpd.apache.org/bug_report.html[]. Additionally, the Apache user community can be reached via a mailing list available at link:https://httpd.apache.org/userslist.html[].
+
+[#sec-apache2-more-information]
+== More information
+
+The package `+apache2-doc+` contains the complete Apache manual in multiple localizations for local installation and reference. It is not installed by default—the quickest way to install it is to use the command `+zypper in apache2-doc+`. Having been installed, the Apache manual is available at `+http://localhost/manual/+`. You may also access it on the Web at link:https://httpd.apache.org/docs/2.4/[]. SUSE-specific configuration hints are available in the directory `+/usr/share/doc/packages/apache2/README.*+`.
+
+[#sec-apache2-more-information-apache22]
+=== Apache 2.4
+
+For a list of new features in Apache 2.4, refer to link:https://httpd.apache.org/docs/2.4/new_features_2_4.html[]. Information about upgrading from version 2.2 to 2.4 is available at link:https://httpd.apache.org/docs/2.4/upgrading.html[].
+
+[#sec-apache2-more-information-modules]
+=== Apache modules
+
+More information about external Apache modules that are briefly described in <<sec-apache2-modules-external,External modules>> is available at the following locations:
+
+`+mod_apparmor+`::
+link:https://en.opensuse.org/SDB:AppArmor[]
+`+mod_php8+`::
+link:https://www.php.net/manual/en/install.unix.apache2.php[]
++
+You can obtain detailed information about `+mod_php8+` configuration in its well-commented main configuration file `+/etc/php8/apache2/php.ini+`.
+`+mod_python+`::
+link:https://modpython.org/[]
+`+mod_security+`::
+link:https://github.com/owasp-modsecurity/ModSecurity[]
+
+[#sec-apache2-more-information-cgi]
+=== Development
+
+More information about developing Apache modules or about getting involved in the Apache Web server project are available at the following locations:
+
+Apache developer information::
+link:https://httpd.apache.org/dev/[]
+Apache developer documentation::
+link:https://httpd.apache.org/docs/2.4/developer/[]
+
+ifdef::os-sles,os-sled[]
+[#sec-apache2-more-information-miscellaneous-sources]
+=== Miscellaneous sources
+
+If you experience difficulties specific to Apache in {productname}, take a look at the Technical Information Search at link:https://www.suse.com/support/[]. The history of Apache is provided at link:https://httpd.apache.org/ABOUT_APACHE.html[]. This page also explains why the server is called Apache.
+endif::[]

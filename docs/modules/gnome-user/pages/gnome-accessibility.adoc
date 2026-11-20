@@ -1,0 +1,98 @@
+// Converted from xml/gnome_accessibility.xml
+[#cha-gnome-accessibility]
+= Assistive technologies
+:description: Learn how to use the GNOME desktop's built-in assistive technologies for interacting with your system
+:revdate: 2026-01-16
+
+[abstract]
+--
+The {gnome} desktop provides built-in assistive technologies to support users with disabilities and facilitate interaction with common assistive devices. This chapter describes several assistive technology applications designed to meet the needs of users with physical disabilities like low vision or impaired motor skills.
+--
+
+[#sec-general-accessibility-enable]
+== Enabling assistive technologies
+
+To configure accessibility features, open the *Settings* dialog by right-clicking the desktop and choosing *Settings*. In the navigation pane, select *Accessibility*. Each assistive feature can be enabled separately.
+
+To directly access individual assistive features, enable the *Accessibility Menu*. This will display an icon resembling a person in the top bar, providing quick access to accessibility settings.
+
+[#sec-general-accessibility-visual]
+== Visual assistance
+
+In the *Seeing* section of the *Accessibility* settings, you can enable features that help people with impaired vision.
+
+* Turning on *High Contrast* increases color contrast of foreground and background interface elements.
+* Turning on *Reduce Animation* reduces animations in the user interface to reduce motion.
+* Turning on *Large Text* increases the size of all text in the user interface.
+* By customizing the *Cursor Size*, you can make it easier to see the mouse pointer.
+* If the *Sound Keys* are turned on, a beep will sound when kbd:[Num Lock] or kbd:[Caps Lock] are turned on or off.
+* The *Overlay Scrollbars* option uses scrollbars that overlay the content and automatically hide.
+* If the *Screen Reader* is turned on, the screen reader reads displayed text as you move the focus.
+
+[#sec-general-accessibility-hearing]
+== Hearing assistance
+
+In the *Hearing* section of the *Accessibility* dialog, you can enable features helping people with impaired hearing.
+
+If the *Visual Alerts* are turned on, a window title or the entire screen is flashed when an alert sound occurs for the respective application.
+
+[#sec-general-accessibility-mobility]
+== Keyboard and mouse
+
+In the *Typing* and *Pointing and Clicking* sections of the *Accessibility* dialog, you can enable features that help people with mobility impairments.
+
+* In the *Typing* section, when *Screen Keyboard* is turned on, an on-screen keyboard appears at the bottom of the screen when you next have the opportunity to type.
++
+.On-screen keyboard
+image::gnome_onscreen_kbd.png["Screen keyboard showing on-screen typing with numbers, symbols and layout controls",width=80%]
++
+To enter numbers and symbols, press the *?123* button first. More symbols are available if you press the *=/<* button. To return to the alphabetic keyboard, press the *ABC* button.
++
+To temporarily hide the keyboard, press the button with the arrow down icon. The keyboard is shown again automatically in the next situation where you can use it. To change your keyboard layout or change *Region & Language* settings, press the button with the flag icon.
+* {empty}
++
+*Enable by Keyboard* allows you to turn accessibility features on or off using keyboard shortcuts.
+* Under *Cursor Blinking*, you can configure if and at which speed the cursor blinks in text boxes (for example, in a terminal).
+* {empty}
++
+*Blink Speed* is an adjustable slider to set how quickly the cursor blinks, ranging from Slow to Fast.
+* {empty}
++
+*Test Entry* is a field where you can test cursor behavior.
+* {empty}
++
+*Repeat Keys* lets you configure if and when a key is repeated when it is pressed for a longer time. You can either turn this feature *Off* or configure a *Delay* and the *Speed* by which keys are repeated.
+* {empty}
++
+*Sticky Keys* allows you to type key combinations one key at a time rather than having to hold down all keys at once. For example, the kbd:[Alt+Tab] shortcut switches between windows.
++
+With sticky keys turned off, you need to hold down both keys at the same time. With sticky keys turned on, press kbd:[Alt] and then kbd:[Tab] to do the same.
+* Turn on *Slow Keys* if you want a delay between pressing a key and the letter being displayed on the screen. This means that you need to hold down each key you want to type for a little while before it appears. Use slow keys if you accidentally press several keys at a time when you type, or if you find it difficult to press the right key on the keyboard first time.
+* Turn on *Bounce Keys* to ignore key presses that are rapidly repeated. This can help, for example, if you have hand tremors which cause you to press a key multiple times when you only want to press it once.
+* The *Pointing & Clicking* section includes:
++
+** {empty}
++
+*Mouse Keys*: When enabled, it allows users to control the mouse pointer using the numeric keypad on the keyboard.
+** {empty}
++
+*Locate Pointer*: When enabled, it reveals the pointer location by pressing left kbd:[Ctrl].
+** {empty}
++
+*Double-Click Delay* is a slider adjustment that lets users set how quickly they need to click twice for a double-click to register, ranging from Short to Long.
+** In the *Click Assist* section, you can enable *Simulated Secondary Click* to activate the secondary click (usually the right mouse button) by holding down the primary button. This is useful if you find it difficult to move your fingers individually on one hand, or if your pointing device only has a single button.
+** Turn on *Hover Click* to trigger a click by hovering your mouse pointer over an object on the screen. This is useful if you find it difficult to move the mouse and click at the same time. If this feature is turned on, a small hover click window opens and stays above all your other windows. You can use this to choose what sort of click should happen when you hover. When you hover your mouse pointer over a button and do not move it, the pointer gradually changes color. When it has fully changed color, the button will be clicked.
+
+[#sec-general-accessibility-zoom]
+== Zoom
+
+In the *Zoom* section of the *Accessibility* dialog, you can enable features that help people with visual impairments.
+
+* {empty}
++
+*Desktop Zoom* allows you to magnify the entire screen.
+* The *Magnifier* section offers detailed configuration options, including *Magnifier View*, *Screen Area* and *Follow Behavior*.
+* The *Crosshairs* section includes options like *Overlap Mouse Cursor*, *Thickness* and *Length* sliders and *Color*.
+* {empty}
++
+*Color Filters* offers the *Inverted* option to invert colors in the magnifier region, and *Brightness*, *Contrast* and *Color* options to adjust color effects.

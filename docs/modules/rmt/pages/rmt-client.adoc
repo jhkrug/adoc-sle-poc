@@ -1,0 +1,148 @@
+// Converted from xml/rmt_client.xml
+[#cha-rmt-client]
+= Configuring clients to use {rmt}
+:description: Configure any machine running SUSE Linux Enterprise Server 12 or newer to register against the RMT server and download software updates from there
+:revdate: 2026-02-09
+
+Any machine running {sle} 12 or newer can be configured to register against {rmt} and download software updates from there, instead of communicating directly with {scc}.
+
+[TIP]
+.Register with the {rmt} server over HTTP
+====
+We recommend registering with the {rmt} server over a secured HTTPS protocol (all examples in this documentation use it). However, you can also register with the {rmt} server over an insecure HTTP protocol. Use this approach only if your setup benefits from it *and* only in a trusted environment where security is not crucial.
+====
+
+To configure clients to use the {rmt} server, use one of the following methods:
+
+* Provide the required information with boot parameters. See <<sec-rmt-client-parameters,Configuring clients with boot parameters>>.
+* Configure the clients using an {ay} profile. See <<sec-rmt-client-autoyast,Configuring clients with {ay} profile>>.
+* Use the `+rmt-client-setup+` command. See <<sec-rmt-client-clientsetupscript,Configuring clients with `+rmt-client-setup+`>>.
+* Use the {yast} registration module during installation or later. See <<sec-rmt-client-yast,Configuring clients with {yast}>>.
+
+[TIP]
+.CA certificate
+====
+If you need the CA certificate of the {rmt} server, find it at `+/etc/rmt/ssl/rmt-ca.crt+` and `https://_RMT_SERVER_/rmt.crt`.
+====
+
+[#sec-rmt-client-parameters]
+== Configuring clients with boot parameters
+
+Any client can be configured to use {rmt} by providing the `+regurl+` parameter during machine boot.
+
+The parameter needs to be entered as `regurl=_RMT_SERVER_URL_`. The URL needs to be in the following format: `https://_FQDN_`, with _FQDN_ being the fully qualified host name of the {rmt} server. It must be identical to the FQDN of the server certificate used on the {rmt} server. Example:
+
+[subs="attributes+"]
+----
+regurl=https://rmt.{exampledomain}
+----
+
+[WARNING]
+.Beware of typing errors
+====
+Make sure the values you enter are correct. If `+regurl+` has not been specified correctly, the registration of the update source fails.
+====
+
+[NOTE]
+.Change of {rmt} server certificate
+====
+If the {rmt} server gets a new certificate from an untrusted CA, the clients need to retrieve the new CA certificate file. {yast} displays a dialog for importing a new certificate. If you confirm importing the new certificate, the old one is replaced with the new one.
+====
+
+[#sec-rmt-client-autoyast]
+== Configuring clients with {ay} profile
+
+Clients can be configured to register with the {rmt} server via an {ay} profile. To learn about creating {ay} profiles and preparing for automatic installation, refer to the _{ay} Guide_. In this section, only {rmt} specific configuration is described.
+
+To configure {rmt} specific data using {ay}, follow the steps for the relevant version of the {rmt} client.
+
+. As `+root+`, start {yast} and select menu:Miscellaneous[Autoinstallation] to start the graphical {ay} front-end.
++
+From a command line, you can start the graphical {ay} front-end with the `+yast2 autoyast+` command.
+. Open an existing profile using menu:File[Open]. Create a profile based on the current system's configuration using menu:Tools[Create Reference Profile], or work with an empty profile.
+. Select menu:Software[Product Registration]. An overview of the current configuration is shown.
+. Click *Edit*.
+. Check *Register the Product*, set the URL of the {rmt} server in *Use Specific Server URL Instead of the Default*, and you can set the *Optional SSL Server Certificate URL*. The possible values for the server URL are the same as for the kernel parameter `+regurl+`. For the SSL certificate location, you can use either HTTP or HTTPS based URLs.
+. Perform all other configurations needed for the systems to be deployed, then click *Finish* to return to the main screen.
+. Select menu:File[Save As] and enter a file name for the profile, such as `+autoinst.xml+`.
+
+[#sec-rmt-client-clientsetupscript]
+== Configuring clients with `+rmt-client-setup+`
+
+The `+/usr/share/rmt/public/tools/rmt-client-setup+` script is provided in the package `+rmt-server+`. This script allows you to configure a client machine to use an {rmt} server. It can also be used to reconfigure an existing client to use a different {rmt} server.
+
+To configure a client machine to use {rmt} with `+rmt-client-setup+`, follow these steps:
+
+. Download `+rmt-client-setup+` from the {rmt} server:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} curl http://__RMT{underscore}SERVER__/tools/rmt-client-setup --output rmt-client-setup 
+----
+. Set the permissions to execute the script:
++
+----
+#  chmod +x rmt-client-setup 
+----
+. Run the script with the URL of the {rmt} server as a parameter:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} sh rmt-client-setup https://__RMT{underscore}SERVER__/
+----
++
+Executing this script imports the {rmt} CA's certificate into the trusted store.
+. Alternatively, you can specify the SHA1 fingerprint from the {rmt} server and auto register on the {rmt} client with a `+yes+` flag:
++
+----
+>  openssl x509 -noout -in /etc/rmt/ssl/rmt-ca.crt -fingerprint
+            FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF
+----
++
+----
+>  ./rmt-client-setup --host rmt-server.example.com --regcert http://rmt-server.example.com/rmt.crt --fingerprint FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF -yes
+----
++
+For more details, use the `+sh rmt-client-setup --help+` command.
+. The script downloads the server's CA certificate. Accept it by pressing kbd:[Y]. The tool now performs all necessary modifications to the client.
+. Use `+SUSEConnect+` to add more products. For details, run `+SUSEConnect --help+` .
+
+[#sec-rmt-client-yast]
+== Configuring clients with {yast}
+
+To configure a client to perform the registration against an {rmt} server, use the {yast} *Product Registration* module `+yast2 registration+`.
+
+On the client, the credentials are not necessary, and you may leave the relevant fields empty. Click *Local Registration Server* and enter its URL. Then click *Next* until the exit from the module.
+
+[#rmt-client-custom-repo]
+== Configuring clients for custom stand-alone repositories
+
+If you created a custom stand-alone repository on the {rmt} server, it is not registered on client machines with `+SUSEConnect+` because it has no parent product.
+
+To add the repository manually, follow these steps:
+
+. Point your Web browser to the following RMT server URL:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+https://__RMT{underscore}SERVER{underscore}HOSTNAME/repo/__
+----
+. Navigate the browser through the directory structure to your custom repository's `+repodata/+` subdirectory.
+. On the client machine, add the discovered repository URL:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> sudo zypper ar __CUSTOM{underscore}REPO{underscore}URL__ __CUSTOM{underscore}REPO{underscore}NAME__
+----
+
+[#sec-rmt-client-list-repositories]
+== Listing accessible repositories
+
+To list available modules and repositories, use `+SUSEConnect --list-extensions+`. Alternatively, you can also browse the directory listing of the {rmt} server by visiting `https://_RMT_SERVER_/repo/` and its subdirectories.
+
+[#sec-rmt-client-online-migration]
+== Online migration of {sle} clients
+
+{sle} clients registered to {rmt} can be migrated online to the latest service pack of the same major release the same way as clients registered to {scc}. Before starting the migration, make sure that {rmt} has the required products available and mirrored.
+
+For detailed information on the online migration, see xref:upgrade:sle-update-upgrading.adoc[].

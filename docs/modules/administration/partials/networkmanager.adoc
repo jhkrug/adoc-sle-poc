@@ -1,0 +1,42 @@
+// Converted from xml/networkmanager.xml
+
+[#sec-network-nm]
+== {nm}
+
+{nm} is the ideal solution for laptops and other portable computers. With {nm}, you do not need to worry about configuring network interfaces and switching between networks when you are moving.
+
+ifdef::os-sles,os-sled,os-slemicro[]
+[IMPORTANT]
+.Support coverage
+====
+{nm} is only supported by {suse} for desktop workloads with {sleda} or the Workstation extension. All server certifications are done with `+wicked+` as the network configuration tool, and using {nm} may invalidate them. {nm} is not supported by {suse} for server workloads.
+====
+endif::[]
+
+[#sec-network-nm-comparison]
+=== {nm} and `+wicked+`
+
+However, {nm} is not a suitable solution for all cases, so you can still choose between the `+wicked+` controlled method for managing network connections and {nm}. If you want to manage your network connection with {nm}, enable {nm} in the {yast} Network Settings module as described in xref:nm.adoc#sec-nm-activate[Enabling or disabling {nm}] and configure your network connections with {nm}. For a list of use cases and a detailed description of how to configure and use {nm}, refer to xref:nm.adoc[].
+
+Some differences between wicked and {nm}:
+
+`+root+` privileges::
+If you use {nm} for network setup, you can easily switch, stop or start your network connection at any time from within your desktop environment using an applet. {nm} also makes it possible to change and configure wireless card connections without requiring `+root+` privileges. For this reason, {nm} is the ideal solution for a mobile workstation.
++
+`+wicked+` also provides some ways to switch, stop or start the connection with or without user intervention, like user-managed devices. However, this always requires `+root+` privileges to change or configure a network device. This is often a problem for mobile computing, where it is not possible to preconfigure all the connection possibilities.
+Types of network connections::
+Both `+wicked+` and NetworkManager can handle network connections with a wireless network (with WEP, WPA-PSK, and WPA-Enterprise access) and wired networks using DHCP and static configuration. They also support connection through dial-up and VPN. With NetworkManager you can also connect a mobile broadband (3G) modem or set up a DSL connection, which is not possible with the traditional configuration.
++
+{nm} tries to keep your computer connected at all times using the best connection available. If the network cable is accidentally disconnected, it tries to reconnect. It can find the network with the best signal strength from the list of your wireless connections and automatically use it to connect. To get the same functionality with `+wicked+`, more configuration effort is required.
+
+[#sec-network-nm-functionality]
+=== {nm} functionality and configuration files
+
+The individual network connection settings created with {nm} are stored in configuration profiles. The _system_ connections configured with either {nm} or {yast} are saved in `+/etc/NetworkManager/system-connections/*+` or in `+/etc/sysconfig/network/ifcfg-*+`. For {gnome}, all user-defined connections are stored in GConf.
+
+In case no profile is configured, {nm} automatically creates one and names it `+Auto $INTERFACE-NAME+`. That is made in an attempt to work without any configuration for as many cases as (securely) possible. If the automatically created profiles do not suit your needs, use the network connection configuration dialogs provided by {gnome} to modify them as desired. For more information, see xref:nm.adoc#sec-nm-configure[Configuring network connections].
+
+[#sec-network-nm-polkit]
+=== Controlling and locking down {nm} features
+
+On centrally administered machines, certain {nm} features can be controlled or disabled with {pk}, for example if a user is allowed to modify administrator defined connections or if a user is allowed to define their own network configurations. To view or change the respective {nm} policies, start the graphical *Authorizations* tool for {pk}. In the tree on the left side, find them below the *network-manager-settings* entry. For an introduction to {pk} and details on how to use it, refer to xref:security:security-polkit.adoc[].

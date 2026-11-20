@@ -1,0 +1,142 @@
+// Converted from xml/powermanagement.xml
+[#cha-power-mgmt]
+= Power management
+:description: Learn to configure power management on a laptop or desktop computer using ACPI, controlling CPU performance and saving energy through various methods
+:revdate: 2026-01-16
+
+ifdef::os-sles[]
+ifdef::arch-zseries[]
+The features and hardware described in this chapter do not exist on {zseries}, making this chapter irrelevant for these platforms.
+endif::[]
+endif::[]
+
+Power management is especially important on laptop computers, but is also useful on other systems. ACPI (Advanced Configuration and Power Interface) is available on all modern computers (laptops, desktops and servers). Power management technologies require suitable hardware and BIOS routines. Most laptops and many modern desktops and servers meet these requirements. It is also possible to control CPU frequency scaling to save power or decrease noise.
+
+[#sec-power-mgmt-save]
+== Power saving functions
+
+Power saving functions are not only significant for the mobile use of laptops, but also for desktop systems. The main functions and their use in ACPI are:
+
+Standby::
+Not supported.
+Suspend (to memory)::
+This mode writes the entire system state to the RAM. Subsequently, the entire system except the RAM is put to sleep. In this state, the computer consumes little power. The advantage of this state is the possibility of resuming work at the same point within a few seconds without having to boot and restart applications. This function corresponds to the ACPI state `+S3+`.
+Hibernation (suspend to disk)::
+In this operating mode, the entire system state is written to the hard disk and the system is powered off. There must be a swap partition at least as big as the RAM to write all the active data. Reactivation from this state takes about 30 to 90 seconds. The state before the suspend is restored. Several manufacturers offer useful hybrid variants of this mode, such as RediSafe in IBM Thinkpads. The corresponding ACPI state is `+S4+`. In Linux, suspend to disk is performed by kernel routines that are independent from ACPI.
++
+[NOTE]
+.Changed UUID for swap partitions when formatting via `+mkswap+`
+====
+Do not reformat existing swap partitions with `+mkswap+` if possible. Reformatting with `+mkswap+` will change the UUID value of the swap partition. Either reformat via {yast} (which will update `+/etc/fstab+`) or adjust `+/etc/fstab+` manually.
+====
+Battery monitor::
+ACPI checks the battery charge status and provides information about it. Additionally, it coordinates actions to perform when a critical charge status is reached.
+Automatic power-off::
+Following a shutdown, the computer is powered off. This is especially important when an automatic shutdown is performed shortly before the battery is empty.
+Processor speed control::
+In connection with the CPU, energy can be saved in three different ways: frequency and voltage scaling (also known as PowerNow! or Speedstep), throttling and putting the processor to sleep (C-states). Depending on the operating mode of the computer, these methods can also be combined.
+
+[#sec-power-mgmt-acpi]
+== Advanced configuration and power interface (ACPI)
+
+ACPI was designed to enable the operating system to set up and control the individual hardware components. ACPI supersedes both Power Management Plug and Play (PnP) and Advanced Power Management (APM). It delivers information about the battery, AC adapter, temperature, fan and system events, like “close lid” or “battery low.”
+
+The BIOS provides tables containing information about the individual components and hardware access methods. The operating system uses this information for tasks like assigning interrupts or activating and deactivating components. Because the operating system executes commands stored into the BIOS, the functionality depends on the BIOS implementation. The tables ACPI can detect and load are reported in journald. See xref:journalctl.adoc[] for more information on viewing the journal log messages. See <<sec-power-mgmt-acpi-trouble,Troubleshooting>> for more information about troubleshooting ACPI problems.
+
+[#sec-power-mgmt-acpi-powernow]
+=== Controlling the CPU performance
+
+The CPU can save energy in three ways:
+
+* Frequency and Voltage Scaling
+* Throttling the Clock Frequency (T-states)
+* Putting the Processor to Sleep (C-states)
+
+Depending on the operating mode of the computer, these methods can be combined. Saving energy also means that the system heats up less and the fans are activated less frequently.
+
+Frequency scaling and throttling are only relevant if the processor is busy, because the most economic C-state is applied anyway when the processor is idle. If the CPU is busy, frequency scaling is the recommended power saving method. Often the processor only works with a partial load. In this case, it can be run with a lower frequency. Dynamic frequency scaling controlled by the kernel on-demand governor is the best approach.
+
+Throttling should be used as the last resort, for example, to extend the battery operation time despite a high system load. However, certain systems do not run smoothly when they are throttled too much. Moreover, CPU throttling does not make sense if the CPU has little to do.
+
+For in-depth information, refer to xref:tuning:tuning-power.adoc[].
+
+[#sec-power-mgmt-acpi-trouble]
+=== Troubleshooting
+
+There are two different types of problems. On one hand, the ACPI code of the kernel may contain bugs that were not detected in time. In this case, a solution will be made available for download. More often, the problems are caused by the BIOS. Sometimes, deviations from the ACPI specification are purposely integrated in the BIOS to circumvent errors in the ACPI implementation of other widespread operating systems. Hardware components that have serious errors in the ACPI implementation are recorded in a blacklist that prevents the Linux kernel from using ACPI for these components.
+
+The first thing to do when problems are encountered is to update the BIOS. If the computer does not boot, one of the following boot parameters may be helpful:
+
+pci=noacpi::
+Do not use ACPI for configuring the PCI devices.
+acpi=ht::
+Only perform a simple resource configuration. Do not use ACPI for other purposes.
+acpi=off::
+Disable ACPI.
+
+[WARNING]
+.Problems booting without ACPI
+====
+Certain newer machines (especially SMP systems and AMD64 systems) need ACPI for configuring the hardware correctly. On these machines, disabling ACPI can cause problems.
+====
+
+Sometimes, the machine is confused by hardware that is attached over USB or FireWire. If a machine refuses to boot, unplug all unneeded hardware and try again.
+
+Monitor the boot messages of the system with the command `+dmesg -T+` `+| grep -2i acpi+` (or all messages, because the problem may not be caused by ACPI) after booting. If an error occurs while parsing an ACPI table, the most important table—the DSDT (_Differentiated System Description Table_)—can be replaced with an improved version. In this case, the faulty DSDT of the BIOS is ignored. The procedure is described in <<sec-power-mgmt-faq,Troubleshooting>>.
+
+In the kernel configuration, there is a switch for activating ACPI debug messages. If a kernel with ACPI debugging is compiled and installed, detailed information is issued.
+
+If you experience BIOS or hardware problems, it is always advisable to contact the manufacturers. Especially if they do not always provide assistance for Linux, they should be confronted with the problems. Manufacturers only take the issue seriously if they realize that an adequate number of their customers use Linux.
+
+[#sec-power-mgmt-acpi-trouble-info]
+==== More information
+
+* link:https://tldp.org/HOWTO/ACPI-HOWTO/[] (detailed ACPI HOWTO, contains DSDT patches)
+* link:https://uefi.org/specifications[] (Advanced Configuration & Power Interface Specification)
+
+[#sec-power-mgmt-silenthd]
+== Rest for the hard disk
+
+In Linux, the hard disk can be put to sleep entirely if it is not needed or it can be run in a more economic or quieter mode. On modern laptops, you do not need to switch off the hard disks manually, because they automatically enter an economic operating mode whenever they are not needed. However, if you want to maximize power savings, test the following methods, using the `+hdparm+` command.
+
+It can be used to modify hard disk settings. The option `+-y+` instantly switches the hard disk to the standby mode. `+-Y+` puts it to sleep. `+hdparm+` `+-S+` _X_ causes the hard disk to be spun down after a certain period of inactivity. Replace _X_ as follows: `+0+` disables this mechanism, causing the hard disk to run continuously. Values from `+1+` to `+240+` are multiplied by 5 seconds. Values from `+241+` to `+251+` correspond to 1 to 11 times 30 minutes.
+
+Internal power saving options of the hard disk can be controlled with the option `+-B+`. Select a value from `+0+` to `+255+` for maximum saving to maximum throughput. The result depends on the hard disk used and is difficult to assess. To make a hard disk quieter, use the option `+-M+`. Select a value from `+128+` to `+254+` for quiet to fast.
+
+Often, it is not so easy to put the hard disk to sleep. In Linux, multiple processes write to the hard disk, waking it up repeatedly. Therefore, it is important to understand how Linux handles data that needs to be written to the hard disk. First, all data is buffered in the RAM. This buffer is monitored by the `+pdflush+` daemon. When the data reaches a certain age limit or when the buffer is filled to a certain degree, the buffer content is flushed to the hard disk. The buffer size is dynamic and depends on the size of the memory and the system load. By default, pdflush is set to short intervals to achieve maximum data integrity. It checks the buffer every 5 seconds and writes the data to the hard disk. The following variables are interesting:
+
+`+/proc/sys/vm/dirty_writeback_centisecs+`::
+Contains the delay until a pdflush thread wakes up (in hundredths of a second).
+`+/proc/sys/vm/dirty_expire_centisecs+`::
+Defines after which timeframe a dirty page should be written at latest. Default is `+3000+`, which means 30 seconds.
+`+/proc/sys/vm/dirty_background_ratio+`::
+Maximum percentage of dirty pages until pdflush begins to write them. Default is `+5+`%.
+`+/proc/sys/vm/dirty_ratio+`::
+When the dirty pages exceed this percentage of the total memory, processes are forced to write dirty buffers during their time slice instead of continuing to write.
+
+[WARNING]
+.Data integrity risk
+====
+Changes to the `+pdflush+` daemon settings can compromise data integrity.
+====
+
+Apart from these processes, journaling file systems, like `+Btrfs+`, `+Ext3+`, `+Ext4+` and others write their metadata independently from `+pdflush+`, which also prevents the hard disk from spinning down. 
+ifdef::os-sled,os-osuse[To avoid this, a special kernel extension has been developed for mobile devices. To use the extension, install the `+laptop-mode-tools+` package and see `+/usr/src/linux/Documentation/laptops/laptop-mode.txt+` for details.]
+
+Another important factor is the way active programs behave. For example, good editors regularly write hidden backups of the currently modified file to the hard disk, causing the disk to wake up. Features like this can be disabled at the expense of data integrity.
+
+In this connection, the mail daemon postfix uses the variable `+POSTFIX_LAPTOP+`. If this variable is set to `+yes+`, postfix accesses the hard disk far less frequently.
+
+ifdef::os-sled,os-osuse[]
+In {productname} these technologies are controlled by `+laptop-mode-tools+`.
+endif::[]
+
+[#sec-power-mgmt-faq]
+== Troubleshooting
+
+All error messages and alerts are logged in the system journal, which can be queried with the command `+journalctl+` (see xref:journalctl.adoc[] for more information). The following sections cover the most common problems.
+
+[#sec-power-mgmt-faq-cpufreq]
+=== CPU frequency does not work
+
+Refer to the kernel sources to see if your processor is supported. You may need a special kernel module or module option to activate CPU frequency control. If the `+kernel-source+` package is installed, this information is available in `+/usr/src/linux/Documentation/cpu-freq/*+`.

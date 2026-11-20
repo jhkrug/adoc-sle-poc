@@ -1,0 +1,25 @@
+# Spike playbook. build.sh stages docs/ into a scratch git repo in /tmp.
+site:
+  title: SLE docs on Antora (spike)
+  start_page: sles::index.adoc
+content:
+  sources:
+  - url: /tmp/adoc-sle-poc-stage
+    branches: HEAD
+ui:
+  bundle:
+    url: ../../product-docs/product-docs-playbook/dsc-style-bundle/default-ui/ui-bundle.zip
+runtime:
+  log:
+    failure_level: fatal
+    level: warn
+    format: pretty
+output:
+  dir: build/site
+antora:
+  extensions:
+  # Pages whose book include is profiled out (os="sled") are still converted,
+  # and Antora publishes every page. The nav is profiled with ifdef, so drop
+  # pages that are not in the nav. Same extension as the Rancher playbook.
+  - require: ../../product-docs/product-docs-playbook/product-docs-common/extensions/unpublish-unlisted-pages/unpublish-unlisted-pages.js
+    component: [sles]

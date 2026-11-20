@@ -1,0 +1,130 @@
+// Converted from xml/fuse.xml
+[#cha-fuse]
+= Accessing file systems with FUSE
+:description: Learn how to configure and mount file systems as an unprivileged user with FUSE (Filesystem in Userspace) technology
+:revdate: 2026-01-16
+
+[abstract]
+--
+FUSE is the acronym for _Filesystem in Userspace_. This means you can configure and mount a file system as an unprivileged user. Normally, you need to be `+root+` for this task. FUSE alone is a kernel module. Combined with plug-ins, it allows you to extend FUSE to access almost all file systems like remote SSH connections, ISO images, and more.
+--
+
+[#sec-fuse-config]
+== Configuring FUSE
+
+Before you can use FUSE, you need to install the package `+fuse+`. Depending which file system you want to use, you need additional plug-ins available as separate packages. 
+ifdef::os-osuse[For an overview, see <<sec-fuse-plugins,Available FUSE plug-ins>>.]
+
+Generally you do not need to configure FUSE. However, it is a good idea to create a directory where all your mount points are combined. For example, you can create a directory `+~/mounts+` and insert your subdirectories for your different file systems there.
+
+[#sec-fuse-ntfs]
+== Mounting an NTFS partition
+
+NTFS, the _New Technology File System_, is the default file system of Windows. Since under normal circumstances the unprivileged user cannot mount NTFS block devices using the external FUSE library, the process of mounting a Windows partition described below requires root privileges. 
+ifdef::os-sles,os-sled[Mounting NTFS partitions is supported on {sls} and {sled} with {slewe} only.]
+
+. Become `+root+` and install the package `+ntfs-3g+`. 
+ifdef::os-sles,os-sled[It is available in {slewe}.]
+. Create a directory that is to be used as a mount point, for example, `+~/mounts/windows+`.
+. Find out which Windows partition you need. Use {yast} and start the partitioner module to see which partition belongs to Windows, but do not modify anything. Alternatively, become `+root+` and execute `+/sbin/fdisk+` `+-l+`. Look for partitions with a partition type of `+HPFS/NTFS+`.
+. Mount the partition in read-write mode. Replace the placeholder _DEVICE_ with your respective Windows partition:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> ntfs-3g /dev/__DEVICE__ __MOUNT POINT__
+----
++
+To use your Windows partition in read-only mode, append `+-o ro+`:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+> ntfs-3g /dev/__DEVICE__ __MOUNT POINT__ -o ro
+----
++
+The command `+ntfs-3g+` uses the current user (UID) and group (GID) to mount the given device. To set the write permissions to a different user, use the command `+id+` `+USER+` to get the output of the UID and GID values. Set it with:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} id tux
+uid=1000(tux) gid=100(users) groups=100(users),16(dialout),33(video)
+ntfs-3g /dev/__DEVICE__ __MOUNT POINT__ -o uid=1000,gid=100
+----
++
+Find additional options in the man page.
+
+To unmount the resource, run `+fusermount -u+` _MOUNT POINT_.
+
+ifdef::os-osuse[]
+[#sec-fuse-sshfs]
+== Mounting remote file system with SSHFS
+
+SSH, the secure shell network protocol, can be used to exchange data between two computers using a secure channel. To establish an SSH connection through FUSE, proceed as follows:
+
+. Install the package `+sshfs+`.
+. Create a directory that is to be used as a mount point. A good idea is to use `{tilde}/mounts/_HOST_`. Replace _HOST_ with the name of your remote computer.
+. Mount the remote file system:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} sshfs __USER__@__HOST__ __MOUNT POINT__
+----
+. Enter your password for the remote computer.
+
+To unmount the resource, run `+fusermount -u+` _MOUNT POINT_.
+endif::[]
+
+ifdef::os-osuse[]
+[#sec-fuse-iso]
+== Mounting an ISO file system
+
+To look into an ISO image, you can mount it with the `+fuseiso+` package:
+
+. Install the package `+fuseiso+`.
+. Create a directory that is to be used as a mount point, for example, `+~/mounts/iso+`.
+. Mount the ISO image:
++
+[subs="specialchars,quotes,attributes,callouts"]
+----
+{hash} fuseiso __ISO{underscore}IMAGE__ __MOUNT POINT__
+----
+
+You can only read content from the ISO image, but you can not write back. To unmount the resource, use `+fusermount -u+` _MOUNT POINT_.
+endif::[]
+
+ifdef::os-osuse[]
+[#sec-fuse-plugins]
+== Available FUSE plug-ins
+
+FUSE is dependent on plug-ins. The following table lists common plug-ins.
+
+[#tab-fuse-plugins]
+.Available FUSE plug-ins
+[cols="1,1"]
+|===
+a|`+curlftpfs+`
+a|mount FTP servers
+a|`+encfs+`
+a|mount encrypted file systems
+a|`+fuseiso+`
+a|mounts CD-ROM images with ISO9660 file systems in them
+a|`+fusepod+`
+a|mount iPods
+a|`+fusesmb+`
+a|mount browseable Samba clients or Windows shares
+a|`+gphotofs+`
+a|mount supported digital cameras through gPhoto
+a|`+ntfs-3g+`
+a|mount NTFS volumes (with read and write support)
+a|`+obexfs+`
+a|mount Bluetooth devices
+a|`+sshfs+`
+a|file system client based on SSH file transfer protocol
+a|`+wdfs+`
+a|mount WebDAV file systems
+|===
+endif::[]
+
+[#sec-fuse-moreinfo]
+== More information
+
+For more information, see the home page of FUSE at link:https://github.com/libfuse/libfuse[].

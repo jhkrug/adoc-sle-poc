@@ -1,0 +1,478 @@
+// Converted from xml/adm_shell.xml
+[#cha-adm-shell]
+= Bash and Bash scripts
+:description: Manage tasks and automate processes with the Bash shell using its powerful commands and features, then apply your newfound skills in practice
+:revdate: 2026-01-16
+
+[abstract]
+--
+Today, many people use computers with a graphical user interface (GUI) like {gnome}. Although GUIs offer many features, they are limited when performing automated task execution. Shells complement GUIs well, and this chapter gives an overview of several aspects of shells, in this case the Bash shell.
+--
+
+[#sec-adm-whatistheshell]
+== What is “the shell”?
+
+Traditionally, _the_ Linux shell is Bash (Bourne again Shell). When this chapter speaks about “the shell” it means Bash. There are more shells available (ash, csh, ksh, zsh, …), each employing different features and characteristics.
+
+[#sec-adm-configfiles]
+=== Bash configuration files
+
+A shell can be invoked as an:
+
+. {empty}
++
+.Interactive login shell
+This is used when logging in to a machine, invoking Bash with the `+--login+` option or when logging in to a remote machine with SSH.
+. {empty}
++
+.Interactive non-login shell
+This is normally the case when starting xterm, konsole, gnome-terminal, or similar command line interface (CLI) tools.
+. {empty}
++
+.Non-interactive non-login shell
+This is invoked when invoking a shell script at the command line.
+
+Each shell reads different configuration files. The following tables show the login and non-login shell configuration files.
+
+[TIP]
+====
+Bash looks for its configuration files in a specific order depending on the type of shell where it is run. Find more details on the Bash man page (`+man 1 bash+`). Search for the headline `+INVOCATION+`.
+====
+
+[#tab-adm-shell-config-loginshells]
+.Bash configuration files for login shells
+[cols="1,1",options="header"]
+|===
+a|File
+a|Description
+
+a|`+/etc/profile+`
+a|Do not modify this file, otherwise your modifications may be destroyed during your next update.
+a|`+/etc/profile.local+`
+a|Use this file if you extend `+/etc/profile+`
+a|`+/etc/profile.d/+`
+a|Contains system-wide configuration files for specific programs
+a|`+~/.profile+`
+a|Insert user specific configuration for login shells here
+|===
+
+The login shell also sources the configuration files listed under <<tab-adm-shell-configs-nonloginshells,Bash configuration files for non-login shells>>.
+
+[#tab-adm-shell-configs-nonloginshells]
+.Bash configuration files for non-login shells
+[cols="1,1"]
+|===
+a|`+/etc/bash.bashrc+`
+a|Do not modify this file, otherwise your modifications may be destroyed during your next update.
+a|`+/etc/bash.bashrc.local+`
+a|Use this file to insert your system-wide modifications for Bash only
+a|`+~/.bashrc+`
+a|Insert user specific configuration here
+|===
+
+Additionally, Bash uses multiple files:
+
+.Special files for Bash
+[cols="1,1",options="header"]
+|===
+a|File
+a|Description
+
+a|`+~/.bash_history+`
+a|Contains a list of all commands you have typed
+a|`+~/.bash_logout+`
+a|Executed when logging out
+a|`+~/.alias+`
+a|User defined aliases of frequently used commands. See `+man 1 alias+` for more details about defining aliases.
+|===
+
+[discrete]
+==== No-Login Shells
+
+There are special shells that block users from logging into the system: `+/bin/false+` and `+/sbin/nologin+`. Both fail silently when the user attempts to log into the system. This was intended as a security measure for system users, though modern Linux operating systems have more effective tools for controlling system access, such as PAM and AppArmor.
+
+The default on {productname} is to assign `+/bin/bash+` to human users, and `+/bin/false+` or `+/sbin/nologin+` to system users. The `+nobody+` user has `+/bin/bash+` for historical reasons, as it is a user with minimum privileges that used to be the default for system users. However, whatever little bit of security gained by using `+nobody+` is lost when multiple system users use it. It should be possible to change it to `+/sbin/nologin+`; the fastest way to test it is change it and see if it breaks any services or applications.
+
+Use the following command to list which shells are assigned to all users, system and human users, in `+/etc/passwd+`. The output varies according to the services and users on your system:
+
+[subs="attributes+"]
+----
+> sort -t: -k 7 /etc/passwd | awk -F: '{print $1"\t" $7}' | column -t
+{exampleuser_plain}               /bin/bash
+nobody            /bin/bash
+root              /bin/bash
+avahi             /bin/false
+chrony            /bin/false
+dhcpd             /bin/false
+dnsmasq           /bin/false
+ftpsecure         /bin/false
+lightdm           /bin/false
+mysql             /bin/false
+postfix           /bin/false
+rtkit             /bin/false
+sshd              /bin/false
+tftp              /bin/false
+unbound           /bin/false
+bin               /sbin/nologin
+daemon            /sbin/nologin
+ftp               /sbin/nologin
+lp                /sbin/nologin
+mail              /sbin/nologin
+man               /sbin/nologin
+nscd              /sbin/nologin
+polkitd           /sbin/nologin
+pulse             /sbin/nologin
+qemu              /sbin/nologin
+radvd             /sbin/nologin
+rpc               /sbin/nologin
+statd             /sbin/nologin
+svn               /sbin/nologin
+systemd-coredump  /sbin/nologin
+systemd-network   /sbin/nologin
+systemd-timesync  /sbin/nologin
+usbmux            /sbin/nologin
+vnc               /sbin/nologin
+wwwrun            /sbin/nologin
+messagebus        /usr/bin/false
+scard             /usr/sbin/nologin
+----
+
+include::partial$fs-structure-i.adoc[]
+
+[#sec-adm-shellscripts]
+== Writing shell scripts
+
+Shell scripts provide a convenient way to perform a wide range of tasks: collecting data, searching for a word or phrase in a text and other useful things. The following example shows a small shell script that prints a text:
+
+.A shell script printing a text
+====
+----
+#!/bin/sh <1>
+# Output the following line: <2>
+echo "Hello World" <3>
+----
+
+<1> The first line begins with the _Shebang_ characters (`+#!+`) which indicate that this file is a script. The interpreter, specified after the _Shebang_, executes the script. In this case, the specified interpreter is `+/bin/sh+`.
+<2> The second line is a comment beginning with the hash sign. We recommend that you comment difficult lines. With proper commenting, you can remember the purpose and function of the line. Also, other readers can better understand your script. Commenting is considered good practice in the development community.
+<3> The third line uses the built-in command `+echo+` to print the corresponding text.
+====
+
+Before you can run this script, there are a few prerequisites:
+
+. Every script should contain a Shebang line (as in the example above). If the line is missing, you need to call the interpreter manually.
+. You can save the script wherever you want. However, it is a good idea to save it in a directory where the shell can find it. The search path in a shell is determined by the environment variable `+PATH+`. A normal user does not have write access to `+/usr/bin+`. Therefore it is recommended to save your scripts in the users' directory `+~/bin/+`. The above example gets the name `+hello.sh+`.
+. The script needs executable permissions. Set the permissions with the following command:
++
+----
+> chmod +x ~/bin/hello.sh
+----
+
+If you have fulfilled all the above prerequisites, you can execute the script in the following ways:
+
+. {empty}
++
+.As absolute path
+The script can be executed with an absolute path. In our case, it is `+~/bin/hello.sh+`.
+. {empty}
++
+.Everywhere
+If the `+PATH+` environment variable contains the directory where the script is located, you can execute the script with `+hello.sh+`.
+
+[#sec-adm-shell-redirect]
+== Redirecting command events
+
+Each command can use three channels, either for input or output:
+
+* {empty}
++
+.Standard output
+This is the default output channel. Whenever a command prints something, it uses the standard output channel.
+* {empty}
++
+.Standard input
+If a command needs input from users or other commands, it uses this channel.
+* {empty}
++
+.Standard error
+Commands use this channel for error reporting.
+
+To redirect these channels, there are the following possibilities:
+
+`+Command > File+`::
+Saves the output of the command into a file, the existing file is deleted. For example, the `+ls+` command writes its output into the file `+listing.txt+`:
++
+----
+> ls > listing.txt
+----
+`+Command >> File+`::
+Appends the output of the command to a file. For example, the `+ls+` command appends its output to the file `+listing.txt+`:
++
+----
+> ls >> listing.txt
+----
+`+Command < File+`::
+Reads the file as input for the given command. For example, the `+read+` command reads in the content of the file into the variable:
++
+----
+> read a < foo
+----
+`+Command1 | Command2+`::
+Redirects the output of the left command as input for the right command. For example, the `+cat+` command outputs the content of the `+/proc/cpuinfo+` file. This output is used by `+grep+` to filter only those lines which contain `+cpu+`:
++
+----
+> cat /proc/cpuinfo | grep cpu
+----
+
+Every channel has a _file descriptor_: 0 (zero) for standard input, 1 for standard output and 2 for standard error. It is allowed to insert this file descriptor before a `+<+` or `+>+` character. For example, the following line searches for a file starting with `+foo+`, but suppresses its errors by redirecting it to `+/dev/null+`:
+
+----
+> find / -name "foo*" 2>/dev/null
+----
+
+[#sec-adm-alias]
+== Using aliases
+
+An alias is a shortcut definition of one or more commands. The syntax for an alias is:
+
+[subs="specialchars,quotes,attributes,callouts"]
+----
+alias __NAME__=__DEFINITION__
+----
+
+For example, the following line defines an alias `+lt+` that outputs a long listing (option `+-l+`), sorts it by modification time (`+-t+`), and prints it in reverse sorted order (`+-r+`):
+
+----
+> alias lt='ls -ltr'
+----
+
+To view all alias definitions, use `+alias+`. Remove your alias with `+unalias+` and the corresponding alias name.
+
+[#sec-adm-variables]
+== Using variables in Bash
+
+A shell variable can be global or local. Global variables, or environment variables, can be accessed in all shells. In contrast, local variables are visible in the current shell only.
+
+To view all environment variables, use the `+printenv+` command. If you need to know the value of a variable, insert the name of your variable as an argument:
+
+----
+> printenv PATH
+----
+
+A variable, be it global or local, can also be viewed with `+echo+`:
+
+----
+> echo $PATH
+----
+
+To set a local variable, use a variable name followed by the equal sign, followed by the value:
+
+----
+> PROJECT="SLED"
+----
+
+Do not insert spaces around the equal sign, otherwise you get an error. To set an environment variable, use `+export+`:
+
+----
+> export NAME="tux"
+----
+
+To remove a variable, use `+unset+`:
+
+----
+> unset NAME
+----
+
+The following table contains common environment variables that you can use in you shell scripts:
+
+[#tab-adm-envars]
+.Useful environment variables
+[cols="1,1"]
+|===
+a|`+HOME+`
+a|the home directory of the current user
+a|`+HOST+`
+a|the current host name
+a|`+LANG+`
+a|when a tool is localized, it uses the language from this environment variable. English can also be set to `+C+`
+a|`+PATH+`
+a|the search path of the shell, a list of directories separated by colon
+a|`+PS1+`
+a|specifies the normal prompt printed before each command
+a|`+PS2+`
+a|specifies the secondary prompt printed when you execute a multi-line command
+a|`+PWD+`
+a|current working directory
+a|`+USER+`
+a|the current user
+|===
+
+[#sec-adm-variables-argument]
+=== Using argument variables
+
+For example, if you have the script `+foo.sh+` you can execute it like this:
+
+----
+> foo.sh "Tux Penguin" 2000 
+----
+
+To access all the arguments which are passed to your script, you need positional parameters. These are `+$1+` for the first argument, `+$2+` for the second, and so on. You can have up to nine parameters. To get the script name, use `+$0+`.
+
+The following script `+foo.sh+` prints all arguments from 1 to 4:
+
+----
+#!/bin/sh
+echo \"$1\" \"$2\" \"$3\" \"$4\"
+----
+
+If you execute this script with the above arguments, you get:
+
+----
+"Tux Penguin" "2000" "" ""
+----
+
+[#sec-adm-shell-varsubst]
+=== Using variable substitution
+
+Variable substitutions apply a pattern to the content of a variable either from the left or right side. The following list contains the possible syntax forms:
+
+`+${VAR#pattern}+`::
+removes the shortest possible match from the left:
++
+----
+> file=/home/tux/book/book.tar.bz2
+> echo ${file#*/}
+home/tux/book/book.tar.bz2
+----
+`+${VAR##pattern}+`::
+removes the longest possible match from the left:
++
+----
+> file=/home/tux/book/book.tar.bz2
+> echo ${file##*/}
+book.tar.bz2
+----
+`+${VAR%pattern}+`::
+removes the shortest possible match from the right:
++
+----
+> file=/home/tux/book/book.tar.bz2
+> echo ${file%.*}
+/home/tux/book/book.tar
+----
+`+${VAR%%pattern}+`::
+removes the longest possible match from the right:
++
+----
+> file=/home/tux/book/book.tar.bz2
+> echo ${file%%.*}
+/home/tux/book/book
+----
+`+${VAR/pattern_1/pattern_2}+`::
+substitutes the content of _VAR_ from the _PATTERN_1_ with _PATTERN_2_:
++
+----
+> file=/home/tux/book/book.tar.bz2
+> echo ${file/tux/wilber}
+/home/wilber/book/book.tar.bz2
+----
+
+[#sec-adm-shell-grouping]
+== Grouping and combining commands
+
+Shells allow you to concatenate and group commands for conditional execution. Each command returns an exit code which determines the success or failure of its operation. If it is 0 (zero) the command was successful, everything else marks an error which is specific to the command.
+
+The following list shows, how commands can be grouped:
+
+`+Command1 ; Command2+`::
+executes the commands in sequential order. The exit code is not checked. The following line displays the content of the file with `+cat+` and then prints its file properties with `+ls+` regardless of their exit codes:
++
+----
+> cat filelist.txt ; ls -l filelist.txt
+----
+`+Command1 && Command2+`::
+runs the right command, if the left command was successful (logical AND). The following line displays the content of the file and prints its file properties only, when the previous command was successful (compare it with the previous entry in this list):
++
+----
+> cat filelist.txt && ls -l filelist.txt
+----
+`+Command1 || Command2+`::
+runs the right command, when the left command has failed (logical OR). The following line creates only a directory in `+/home/wilber/bar+` when the creation of the directory in `+/home/tux/foo+` has failed:
++
+----
+> mkdir /home/tux/foo || mkdir /home/wilber/bar
+----
+`+funcname(){ ... }+`::
+creates a shell function. You can use the positional parameters to access its arguments. The following line defines the function `+hello+` to print a short message:
++
+----
+> hello() { echo "Hello $1"; }
+----
++
+You can call this function like this:
++
+----
+> hello Tux
+----
++
+which prints:
++
+----
+Hello Tux
+----
+
+[#sec-adm-shell-commonconstructs]
+== Working with common flow constructs
+
+To control the flow of your script, a shell has `+while+`, `+if+`, `+for+` and `+case+` constructs.
+
+[#sec-adm-shell-if]
+=== The if control command
+
+The `+if+` command is used to check expressions. For example, the following code tests whether the current user is Tux:
+
+----
+if test $USER = "tux"; then
+  echo "Hello Tux."
+else
+  echo "You are not Tux."
+fi
+----
+
+The test expression can be as complex or simple as possible. The following expression checks if the file `+foo.txt+` exists:
+
+----
+if test -e /tmp/foo.txt ; then
+  echo "Found foo.txt"
+fi
+----
+
+The test expression can also be abbreviated in square brackets:
+
+----
+if [ -e /tmp/foo.txt ] ; then
+  echo "Found foo.txt"
+fi
+----
+
+Find more useful expressions at link:https://bash.cyberciti.biz/guide/If..else..fi[].
+
+[#sec-adm-shell-for]
+=== Creating loops with the `+for+` command
+
+The `+for+` loop allows you to execute commands to a list of entries. For example, the following code prints certain information about PNG files in the current directory:
+
+----
+for i in *.png; do
+ ls -l $i
+done
+----
+
+[#sec-adm-shell-moreinfo]
+== More information
+
+Important information about Bash is provided in the man pages `+man bash+`. More about this topic can be found in the following list:
+
+* link:https://tldp.org/LDP/Bash-Beginners-Guide/html/index.html[]—Bash Guide for Beginners
+* link:https://tldp.org/HOWTO/Bash-Prog-Intro-HOWTO.html[]—BASH Programming - Introduction HOW-TO
+* link:https://tldp.org/LDP/abs/html/index.html[]—Advanced Bash-Scripting Guide
+* link:https://www.grymoire.com/Unix/Sh.html[]—Sh - the Bourne Shell

@@ -1,0 +1,198 @@
+// Converted from xml/gnome_start.xml
+[#cha-gnomeuser-start]
+= Getting started with the {gnome} desktop
+:description: Explore the core functionality of the GNOME desktop, including its login process, session types, and essential features to ensure efficient navigation
+:revdate: 2026-01-16
+
+[abstract]
+--
+This chapter provides an overview of the default {gnome} desktop in {sle}, including login, session types and basic usage.
+--
+
+{gnome} is an easy-to-use graphical interface that can be customized to meet your needs and personal preferences. This section describes the default configuration of {gnome}. If you or your system administrator modify the defaults, certain aspects might be different, such as appearance or key combinations.
+
+ifdef::os-sles,os-sled[]
+[NOTE]
+.Included session configurations
+====
+Certain versions of {sle} ship with as many as three different session configurations based on {gnome}. These are {gnome}, {gnome} Classic and {slea} Classic. The version described here is the default configuration of {sled}, which is {gnome}.
+====
+endif::[]
+
+ifdef::os-osuse[]
+[NOTE]
+.Included session configurations
+====
+{productname} ships with as three different session configurations based on {gnome}. These are {gnome}, {gnome} Classic and {slea} Classic. The version described here is {gnome}. The main difference between the configurations is the look and feel of the home screen and the main menu. Most of what is described in the following applies to all three configurations.
+====
+endif::[]
+
+[#sec-gnome-login]
+== Logging in
+
+All users must authenticate—unless *Auto Login* is enabled for a specific user. In this case, a particular user is logged in automatically when the system starts. This can save time, especially if a computer is used by a single person. It may impact account security. Auto Login can be enabled or disabled during installation or at any time using the {yast} User and Group Management module. For more information, refer to xref:administration:yast2-userman.adoc[].
+
+If your computer is running in a network environment and you are not the only person using the machine, you are usually prompted to enter your user name and password when you start the system. 
+ifdef::os-sled[ If you did not set up the system and user account yourself, check with your system administrator for your user name and password.]
+
+.Default {gnome} login screen
+image::login_sled.png["The default GNOME login screen",width=75%]
+
+.Normal login
+. In the login screen, select your user name.
++
+If your user name is not listed, click *Not listed?*. Then enter your user name and click *Next*.
+. Enter your password and confirm with kbd:[Enter].
+
+[#sec-gnome-switchsession]
+=== Switching the session type before logging in
+
+To try one of the additional {gnome} session configurations or try another desktop environment, follow the steps below.
+
+. On the login screen, click your user name or enter it, as you normally would.
+. To change the session type, click the cog wheel icon in the lower right corner. A menu appears.
++
+.Default {gnome} login screen—session type
+image::login_sessiontype_sle.png["Selecting session types in the default GNOME login screen",width=75%]
+. From the menu, select one of the entries. Depending on your configuration there may be different choices, but the default selection is as follows.
++
+{gnome} (default)::
+A {gnome} 4 configuration that is close to the upstream design. It focuses on interrupting users as little as possible. However, starting applications and switching between them works differently from many other desktop operating systems. It uses a single panel at the top of the screen. 
+ifdef::os-osuse,os-sled[This session is started on Wayland.]
+{gnome} Classic and {gnome} Classic on Xorg::
+{gnome} classic is for users who prefer a more traditional desktop experience. It is based on {gnome} 4 technologies but provides a number of changes to the user interface.
+ifdef::os-osuse,os-sled[]
+{gnome} on Xorg::
+By default {productname} uses {gnome} with Wayland. Choose this option to start {gnome} on Xorg. This is also the version used in this documentation.
+endif::[]
+IceWM session::
+A basic desktop designed to use little resources. It can be used as a fallback, if other options do not work or are slow.
+ifdef::os-osuse[]
+TWM::
+A minimalist desktop designed to consume as little hardware resources as possible.
+endif::[]
+. Enter your password into the text box and confirm with kbd:[Enter].
+
+After switching to another session type once, the chosen session becomes your default session. To switch back, repeat the steps above.
+
+[#sec-gnome-desktop]
+== Desktop basics
+
+The {gnome} desktop appears after you first log in. The top bar displays the *Activities* overview, the calendar and the *System* menu. The following list gives more details on each element:
+
+*Activities* overview::
+The *Activities* overview allows you to access your windows, applications, files, folders and the Web.
++
+The *Activities* overview is described further in <<sec-gnome-start-activities,*Activities* overview>>.
+Calendar::
+The calendar shows the current day of the week and time. Click it to open a menu where you can access a calendar and adjust date and time settings.
+*System* menu::
+In the right corner of the top bar, click the icons to open the *System* menu where you can adjust sound volume, display brightness, network connection and power settings, take a screenshot, or log out.
+
+ifdef::os-sles,os-sled[]
+.{gnome} desktop with activities overview
+image::desktop_sled_menu.png["Activities overview in the GNOME desktop",width=90%]
+endif::[]
+
+ifdef::os-osuse[]
+.{gnome} desktop
+image::desktop_gnome_osuse.png["Activities overview in the GNOME desktop",width=90%]
+endif::[]
+
+[#sec-gnome-start-activities]
+=== *Activities* overview
+
+The *Activities* overview shows a preview of all open windows and icons for favorite and running applications. It also integrates searching and browsing functionality.
+
+[#sec-gnome-start-activities-open]
+==== Opening the *Activities* overview
+
+To open the *Activities* overview, you have the following options:
+
+* In the left corner of the top bar, click the *Activities* button.
+* Move your mouse pointer to the upper-left hot corner.
+* Press the kbd:[Meta] key on your keyboard.
+
+[#sec-gnome-start-activities-use]
+==== Using the *Activities* overview
+
+In the following, the most important parts of the *Activities* overview are explained.
+
+Search box::
+Use the search box at the top to find applications, settings and files in your home directory.
++
+To search, you do not need to click the search box. You can begin typing directly after opening the *Activities* overview. Search starts while you type, you do not need to press kbd:[Enter].
+`+dash+`::
+The `+Dash+` is the bar positioned in the center at the bottom. It contains your favorite applications and running applications. If you move the mouse pointer over one of the icons, the name of the corresponding application is displayed nearby. A small dot underneath the icon indicates that the application is running.
++
+Right-clicking an icon opens a menu which offers different actions depending on the associated program. Using *Pin to Dash*, you can place the application icon permanently in `+Dash+`. To remove a program icon from `+Dash+`, click *Unpin*. To rearrange an icon, use the mouse to drag it to a new position.
+
+[#sec-gnome-start-startprograms]
+=== Starting programs
+
+To start a program, you have several options:
+
+* In the top bar, click *Activities* and select an application from the menu.
+* Open the *Activities* overview by pressing kbd:[Meta] on your keyboard and select an application.
+* If you know the exact command to start the program, you can press kbd:[Alt+F2], enter the command and press kbd:[Enter].
++
+For more information about the *Activities* overview, see <<sec-gnome-start-activities,*Activities* overview>>.
+
+[#sec-gnomeuser-start-logout]
+== Pausing or finishing your session
+
+To pause or close your session, open the *System* menu in the upper-right corner of the top bar, click the *Power Off* button and choose one of the options listed.
+
+* {empty}
++
+.*Suspend*
+Pause your session and put the computer into a state where it consumes a minimal amount of energy. Suspend mode can be configured to lock your screen, so nobody can look at or change your work. Waking up the computer is generally much quicker than a full computer start.
++
+This mode is also known as suspend-to-RAM, sleep or standby mode.
+* {empty}
++
+.*Restart*
+Finish the current session and restart the computer. Restarting is necessary to apply the system updates.
+* {empty}
++
+.*Power Off*
+Finish the current session and turn off the computer.
+* {empty}
++
+.*Log Out* or *Switch User*
+Finish the current session, but leave the computer on, so other users can log in. This option is only available if you have more than one user account on your system.
+
+[#sec-gnomeuser-start-login-lock]
+=== Locking the screen
+
+To lock the screen, open the *System* menu in the upper-right corner of the top bar and click the padlock icon.
+
+When you lock your screen, a curtain with a clock appears first. After a certain amount of time, the screen turns black.
+
+To unlock the screen, move the mouse or press a key to display the locked screen dialog. Enter your password and press kbd:[Enter] to unlock the screen.
+
+[#sec-gnomeuser-start-logout-logout]
+=== Logging out or switching users
+
+The *Log Out* and *Switch User* entries only appear in the menu if you have more than one user account on your system.
+
+. Click the *System* menu in the upper-right corner of the top bar and click the *Power Off* button to open the menu.
+. Select one of the following options:
++
+*Log Out*::
+Logs you out of the current session and returns you to the Login screen.
+*Switch User*::
+Suspends your session, allowing another user to log in and use the computer.
+
+[#sec-gnomeuser-start-logout-restart]
+=== Restarting or shutting down the computer
+
+. Click the *System* menu in the upper-right corner of the top bar and click the *Power Off* button to open the menu.
+. Select one of the following options:
++
+*Suspend*::
+Pauses your session and puts the computer into a state where it consumes a minimal amount of energy. Suspend mode can be configured to lock your screen, so nobody can look at or change your work. Waking up the computer is generally much quicker than a full computer start.
+*Restart*::
+Logs you out of the current session, then restarts the computer.
+*Power Off*::
+Logs you out of the current session, then turns off the computer.
